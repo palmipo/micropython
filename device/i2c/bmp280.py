@@ -2,6 +2,9 @@ from devicei2c import DeviceI2C
 
 class BMP280(DeviceI2C):
 
+    def __init__(self, address, bus):
+        super().__init__(0x77 & (address & 0x03), bus)
+
     def statusRegister(self):
         buf = bytearray(1)
         buf[0] = 0xf3
