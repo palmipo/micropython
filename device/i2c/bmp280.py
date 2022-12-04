@@ -2,8 +2,8 @@ from devicei2c import DeviceI2C
 
 class BMP280(DeviceI2C):
 
-    def __init__(self, address, bus):
-        super().__init__(0x77 & (address & 0x03), bus)
+    def __init__(self, bus):
+        super().__init__(0x77, bus)
 
     def statusRegister(self):
         buf = bytearray(1)
@@ -31,6 +31,7 @@ class BMP280(DeviceI2C):
         data = self.busi2c.transferer(self.adresse, buf, 6)
         self.raw_pressure = (data[0] << 12) | (data[1] << 4) | ((data[2] & 0xF0) >> 4)
         self.raw_temperature = (data[3] << 12) | (data[4] << 4) | ((data[5] & 0xF0) >> 4)
+        return self.raw_temperature, self.raw_pressure
 
     def readCompensationRegister(self):
         buf = bytearray(1)
@@ -49,25 +50,36 @@ class BMP280(DeviceI2C):
         self.dig_P8 = (1 << 16) - ((data[20] << 8) | data[21])
         self.dig_P9 = (1 << 16) - ((data[22] << 8) | data[23])
 
-    def compute(self):
-        var1=(self.raw_temperature/16384.0-self.dig_T1/1024.0)*self.dig_T2 # formula for temperature from datasheet
-        var2=(self.raw_temperature/131072.0-self.dig_T1/8192.0)*(self.raw_temperature/131072.0-self.dig_T1/8192.0)*self.dig_T3 # formula for temperature from datasheet
-        temp=(var1+var2)/5120.0 # formula for temperature from datasheet
-        t_fine=(var1+var2) # need for pressure calculation
+    def compensateT(self):
+        var1 = (((self.raw_temperature >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
+        var2 = (((((self.raw_temperature >> 4) - self.dig_T1) * ((self.raw_temperature >> 4) - self.dig_T1)) >> 12) * self.dig_T3) >> 14
+        t_fine = var1 + var2
+        t = (t_fine * 5 + 128) >> 8;
+        return t
 
-        var1=t_fine/2.0-64000.0 # formula for pressure from datasheet
-        var2=var1*var1*self.dig_P6/32768.0 # formula for pressure from datasheet
-        var2=var2+var1*self.dig_P5*2 # formula for pressure from datasheet
-        var2=var2/4.0+self.dig_P4*65536.0 # formula for pressure from datasheet
-        var1=(self.dig_P3*var1*var1/524288.0+self.dig_P2*var1)/524288.0 # formula for pressure from datasheet
-        var1=(1.0+var1/32768.0)*self.dig_P1 # formula for pressure from datasheet
-        press=1048576.0-self.raw_pressure # formula for pressure from datasheet
-        press=(press-var2/4096.0)*6250.0/var1 # formula for pressure from datasheet
-        var1=self.dig_P9*press*press/2147483648.0 # formula for pressure from datasheet
-        var2=press*self.dig_P8/32768.0 # formula for pressure from datasheet
-        press=press+(var1+var2+self.dig_P7)/16.0 # formula for pressure from datasheet
+    def compensateTP(self):
+        var1 = (((self.raw_temperature >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
+        var2 = (((((self.raw_temperature >> 4) - self.dig_T1) * ((self.raw_temperature >> 4) - self.dig_T1)) >> 12) * self.dig_T3) >> 14
+        t_fine = var1 + var2
+        t = (t_fine * 5 + 128) >> 8;
 
-        return temp, press
+        var1 = t_fine - 128000
+        var2 = var1 * var1 * self.dig_P6
+        var2 = var2 + ((var1 * self.dig_P5) << 17)
+        var2 = var2 + (self.dig_P4 << 35)
+        var1 = ((var1 * var1 * self.dig_P3) >> 8) + ((var1 * self.dig_P2) << 12)
+        #var1 = (((1 << 47) + var1)) * (self.dig_P1) >> 33
+        var1 = ((1 << 47) * self.dig_P1) >> 33
+        if var1 == 0:
+            return 0
+        
+        p = 1048576 - self.raw_pressure
+        p = (((p << 31) - var2) * 3125) / var1
+        var1 = (self.dig_P9 * (p >> 13) * (p >> 13)) >> 25
+        var2 = (self.dig_P8 * p) >> 19
+        p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
+
+        return t, p
 
     def chipIdRegister(self):
         buf = bytearray(1)

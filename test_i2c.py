@@ -6,6 +6,7 @@ from is31fl3731 import IS31FL3731
 from bmp280 import BMP280
 from ds1307 import DS1307
 from ds1621 import DS1621
+from mcp23017 import MCP23017
 from l298n import L298N
 import time
 
@@ -20,6 +21,28 @@ if (len(circuits) != 0):
     circuits = i2c.scan()
     print(circuits)
     
+    bmp = BMP280(i2c)
+    if bmp.chipIdRegister():
+        bmp.reset()
+        time.sleep(1)
+        bmp.ctrlMeasureRegister(5, 5, 3)
+        bmp.configRegister(4, 4)
+        bmp.readCompensationRegister()
+        bmp.ctrlMeasureRegister(5, 5, 3)
+        print(bmp.rawMeasureRegister())
+        print(bmp.compensateT())
+        time.sleep(1)
+        print(bmp.rawMeasureRegister())
+        print(bmp.compensateT())
+        time.sleep(1)
+        print(bmp.rawMeasureRegister())
+        print(bmp.compensateT())
+        time.sleep(1)
+        print(bmp.rawMeasureRegister())
+        print(bmp.compensateT())
+
+#     pia = MCP23017(0, i2c)
+
     matrix = IS31FL3731(0, i2c)
     matrix.shutdown(1)
     time.sleep(1)
@@ -54,26 +77,6 @@ if (len(circuits) != 0):
             matrix.frameRegister(0, led, blink, pwm)
             time.sleep_ms(10)
 #     matrix.shutdown(0)
-
-#     bmp = BMP280(0, i2c)
-#     if bmp.chipIdRegister():
-#         bmp.reset()
-#         time.sleep(1)
-#         bmp.ctrlMeasureRegister(5, 5, 3)
-#         bmp.configRegister(4, 4)
-#         bmp.readCompensationRegister()
-#         bmp.ctrlMeasureRegister(5, 5, 3)
-#         bmp.rawMeasureRegister()
-#         print(bmp.compute())
-#         time.sleep(1)
-#         bmp.rawMeasureRegister()
-#         print(bmp.compute())
-#         time.sleep(1)
-#         bmp.rawMeasureRegister()
-#         print(bmp.compute())
-#         time.sleep(1)
-#         bmp.rawMeasureRegister()
-#         print(bmp.compute())
 
     t = DS1621(0, i2c)
     t.start()
