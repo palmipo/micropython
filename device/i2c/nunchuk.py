@@ -18,6 +18,10 @@ class Nunchuk(DeviceI2C):
         buf[1] = 0x00;
         self.busi2c.send(self.adresse, buf)
 
+        buf[0] = 0xFB;
+        buf[1] = 0x00;
+        self.busi2c.send(self.adresse, buf)
+
     def get_joy_x_axis(self):
         return self.joy_x_axis
 
@@ -45,7 +49,7 @@ class Nunchuk(DeviceI2C):
         msg = self.busi2c.transferer(self.adresse, cmd)
 
         buf = bytearray(6)
-        for i in range(0, 6):
+        for i in range(0, len(msg)):
             buf[i] = decode_byte(msg[i]);
 
         self.joy_x_axis = buf[0];
