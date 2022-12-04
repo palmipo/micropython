@@ -5,7 +5,7 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
 print(mac)
-wlan.connect('batrahome', 'grenouillette-27')
+wlan.connect('batrahome', 'xxxx')
 while not wlan.isconnected() and wlan.status() >= 0:
   print("Waiting to connect:")
   time.sleep(1)
