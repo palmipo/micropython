@@ -29,13 +29,19 @@ class DS1621(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0xac
         buf = self.busi2c.transferer(self.adresse, cmd, 1)
-        return ((((buf[0] & 0x40) >> 6) != 0) ? True : False)
+        if (((buf[0] & 0x40) >> 6) != 0):
+            return True
+        else:
+            return False
 
     def isTlf(self):
         cmd = bytearray(1)
         cmd[0] = 0xac
         buf = self.busi2c.transferer(self.adresse, cmd, 1)
-        return ((((buf[0] & 0x20) >> 5) != 0) ? True : False)
+        if (((buf[0] & 0x20) >> 5) != 0):
+            return True
+        else:
+            return False
 
     def readOneTemperature(self):
         cmd = bytearray(2)
