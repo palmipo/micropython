@@ -3,7 +3,7 @@ from devicei2c import DeviceI2C
 class IS31FL3731(DeviceI2C):
 
     def __init__(self, address, bus):
-        super().__init__(0x74 & (address & 0x03), bus)
+        super().__init__(0x74 | (address & 0x03), bus)
 
     def frameRegister(self, page, led, blink, pwm):
         buf = bytearray(2)

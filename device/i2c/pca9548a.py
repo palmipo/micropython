@@ -3,7 +3,7 @@ from devicei2c import DeviceI2C
 class PCA9548A(DeviceI2C):
 
     def __init__(self, address, bus):
-        super().__init__(0x70 & (address & 0x03), bus)
+        super().__init__(0x70 | (address & 0x03), bus)
 
     def clear(self):
         cmd = bytearray(1)
