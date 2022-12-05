@@ -1,0 +1,20 @@
+class HD44780IO:
+
+	def writeCmd(self, value):
+		raise NotImplementedError
+
+	def writeData(self, value):
+		raise NotImplementedError
+
+	def readCmd(self):
+		raise NotImplementedError
+
+	def readData(self):
+		raise NotImplementedError
+
+	def write (self, value, rs, rw_):
+		raise NotImplementedError
+
+	def setBackLight(self, value):
+		raise NotImplementedError
+
