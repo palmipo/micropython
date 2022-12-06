@@ -6,10 +6,7 @@ class MCP23017(DeviceI2C):
         super().__init__(0x20 | (address & 0x03), bus)
 
         # The registers are in the same bank (addresses are sequential)
-        cmd = bytearray(2)
-        cmd[0] = 0x0A
-        cmd[1] = 0x00
-        self.busi2c.send(self.adresse, cmd)
+	self.setIOCON(0)
 
 # Controls the direction of the data I/O.
 # When a bit is set, the corresponding pin becomes an
@@ -91,6 +88,28 @@ class MCP23017(DeviceI2C):
         cmd[1] = val & 0xff
         self.busi2c.send(self.adresse, cmd)
 
+#bit 7 BANK: Controls how the registers are addressed
+#1 = The registers associated with each port are separated into different banks.
+#0 = The registers are in the same bank (addresses are sequential).
+#bit 6 MIRROR: INT Pins Mirror bit
+#1 = The INT pins are internally connected
+#0 = The INT pins are not connected. INTA is associated with PORTA and INTB is associated with PORTB
+#bit 5 SEQOP: Sequential Operation mode bit
+#1 = Sequential operation disabled, address pointer does not increment.
+#0 = Sequential operation enabled, address pointer increments.
+#bit 4 DISSLW: Slew Rate control bit for SDA output
+#1 = Slew rate disabled
+#0 = Slew rate enabled
+#bit 3 HAEN: Hardware Address Enable bit (MCP23S17 only) (Note 1)
+#1 = Enables the MCP23S17 address pins.
+#0 = Disables the MCP23S17 address pins.
+#bit 2 ODR: Configures the INT pin as an open-drain output
+#1 = Open-drain output (overrides the INTPOL bit.)
+#0 = Active driver output (INTPOL bit sets the polarity.)
+#bit 1 INTPOL: This bit sets the polarity of the INT output pin
+#1 = Active-high
+#0 = Active-low
+#bit 0 Unimplemented: Read as ‘0’
     def getIOCON(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x0A + (port & 0x01)
