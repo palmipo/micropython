@@ -30,9 +30,11 @@ class ADA772(HD44780IO):
 		self.pia.set(data)
 		time.sleep_ms(1)
 		self.pia.set(data | (1 << EN))
-		time.sleep_ms(1)
+		time.sleep_ms(2)
 		self.pia.set(data)
-		while self.isBusy()
+		busy = self.isBusy()
+		while busy:
+			busy = self.isBusy()
 
 	def isBusy(self):
 		octet = self.readCmd()
@@ -42,17 +44,44 @@ class ADA772(HD44780IO):
 			return False
 
 	def readData(self):
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RS) | (1 << RW_))
-		octet = (self.pia.get() >> DB) << 0xF0
-		octet = octet | ((self.pia.get() >> DB) & 0x0F)
-		retrun octet
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
+		time.sleep_ms(1)
+		octet = self.pia.get()
+		data = ((octet & (1 << DB7)) >> DB7) << 7
+		data |= ((octet & (1 << DB6)) >> DB6) << 6
+		data |= ((octet & (1 << DB5)) >> DB5) << 5
+		data |= ((octet & (1 << DB4)) >> DB4) << 4
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS))
+		time.sleep_ms(2)
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
+		time.sleep_ms(1)
+		octet = self.pia.get()
+		data |= ((octet & (1 << DB7)) >> DB7) << 3
+		data |= ((octet & (1 << DB6)) >> DB6) << 2
+		data |= ((octet & (1 << DB5)) >> DB5) << 1
+		data |= ((octet & (1 << DB4)) >> DB4)
+		self.pia.set(self.backlight << BACKLIGHT)
+		return data
 
 	def readCmd(self):
 		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
+		time.sleep_ms(1)
 		octet = self.pia.get()
-		>> DB) << 0xF0
-		octet = octet | ((self.pia.get() >> DB) & 0x0F)
-		retrun octet
+		data = ((octet & (1 << DB7)) >> DB7) << 7
+		data |= ((octet & (1 << DB6)) >> DB6) << 6
+		data |= ((octet & (1 << DB5)) >> DB5) << 5
+		data |= ((octet & (1 << DB4)) >> DB4) << 4
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_))
+		time.sleep_ms(2)
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
+		time.sleep_ms(1)
+		octet = self.pia.get()
+		data |= ((octet & (1 << DB7)) >> DB7) << 3
+		data |= ((octet & (1 << DB6)) >> DB6) << 2
+		data |= ((octet & (1 << DB5)) >> DB5) << 1
+		data |= ((octet & (1 << DB4)) >> DB4)
+		self.pia.set(self.backlight << BACKLIGHT)
+		return data
 
 	def write(self, data, rs, rw_):
 		cmd = ((data & 0x0F) << DB) | (rw_ << RW_) | (rs << RS)
