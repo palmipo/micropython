@@ -12,7 +12,7 @@ class HD44780IO:
 	def readData(self):
 		raise NotImplementedError
 
-	def write (self, value, rs, rw_):
+	def write (self, value, rs, rw_, en):
 		raise NotImplementedError
 
 	def setBackLight(self, value):
