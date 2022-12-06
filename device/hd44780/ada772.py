@@ -11,12 +11,13 @@ RS = 7
 
 class ADA772(HD44780IO):
 
-	def __init__(self, pia):
-		self.pia = pia
+	def __init__(self, pia1, pia2):
+		self.pia = pia1
+		self.switchs = pia2
 
 	def setBackLight(self, value):
 		self.backlight = value & 0x01
-		self.pia.set(self.backlight)
+		self.pia.set(self.backlight << BACKLIGHT)
 
 	def writeCmd(self, cmd):
 		self.enableBit((self.backlight & 0x01) | ((cmd & 0x80) << DB7) | ((cmd & 0x40) << DB6) | ((cmd & 0x20) << DB5) | ((cmd & 0x10) << DB4))
