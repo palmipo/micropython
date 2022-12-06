@@ -83,8 +83,8 @@ class ADA772(HD44780IO):
 		self.pia.set(self.backlight << BACKLIGHT)
 		return data
 
-	def write(self, data, rs, rw_):
-		cmd = ((data & 0x0F) << DB) | (rw_ << RW_) | (rs << RS)
+	def write(self, data, rs, rw_, en):
+		cmd = ((data & 0x0F) << DB) | (rw_ << RW_) | (rs << RS) | (en << EN)
 		self.enableBit(cmd)
 
 	def bitMode(self):
