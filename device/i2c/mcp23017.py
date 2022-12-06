@@ -15,12 +15,12 @@ class MCP23017(DeviceI2C):
 # When a bit is set, the corresponding pin becomes an
 # input. When a bit is clear, the corresponding pin
 # becomes an output.
-    def getIODirectionRegister(self, port):
+    def getIODIR(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x00 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setIODirectionRegister(self, port, io):
+    def setIODIR(self, port, io):
         cmd = bytearray(2)
         cmd[0] = 0x00 + (port & 0x01)
         cmd[1] = io & 0xff
@@ -30,14 +30,14 @@ class MCP23017(DeviceI2C):
 # the corresponding GPIO port bits.
 # If a bit is set, the corresponding GPIO register bit will
 # reflect the inverted value on the pin.
-    def getInputPolarityPortRegister(self, port):
+    def getIPOL(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x01 + (port & 0x01)
+        cmd[0] = 0x02 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setInputPolarityPortRegister(self, port, ip):
+    def setIPOL(self, port, ip):
         cmd = bytearray(2)
-        cmd[0] = 0x01 + (port & 0x01)
+        cmd[0] = 0x02 + (port & 0x01)
         cmd[1] = ip & 0xff
         self.busi2c.send(self.adresse, cmd)
 
@@ -47,14 +47,14 @@ class MCP23017(DeviceI2C):
 # interrupt-on-change. The DEFVAL and INTCON
 # registers must also be configured if any pins are
 # enabled for interrupt-on-change.
-    def getInterruptOnChangePins(self, port):
+    def getGPINTEN(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x02 + (port & 0x01)
+        cmd[0] = 0x04 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setInterruptOnChangePins(self, port, gpint):
+    def setGPINTEN(self, port, gpint):
         cmd = bytearray(2)
-        cmd[0] = 0x02 + (port & 0x01)
+        cmd[0] = 0x04 + (port & 0x01)
         cmd[1] = gpint & 0xff
         self.busi2c.send(self.adresse, cmd)
 
@@ -63,14 +63,14 @@ class MCP23017(DeviceI2C):
 # INTCON) to compare against the DEFVAL register, an
 # opposite value on the associated pin will cause an
 # interrupt to occur.
-    def getDefaultValueRegister(self, port):
+    def getDEFVAL(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x03 + (port & 0x01)
+        cmd[0] = 0x06 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setDefaultValueRegister(self, port, val):
+    def setDEFVAL(self, port, val):
         cmd = bytearray(2)
-        cmd[0] = 0x03 + (port & 0x01)
+        cmd[0] = 0x06 + (port & 0x01)
         cmd[1] = val & 0xff
         self.busi2c.send(self.adresse, cmd)
 
@@ -80,25 +80,25 @@ class MCP23017(DeviceI2C):
 # against the associated bit in the DEFVAL register. If a
 # bit value is clear, the corresponding I/O pin is compared
 # against the previous value.
-    def getInterruptOnChangeControlRegister(self, port):
+    def getINTCON(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x04 + (port & 0x01)
+        cmd[0] = 0x08 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setInterruptOnChangeControlRegister(self, port, val):
+    def setINTCON(self, port, val):
         cmd = bytearray(2)
-        cmd[0] = 0x04 + (port & 0x01)
+        cmd[0] = 0x08 + (port & 0x01)
         cmd[1] = val & 0xff
         self.busi2c.send(self.adresse, cmd)
 
-    def getIOEXpenderConfigurationRegister(self, port):
+    def getIOCON(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x05 + (port & 0x01)
+        cmd[0] = 0x0A + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setIOEXpenderConfigurationRegister(self, port, mirror, seqop, disslw, haen, odr, intpol):
+    def setIOCON(self, port, mirror, seqop, disslw, haen, odr, intpol):
         cmd = bytearray(2)
-        cmd[0] = 0x05 + (port & 0x01)
+        cmd[0] = 0x0A + (port & 0x01)
         cmd[1] = ((mirror & 1) << 6) | ((seqop & 1) << 5) | ((disslw & 1) << 4) | ((haen & 1) << 3) | ((odr & 1) << 2) | ((intpol & 1) << 1)
         self.busi2c.send(self.adresse, cmd)
 
@@ -106,14 +106,14 @@ class MCP23017(DeviceI2C):
 # port pins. If a bit is set and the corresponding pin is
 # configured as an input, the corresponding port pin is
 # internally pulled up with a 100 kOhm resistor.
-    def getPullUpResistor(self, port):
+    def getGPPU(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x06 + (port & 0x01)
+        cmd[0] = 0x0C + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setPullUpResistor(self, port, pullup):
+    def setGPPU(self, port, pullup):
         cmd = bytearray(2)
-        cmd[0] = 0x06 + (port & 0x01)
+        cmd[0] = 0x0C + (port & 0x01)
         cmd[1] = pullup & 0xff
         self.busi2c.send(self.adresse, cmd)
 
@@ -123,9 +123,9 @@ class MCP23017(DeviceI2C):
 # associated pin caused the interrupt.
 # This register is read-only. Writes to this register will be
 # ignored.
-    def getInterruptFlagRegister(self, port):
+    def getINTF(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x07 + (port & 0x01)
+        cmd[0] = 0x0E + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
 # The INTCAP register captures the GPIO port value at
@@ -133,22 +133,22 @@ class MCP23017(DeviceI2C):
 # read-only and is updated only when an interrupt
 # occurs. The register remains unchanged until the
 # interrupt is cleared via a read of INTCAP or GPIO.
-    def getInterruptCapturedValueForPortRegister(self, port):
+    def getINTCAP(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x08 + (port & 0x01)
+        cmd[0] = 0x10 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
 # The GPIO register reflects the value on the port.
 # Reading from this register reads the port. Writing to this
 # register modifies the Output Latch (OLAT) register.
-    def getGeneralPurposeIOPortRegister(self, port):
+    def getGPIO(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x09 + (port & 0x01)
+        cmd[0] = 0x12 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setGeneralPurposeIOPortRegister(self, port, gp):
+    def setGPIO(self, port, gp):
         cmd = bytearray(2)
-        cmd[0] = 0x09 + (port & 0x01)
+        cmd[0] = 0x12 + (port & 0x01)
         cmd[1] = gp & 0xff
         self.busi2c.send(self.adresse, cmd)
 
@@ -157,13 +157,13 @@ class MCP23017(DeviceI2C):
 # OLAT and not the port itself. A write to this register
 # modifies the output latches that modifies the pins
 # configured as outputs.
-    def getOutputLatchRegister(self, port):
+    def getOLAT(self, port):
         cmd = bytearray(1)
-        cmd[0] = 0x0A + (port & 0x01)
+        cmd[0] = 0x14 + (port & 0x01)
         return self.busi2c.transferer(self.adresse, cmd, 1)
 
-    def setOutputLatchRegister(self, port, ol):
+    def setOLAT(self, port, ol):
         cmd = bytearray(2)
-        cmd[0] = 0x0A + (port & 0x01)
+        cmd[0] = 0x14 + (port & 0x01)
         cmd[1] = ol & 0xff
         self.busi2c.send(self.adresse, cmd)
