@@ -87,3 +87,8 @@ class ADA772(HD44780IO):
 		cmd = ((data & 0x0F) << DB) | (rw_ << RW_) | (rs << RS)
 		self.enableBit(cmd)
 
+	def bitMode(self):
+		return 0
+
+	def nLine(self):
+		return 1
