@@ -62,15 +62,15 @@ class HD44780:
 	def reset(self):
 		time.sleep_ms(15)
 
-		self.ctrl.write(3, 0, 0)
+		self.ctrl.write(0x30, 0, 0, 0)
 		time.sleep_ms(45)
 
-		self.ctrl.write(3, 0, 0)
+		self.ctrl.write(0x30, 0, 0, 0)
 		time.sleep_ms(45)
 
-		self.ctrl.write(3, 0, 0)
+		self.ctrl.write(0x30, 0, 0, 0)
 		time.sleep_ms(15)
 
-		self.ctrl.write(2, 0, 0)
+		self.ctrl.write(0x20, 0, 0, 0)
 		time.sleep_ms(15)
 
