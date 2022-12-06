@@ -24,7 +24,9 @@ pia2 = PIA_MCP23017(0, gpio)
 print(pia2.getInput())
 
 lcd_io = ADA772(pia1, pia2)
-lcd_io.setBackLight(0)
+lcd_io.setBackLight(1)
 
 lcd = HD44780(lcd_io)
-
+lcd.clear()
+lcd.home()
+lcd.writeText("Hello World !")

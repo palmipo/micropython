@@ -9,7 +9,7 @@ class HD44780:
 
     def writeText(self, texte):
         for i in range(0, len(texte)):
-            self.ctrl.writeData(texte[i])
+            self.ctrl.writeData(texte[i].encode()[0])
 
     def clear(self):
         self.ctrl.writeCmd(0x01)

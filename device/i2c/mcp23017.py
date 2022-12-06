@@ -15,7 +15,7 @@ class MCP23017(DeviceI2C):
     def getIODIR(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x00 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setIODIR(self, port, io):
         cmd = bytearray(2)
@@ -30,7 +30,7 @@ class MCP23017(DeviceI2C):
     def getIPOL(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x02 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setIPOL(self, port, ip):
         cmd = bytearray(2)
@@ -47,7 +47,7 @@ class MCP23017(DeviceI2C):
     def getGPINTEN(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x04 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setGPINTEN(self, port, gpint):
         cmd = bytearray(2)
@@ -63,7 +63,7 @@ class MCP23017(DeviceI2C):
     def getDEFVAL(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x06 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setDEFVAL(self, port, val):
         cmd = bytearray(2)
@@ -80,7 +80,7 @@ class MCP23017(DeviceI2C):
     def getINTCON(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x08 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setINTCON(self, port, val):
         cmd = bytearray(2)
@@ -113,7 +113,7 @@ class MCP23017(DeviceI2C):
     def getIOCON(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x0A + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setIOCON(self, port, mirror, seqop, disslw, haen, odr, intpol):
         cmd = bytearray(2)
@@ -128,7 +128,7 @@ class MCP23017(DeviceI2C):
     def getGPPU(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x0C + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setGPPU(self, port, pullup):
         cmd = bytearray(2)
@@ -145,7 +145,7 @@ class MCP23017(DeviceI2C):
     def getINTF(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x0E + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
 # The INTCAP register captures the GPIO port value at
 # the time the interrupt occurred. The register is
@@ -155,7 +155,7 @@ class MCP23017(DeviceI2C):
     def getINTCAP(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x10 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
 # The GPIO register reflects the value on the port.
 # Reading from this register reads the port. Writing to this
@@ -163,7 +163,7 @@ class MCP23017(DeviceI2C):
     def getGPIO(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x12 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setGPIO(self, port, gp):
         cmd = bytearray(2)
@@ -179,7 +179,7 @@ class MCP23017(DeviceI2C):
     def getOLAT(self, port):
         cmd = bytearray(1)
         cmd[0] = 0x14 + (port & 0x01)
-        return self.busi2c.transferer(self.adresse, cmd, 1)
+        return self.busi2c.transferer(self.adresse, cmd, 1)[0]
 
     def setOLAT(self, port, ol):
         cmd = bytearray(2)
