@@ -1,4 +1,6 @@
-import HD44780IO
+from hd44780io import HD44780IO
+from pia_mcp23017 import PIA_MCP23017
+import time
 
 BACKLIGHT = 0
 DB7 = 1
@@ -11,90 +13,91 @@ RS = 7
 
 class ADA772(HD44780IO):
 
-	def __init__(self, pia1, pia2):
-		self.pia = pia1
-		self.switchs = pia2
+    def __init__(self, pia1, pia2):
+        self.pia = pia1
+        self.switchs = pia2
 
-	def setBackLight(self, value):
-		self.backlight = value & 0x01
-		self.pia.set(self.backlight << BACKLIGHT)
+    def setBackLight(self, value):
+        self.backlight = value & 0x01
+        self.pia.setOutput(self.backlight << BACKLIGHT)
 
-	def writeCmd(self, cmd):
-		self.enableBit((self.backlight & 0x01) | ((cmd & 0x80) << DB7) | ((cmd & 0x40) << DB6) | ((cmd & 0x20) << DB5) | ((cmd & 0x10) << DB4))
-		self.enableBit((self.backlight & 0x01) | ((cmd & 0x08) << DB7) | ((cmd & 0x04) << DB6) | ((cmd & 0x02) << DB5) | ((cmd & 0x01) << DB4))
+    def writeCmd(self, cmd):
+        self.enableBit((self.backlight & 0x01) | ((cmd & 0x80) << DB7) | ((cmd & 0x40) << DB6) | ((cmd & 0x20) << DB5) | ((cmd & 0x10) << DB4))
+        self.enableBit((self.backlight & 0x01) | ((cmd & 0x08) << DB7) | ((cmd & 0x04) << DB6) | ((cmd & 0x02) << DB5) | ((cmd & 0x01) << DB4))
 
-	def writeData(self, cmd):
-		self.enableBit((self.backlight & 0x01) | ((cmd & 0x80) << DB7) | ((cmd & 0x40) << DB6) | ((cmd & 0x20) << DB5) | ((cmd & 0x10) << DB4) | (1 << RS))
-		self.enableBit((self.backlight & 0x01) | ((cmd & 0x08) << DB7) | ((cmd & 0x04) << DB6) | ((cmd & 0x02) << DB5) | ((cmd & 0x01) << DB4) | (1 << RS))
+    def writeData(self, cmd):
+        self.enableBit((self.backlight & 0x01) | ((cmd & 0x80) << DB7) | ((cmd & 0x40) << DB6) | ((cmd & 0x20) << DB5) | ((cmd & 0x10) << DB4) | (1 << RS))
+        self.enableBit((self.backlight & 0x01) | ((cmd & 0x08) << DB7) | ((cmd & 0x04) << DB6) | ((cmd & 0x02) << DB5) | ((cmd & 0x01) << DB4) | (1 << RS))
 
-	def enableBit(self, data):
-		self.pia.set(data)
-		time.sleep_ms(1)
-		self.pia.set(data | (1 << EN))
-		time.sleep_ms(2)
-		self.pia.set(data)
-		busy = self.isBusy()
-		while busy:
-			busy = self.isBusy()
+    def enableBit(self, data):
+        self.pia.setOutput(data)
+        time.sleep_ms(1)
+        self.pia.setOutput(data | (1 << EN))
+        time.sleep_ms(2)
+        self.pia.setOutput(data)
+        busy = self.isBusy()
+        while busy:
+            busy = self.isBusy()
 
-	def isBusy(self):
-		octet = self.readCmd()
-		if (octet & 0x80) != 0:
-			return True
-		else:
-			return False
+    def isBusy(self):
+        octet = self.readCmd()
+        if (octet & 0x80) != 0:
+            return True
+        else:
+            return False
 
-	def readData(self):
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
-		time.sleep_ms(1)
-		octet = self.pia.get()
-		data = ((octet & (1 << DB7)) >> DB7) << 7
-		data |= ((octet & (1 << DB6)) >> DB6) << 6
-		data |= ((octet & (1 << DB5)) >> DB5) << 5
-		data |= ((octet & (1 << DB4)) >> DB4) << 4
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS))
-		time.sleep_ms(2)
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
-		time.sleep_ms(1)
-		octet = self.pia.get()
-		data |= ((octet & (1 << DB7)) >> DB7) << 3
-		data |= ((octet & (1 << DB6)) >> DB6) << 2
-		data |= ((octet & (1 << DB5)) >> DB5) << 1
-		data |= ((octet & (1 << DB4)) >> DB4)
-		self.pia.set(self.backlight << BACKLIGHT)
-		return data
+    def readData(self):
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
+        time.sleep_ms(1)
+        octet = self.pia.getInput()
+        data = ((octet & (1 << DB7)) >> DB7) << 7
+        data |= ((octet & (1 << DB6)) >> DB6) << 6
+        data |= ((octet & (1 << DB5)) >> DB5) << 5
+        data |= ((octet & (1 << DB4)) >> DB4) << 4
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS))
+        time.sleep_ms(2)
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
+        time.sleep_ms(1)
+        octet = self.pia.getInput()
+        data |= ((octet & (1 << DB7)) >> DB7) << 3
+        data |= ((octet & (1 << DB6)) >> DB6) << 2
+        data |= ((octet & (1 << DB5)) >> DB5) << 1
+        data |= ((octet & (1 << DB4)) >> DB4)
+        self.pia.setOutput(self.backlight << BACKLIGHT)
+        return data
 
-	def readCmd(self):
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
-		time.sleep_ms(1)
-		octet = self.pia.get()
-		data = ((octet & (1 << DB7)) >> DB7) << 7
-		data |= ((octet & (1 << DB6)) >> DB6) << 6
-		data |= ((octet & (1 << DB5)) >> DB5) << 5
-		data |= ((octet & (1 << DB4)) >> DB4) << 4
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_))
-		time.sleep_ms(2)
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
-		time.sleep_ms(1)
-		octet = self.pia.get()
-		data |= ((octet & (1 << DB7)) >> DB7) << 3
-		data |= ((octet & (1 << DB6)) >> DB6) << 2
-		data |= ((octet & (1 << DB5)) >> DB5) << 1
-		data |= ((octet & (1 << DB4)) >> DB4)
-		self.pia.set(self.backlight << BACKLIGHT)
-		return data
+    def readCmd(self):
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
+        time.sleep_ms(1)
+        octet = self.pia.getInput() # type byte
+        data = ((octet & (1 << DB7)) >> DB7) << 7
+        data |= ((octet & (1 << DB6)) >> DB6) << 6
+        data |= ((octet & (1 << DB5)) >> DB5) << 5
+        data |= ((octet & (1 << DB4)) >> DB4) << 4
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_))
+        time.sleep_ms(2)
+        self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
+        time.sleep_ms(1)
+        octet = self.pia.getInput()
+        data |= ((octet & (1 << DB7)) >> DB7) << 3
+        data |= ((octet & (1 << DB6)) >> DB6) << 2
+        data |= ((octet & (1 << DB5)) >> DB5) << 1
+        data |= ((octet & (1 << DB4)) >> DB4)
+        self.pia.setOutput(self.backlight << BACKLIGHT)
+        return data
 
-	def write(self, data, rs, rw_, en):
-		cmd = ((data & 0x80) << DB7) | ((data & 0x40) << DB6) | ((data & 0x20) << DB5) | ((data & 0x10) << DB4) | (rw_ << RW_) | (rs << RS) | (en << EN)
-		self.pia.set(cmd)
-		time.sleep_ms(1)
-		self.pia.set(cmd | (1 << EN))
-		time.sleep_ms(2)
-		self.pia.set(cmd)
-		time.sleep_ms(1)
+    def write(self, data, rs, rw_, en):
+        cmd = ((data & 0x80) << DB7) | ((data & 0x40) << DB6) | ((data & 0x20) << DB5) | ((data & 0x10) << DB4) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS) | ((en & 0x01) << EN)
+        self.pia.setOutput(cmd)
+        time.sleep_ms(1)
+        self.pia.setOutput(cmd | (1 << EN))
+        time.sleep_ms(2)
+        self.pia.setOutput(cmd)
+        time.sleep_ms(1)
 
-	def bitMode(self):
-		return 0
+    def bitMode(self):
+        return 0
 
-	def nLine(self):
-		return 1
+    def nLine(self):
+        return 1
+

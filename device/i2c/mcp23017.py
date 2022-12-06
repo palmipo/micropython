@@ -6,7 +6,7 @@ class MCP23017(DeviceI2C):
         super().__init__(0x20 | (address & 0x03), bus)
 
         # The registers are in the same bank (addresses are sequential)
-	self.setIOCON(0)
+        self.setIOCON(0, 0, 0, 0, 0, 0, 0)
 
 # Controls the direction of the data I/O.
 # When a bit is set, the corresponding pin becomes an

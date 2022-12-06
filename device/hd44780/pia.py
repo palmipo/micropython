@@ -1,9 +1,7 @@
 class PIA:
-  def __init__(self):
-    raise NotImplementedError
    
-  def set(self, value):
+  def setOutput(self, value):
     raise NotImplementedError
     
-  def get(self, value):
+  def getInput(self):
     raise NotImplementedError
