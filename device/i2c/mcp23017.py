@@ -7,7 +7,7 @@ class MCP23017(DeviceI2C):
 
         # The registers are in the same bank (addresses are sequential)
         cmd = bytearray(2)
-        cmd[0] = 0x05
+        cmd[0] = 0x0A
         cmd[1] = 0x00
         self.busi2c.send(self.adresse, cmd)
 
