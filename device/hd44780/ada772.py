@@ -48,8 +48,9 @@ class ADA772(HD44780IO):
 		retrun octet
 
 	def readCmd(self):
-		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_))
-		octet = (self.pia.get() >> DB) << 0xF0
+		self.pia.set((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
+		octet = self.pia.get()
+		>> DB) << 0xF0
 		octet = octet | ((self.pia.get() >> DB) & 0x0F)
 		retrun octet
 
