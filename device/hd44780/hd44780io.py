@@ -18,3 +18,8 @@ class HD44780IO:
 	def setBackLight(self, value):
 		raise NotImplementedError
 
+	def bitMode(self):
+		raise NotImplementedError
+
+	def nLine(self):
+		raise NotImplementedError
