@@ -1,9 +1,9 @@
 class PIA:
   def __init__(self):
-    raise NotImplemented
+    raise NotImplementedError
    
   def set(self, value):
-    raise NotImplemented
+    raise NotImplementedError
     
   def get(self, value):
-    raise NotImplemented
+    raise NotImplementedError
