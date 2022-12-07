@@ -97,14 +97,19 @@ class ADA772(HD44780IO):
         return data[0]
 
     def write(self, data, rs, rw_, en):
-        cmd = (((data & 0x80) >> 7) << DB7) | (((data & 0x40) >> 6) << DB6) | (((data & 0x20) >> 5) << DB5) | (((data & 0x10) >> 4) << DB4) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS)
-        self.enableBit(cmd)
-#         self.pia.setOutput(cmd)
-#         time.sleep_ms(1)
-#         self.pia.setOutput(cmd | (1 << EN))
-#         time.sleep_ms(2)
-#         self.pia.setOutput(cmd)
-#         time.sleep_ms(1)
+        cmd = (self.backlight << BACKLIGHT) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS)
+        self.pia.setOutput(cmd)
+        time.sleep_ms(1)
+
+        cmd = (self.backlight << BACKLIGHT) | (((data & 0x80) >> 7) << DB7) | (((data & 0x40) >> 6) << DB6) | (((data & 0x20) >> 5) << DB5) | (((data & 0x10) >> 4) << DB4) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS)
+        self.pia.setOutput(cmd)
+        time.sleep_ms(1)
+
+        self.pia.setOutput(cmd | (1 << EN))
+        time.sleep_ms(2)
+
+        self.pia.setOutput(cmd)
+        time.sleep_ms(1)
 
     def bitMode(self):
         return 0
