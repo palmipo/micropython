@@ -1,4 +1,6 @@
 from hd44780io import HD44780IO
+from mcp23017 import MCP23017
+from pia_mcp23017 import PIA_MCP23017
 import time
 
 BACKLIGHT = 0
@@ -12,10 +14,17 @@ RS = 7
 
 class ADA772(HD44780IO):
 
-    def __init__(self, pia1, pia2):
+    def __init__(self, adresse, i2c):
         super().__init__()
-        self.pia = pia1
-        self.switchs = pia2
+
+        gpio = MCP23017(adresse, i2c)
+        gpio.setIODIR(0, 0x1f)
+        gpio.setGPPU(0, 0x1f)
+        gpio.setIPOL(0, 0x1f)
+        gpio.setIODIR(1, 0)
+
+        self.pia = PIA_MCP23017(1, gpio)
+        self.switchs = PIA_MCP23017(0, gpio)
 
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
