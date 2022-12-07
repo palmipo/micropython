@@ -72,4 +72,4 @@ class DS1307(DeviceI2C):
             cmd = bytearray(1)
             cmd[0] = 0x08 + adresse
             data = self.busi2c.transferer(self.adresse, cmd, 1)
-            return int(data[0])
+            return data[0]
