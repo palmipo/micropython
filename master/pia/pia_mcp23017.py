@@ -8,7 +8,10 @@ class PIA_MCP23017(PIA):
     self.pia = pia
     
   def setOutput(self, value):
+#     print("setOutput port : " + str(self.port) + " valeur : " + str(hex(value)))
     self.pia.setOLAT(self.port, value)
    
   def getInput(self):
-    return self.pia.getGPIO(self.port)
+    value = self.pia.getGPIO(self.port)
+#     print("getInput port : " + str(self.port) + " valeur : " + str(hex(value)))
+    return value
