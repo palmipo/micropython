@@ -6,6 +6,8 @@ class HD44780:
         self.ctrl = ctrl_io
         self.init()
         self.clear()
+        self.home()
+        self.writeDate(b'Hello World')
 
     def writeText(self, texte):
         for i in range(0, len(texte)):
@@ -57,7 +59,8 @@ class HD44780:
 
     def init(self):
         self.reset() # Call LCD reset
-        self.setFunction(self.ctrl.bitMode(), self.ctrl.nLine(), 0) #0, 1, 0 // 4-bit mode - 2 lines - 5x8 font.
+        #self.setFunction(self.ctrl.bitMode(), self.ctrl.nLine(), 0) #0, 1, 0 // 4-bit mode - 2 lines - 5x8 font.
+        self.setFunction(0, 1, 0) # 4-bit mode - 2 lines - 5x8 font.
         self.setDisplayControl(1, 0, 0) # Display no cursor - no blink.
         self.setEntryMode(1, 0) # Automatic Increment - No Display shift.
         self.setCursorDisplayShift(0, 0)
