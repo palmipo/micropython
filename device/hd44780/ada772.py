@@ -1,6 +1,9 @@
 from hd44780io import HD44780IO
 from mcp23017 import MCP23017
 from pia_mcp23017 import PIA_MCP23017
+import rp2
+import machine
+from machine import Pin
 import time
 
 BACKLIGHT = 0
@@ -14,14 +17,23 @@ RS = 7
 
 class ADA772(HD44780IO):
 
-    def __init__(self, adresse, i2c):
+    def __init__(self, adresse, i2c, isr=0, callback=None):
         super().__init__()
+        self.callback = callback
 
         gpio = MCP23017(adresse, i2c)
+        gpio.setIOCON(0, 1, 0, 0, 0, 0, 0)
         gpio.setIODIR(0, 0x1f)
         gpio.setGPPU(0, 0x1f)
         gpio.setIPOL(0, 0x1f)
+        gpio.setGPINTEN(0, 0x1f)
+        gpio.setINTCON(0, 0x1f)
+        gpio.setDEFVAL(0, 0)
         gpio.setIODIR(1, 0)
+
+        if isr != 0:
+            self.pin = Pin(isr, Pin.IN, Pin.PULL_UP)
+            self.pin.irq(self.scrute, Pin.IRQ_FALLING)
 
         self.pia = PIA_MCP23017(1, gpio)
         self.switchs = PIA_MCP23017(0, gpio)
@@ -69,53 +81,10 @@ class ADA772(HD44780IO):
 
     def readData(self):
 #         print("readData")
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
-#         time.sleep_ms(1)
-#         octet = self.pia.getInput()
-#         data = bytearray(1)
-#         data[0] = ((octet & (1 << DB7)) >> DB7) << 7
-#         data[0] |= ((octet & (1 << DB6)) >> DB6) << 6
-#         data[0] |= ((octet & (1 << DB5)) >> DB5) << 5
-#         data[0] |= ((octet & (1 << DB4)) >> DB4) << 4
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS))
-#         time.sleep_ms(2)
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << RS) | (1 << EN))
-#         time.sleep_ms(1)
-#         octet = self.pia.getInput()
-#         data[0] |= ((octet & (1 << DB7)) >> DB7) << 3
-#         data[0] |= ((octet & (1 << DB6)) >> DB6) << 2
-#         data[0] |= ((octet & (1 << DB5)) >> DB5) << 1
-#         data[0] |= ((octet & (1 << DB4)) >> DB4)
-#         self.pia.setOutput(self.backlight << BACKLIGHT)
-#         return data[0]
         return 1
 
     def readCmd(self):
 #         print("readCmd")
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
-#         time.sleep_ms(1)
-# 
-#         octet = self.pia.getInput() # type byte
-#         data = bytearray(1)
-#         data[0] = ((octet & (1 << DB7)) >> DB7) << 7
-#         data[0] |= ((octet & (1 << DB6)) >> DB6) << 6
-#         data[0] |= ((octet & (1 << DB5)) >> DB5) << 5
-#         data[0] |= ((octet & (1 << DB4)) >> DB4) << 4
-# 
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_))
-#         time.sleep_ms(2)
-# 
-#         self.pia.setOutput((self.backlight << BACKLIGHT) | (1 << RW_) | (1 << EN))
-#         time.sleep_ms(1)
-#         
-#         octet = self.pia.getInput()
-#         data[0] |= ((octet & (1 << DB7)) >> DB7) << 3
-#         data[0] |= ((octet & (1 << DB6)) >> DB6) << 2
-#         data[0] |= ((octet & (1 << DB5)) >> DB5) << 1
-#         data[0] |= ((octet & (1 << DB4)) >> DB4)
-#         
-#         self.pia.setOutput(self.backlight << BACKLIGHT)
-#         return data[0]
         return 1
 
     def write(self, data, rs, rw_, en):
@@ -139,15 +108,23 @@ class ADA772(HD44780IO):
     def fontMode(self):
         return 0
 
-    def scrute(self):
+    def scrute(self, arg):
+        print(type(arg))
+        state = machine.disable_irq()
         sw = self.switchs.getInput()
         if sw & 1:
             print("bouton select")
+            self.callback()
         if sw & 2:
             print("bouton droit")
+            self.callback()
         if sw & 4:
             print("bouton bas")
+            self.callback()
         if sw & 8:
             print("bouton haut")
+            self.callback()
         if sw & 16:
             print("bouton gauche")
+            self.callback()
+        machine.enable_irq(state)
