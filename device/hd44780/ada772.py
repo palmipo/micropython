@@ -108,9 +108,8 @@ class ADA772(HD44780IO):
     def fontMode(self):
         return 0
 
-    def scrute(self, arg):
-        print(type(arg))
-        state = machine.disable_irq()
+    def scrute(self, pin):
+        print(type(pin))
         sw = self.switchs.getInput()
         if sw & 1:
             print("bouton select")
