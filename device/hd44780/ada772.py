@@ -110,6 +110,7 @@ class ADA772(HD44780IO):
 
     def scrute(self, pin):
         print(type(pin))
+        state = machine.disable_irq()
         sw = self.switchs.getInput()
         if sw & 1:
             print("bouton select")
