@@ -24,3 +24,5 @@ class HD44780IO:
     def nLine(self):
         raise NotImplementedError
 
+    def fontMode(self):
+        raise NotImplementedError

@@ -29,9 +29,7 @@ if (len(circuits) != 0):
     lcd_io = LCD2004(0, i2c)
     lcd_io.setBackLight(1)
     lcd = HD44780(lcd_io)
-    lcd.home()
-    lcd.clear()
-    lcd.writeText("Hello World !")
+
 #     bmp = BMP280(i2c)
 #     if bmp.chipIdRegister():
 #         bmp.reset()
@@ -96,19 +94,19 @@ if (len(circuits) != 0):
 #     t.stop()
         
     rtc = DS1307(0, i2c)
-    rtc.setDate("02/11/22")
-    rtc.setTime("06:44:30")
+    rtc.setDate("10/11/22")
+    rtc.setTime("00:27:30")
 #     rtc.setSquareWave(1)
 #     rtc.setMemory(0, 12)
 #     rtc.setDayWeek(3)
 #     rtc.setOut(0)
 #     print(rtc.getMemory(0))
-    print(rtc.getDayWeek(), rtc.getDate(), rtc.getTime())
 
+    lcd.clear()
     while True:
         lcd.home()
         lcd.writeText(str(" " + rtc.getDate() + " " + rtc.getTime()))
-        time.sleep(1)
+        time.sleep_ms(500)
         
 #     pontH1 = L298N(15, 10, 11)
 #     pontH1.forward(65535)

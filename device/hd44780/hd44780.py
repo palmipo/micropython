@@ -5,7 +5,6 @@ class HD44780:
     def __init__(self, ctrl_io):
         self.ctrl = ctrl_io
         self.init()
-        self.home()
 
     def writeText(self, texte):
 #         print("writeText")
@@ -46,35 +45,11 @@ class HD44780:
 #         print("setDDRAMAdrress")
         self.ctrl.writeCmd(0x80 | (address & 0x7F))
 
-    def readAddress(self):
-#         print("readAddress")
-        return self.ctrl.readCmd()
-
-    def readData(self):
-#         print("readData")
-        return self.ctrl.readData()
-
-    def setPosition(self, line, column):
-#         print("setPosition")
-        pos = 0
-        if line == 0:
-            pos = column;
-        else:
-            if line == 1:
-                pos = 40 + column;
-            else:
-                if line == 2:
-                    pos = 20 + column;
-                else:
-                    if line == 3:
-                        pos = 60 + column;
-        self.setDDRAMAdrress(pos)
-
     def init(self):
 #         print("init")
         self.reset() # Call LCD reset
-        self.setFunction(self.ctrl.bitMode(), self.ctrl.nLine(), self.ctrl.fontMode()) #0, 1, 0 // 4-bit mode - 2 lines - 5x8 font.
-        self.setDisplayControl(1, 1, 1) # Display no cursor - no blink.
+        self.setFunction(self.ctrl.bitMode(), self.ctrl.nLine(), self.ctrl.fontMode()) #4-bit mode - 2 lines - 5x8 font.
+        self.setDisplayControl(1, 0, 0) # Display no cursor - no blink.
         self.setEntryMode(1, 0) # Automatic Increment - No Display shift.
         self.setCursorDisplayShift(0, 0)
 
