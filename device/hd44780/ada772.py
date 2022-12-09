@@ -21,15 +21,15 @@ class ADA772(HD44780IO):
         super().__init__()
         self.callback = callback
 
-        gpio = MCP23017(adresse, i2c)
-        gpio.setIOCON(0, 1, 0, 0, 0, 0, 0)
-        gpio.setIODIR(0, 0x1f)
-        gpio.setGPPU(0, 0x1f)
-        gpio.setIPOL(0, 0x1f)
-        gpio.setGPINTEN(0, 0x1f)
-        gpio.setINTCON(0, 0x1f)
-        gpio.setDEFVAL(0, 0)
-        gpio.setIODIR(1, 0)
+        self.gpio = MCP23017(adresse, i2c)
+        self.gpio.setIOCON(0, 1, 0, 0, 0, 0, 0)
+        self.gpio.setIODIR(0, 0x1f)
+        self.gpio.setGPPU(0, 0x1f)
+        #self.gpio.setIPOL(0, 0x1f)
+        self.gpio.setGPINTEN(0, 0x1f)
+        self.gpio.setINTCON(0, 0x1f)
+        self.gpio.setDEFVAL(0, 0x1f)
+        self.gpio.setIODIR(1, 0)
 
         if isr != 0:
             self.pin = Pin(isr, Pin.IN, Pin.PULL_UP)
@@ -111,7 +111,8 @@ class ADA772(HD44780IO):
     def scrute(self, pin):
         print(type(pin))
         state = machine.disable_irq()
-        sw = self.switchs.getInput()
+        self.gpio.getINTCAPA(0)
+        sw = self.gpio.getGPIO(0)
         if sw & 1:
             print("bouton select")
             self.callback()
