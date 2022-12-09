@@ -3,7 +3,7 @@ from devicei2c import DeviceI2C
 class DS1307(DeviceI2C):
 
     def __init__(self, address, bus):
-        super().__init__(0x68 & (address & 0x01), bus)
+        super().__init__(0x68 | (address & 0x01), bus)
 
     jour = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche")
 

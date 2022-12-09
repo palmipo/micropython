@@ -1,5 +1,5 @@
 from hd44780io import HD44780IO
-from pcf8574a import PCF8574A
+from pcf8574t import PCF8574T
 import time
 
 DB7 = 7
@@ -7,7 +7,7 @@ DB6 = 6
 DB5 = 5
 DB4 = 4
 BACKLIGHT = 3
-EN = 3
+EN = 2
 RW_ = 1
 RS = 0
 
@@ -15,14 +15,15 @@ class LCD2004(HD44780IO):
 
     def __init__(self, adresse, i2c):
         super().__init__()
+        self.backlight = 0
 
-        self.gpio = PCF8574A(adresse, i2c)
+        self.gpio = PCF8574T(adresse, i2c)
         self.gpio.setIODIR(0)
 
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
         self.backlight = (value & 0x01) << BACKLIGHT
-	self.gpio.setOLAT(self.backlight)
+        self.gpio.setOLAT(self.backlight)
 
     def writeCmd(self, cmd):
 #         print("writeCmd("+hex(cmd)+")")
@@ -36,15 +37,15 @@ class LCD2004(HD44780IO):
 
     def enableBit(self, data):
 #         print("enableBit("+hex(data)+")")
-        self.gpio.setOLAT((self.backlight & 0x01) | data)
+        self.gpio.setOLAT(self.backlight | data)
         time.sleep_ms(1)
-        self.gpio.setOLAT((self.backlight & 0x01) | data | (1 << EN))
+        self.gpio.setOLAT(self.backlight | data | (1 << EN))
         time.sleep_ms(2)
-        self.gpio.setOLAT((self.backlight & 0x01) | data)
+        self.gpio.setOLAT(self.backlight | data)
         time.sleep_ms(1)
 
     def write(self, data, rs, rw_, en):
-        cmd = (self.backlight << BACKLIGHT) | (((data & 0x80) >> 7) << DB7) | (((data & 0x40) >> 6) << DB6) | (((data & 0x20) >> 5) << DB5) | (((data & 0x10) >> 4) << DB4) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS)
+        cmd = self.backlight | (((data & 0x80) >> 7) << DB7) | (((data & 0x40) >> 6) << DB6) | (((data & 0x20) >> 5) << DB5) | (((data & 0x10) >> 4) << DB4) | ((rw_ & 0x01) << RW_) | ((rs & 0x01) << RS)
  
         self.gpio.setOLAT(cmd)
         time.sleep_ms(1)

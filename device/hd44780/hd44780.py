@@ -5,6 +5,7 @@ class HD44780:
     def __init__(self, ctrl_io):
         self.ctrl = ctrl_io
         self.init()
+        self.home()
 
     def writeText(self, texte):
 #         print("writeText")
