@@ -1,5 +1,5 @@
 import rp2
-#from machine import Pin
+from machine import Pin
 from picoi2c import PicoI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
@@ -102,12 +102,28 @@ if (len(circuits) != 0):
 #     rtc.setOut(0)
 #     print(rtc.getMemory(0))
 
+    led = Pin(25, Pin.OUT)
+    led_error = False
+    cpt = 0
     lcd.clear()
     while True:
-        lcd.home()
-        lcd.writeText(str(" " + rtc.getDate() + " " + rtc.getTime()))
-        time.sleep_ms(500)
-        
+        try:
+            lcd.home()
+            lcd.writeText(str(" " + rtc.getDate() + " " + rtc.getTime()))
+            if ((cpt < 10) and (led_error == True)):
+                if led.value() == 1:
+                    led.off()
+                else:
+                    led.on()
+                    cpt += 1
+            if cpt >= 10:
+                cpt = 0
+                led_error = False
+                led.off()
+            time.sleep_ms(500)
+        except:
+            led_error = True
+
 #     pontH1 = L298N(15, 10, 11)
 #     pontH1.forward(65535)
 # 
