@@ -1,5 +1,5 @@
 import rp2
-from machine import Pin
+#from machine import Pin
 from picoi2c import PicoI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
@@ -12,13 +12,13 @@ from lcd2004 import LCD2004
 from hd44780 import HD44780
 import time
 
-i2c = PicoI2C(0, Pin(4), Pin(5))
+i2c = PicoI2C(0, 4, 5)
 circuits = i2c.scan()
 print("liste des circuits i2c presents sur le bus :")
 print(circuits)
 
 if (len(circuits) != 0):
-    mux = PCA9548A(0, i2c)
+    mux = PCA9548A(0, i2c, 3)
     mux.reset()
     
     mux.setCanal((1<<2) | (1<<7)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
@@ -95,7 +95,7 @@ if (len(circuits) != 0):
         
     rtc = DS1307(0, i2c)
     rtc.setDate("10/11/22")
-    rtc.setTime("00:27:30")
+    rtc.setTime("09:10:30")
 #     rtc.setSquareWave(1)
 #     rtc.setMemory(0, 12)
 #     rtc.setDayWeek(3)

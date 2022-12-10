@@ -22,3 +22,6 @@ class PCA9548A(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = canal & 0xff
         self.busi2c.send(self.adresse, cmd)
+
+    def getCanal(self):
+        return self.busi2c.recv(self.adresse, 1)[0]

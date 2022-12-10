@@ -5,7 +5,7 @@ from busi2c import BusI2C
 class PicoI2C(BusI2C):
     def __init__(self, n_bus, sda_pin, scl_pin):
       super().__init__()
-      self.busi2c = I2C(id=n_bus, sda=sda_pin, scl=scl_pin, freq=100000)
+      self.busi2c = I2C(id=n_bus, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=100000)
 
     def scan(self):
         return self.busi2c.scan()
