@@ -10,120 +10,146 @@ from ds1307 import DS1307
 # from l298n import L298N
 from lcd2004 import LCD2004
 from hd44780 import HD44780
+import onewire
+import ds18x20
 import time
 
 class Test_I2C:
 
-    def callback(self):
-        print("callback")
-#         print("callback : " + rtc.gatDate() + " " + rtc.getTime())
-#         lcd.writeText(rtc.getDate() + " " + rtc.getTime())
+    def callback(self, pin):
+        try:
+            texte = self.rtc.gatDate() + " " + self.rtc.getTime()
+            print("callback : " + texte)
+            lcd.writeText(texte)
+        except:
+            print("exception")
 
     def __init__(self):
-        i2c = PicoI2C(0, 4, 5)
-        circuits = i2c.scan()
+        self.i2c = PicoI2C(0, 4, 5)
+        circuits = self.i2c.scan()
         print("liste des circuits i2c presents sur le bus :")
         print(circuits)
 
         if (len(circuits) != 0):
-            mux = PCA9548A(0, i2c, 3)
-            mux.reset()
+            self.mux = PCA9548A(0, self.i2c, 3)
+            self.mux.reset()
             
-            mux.setCanal((1<<2) | (1<<7)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
-            circuits = i2c.scan()
+            self.mux.setCanal((1<<2) | (1<<7)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
+            circuits = self.i2c.scan()
             print("liste des circuits i2c presents sur le bus multiplexe :")
             print(circuits)
-#             
-#             lcd_io = LCD2004(0, i2c)
-#             lcd_io.setBackLight(1)
-#             lcd = HD44780(lcd_io)
 
-        #     bmp = BMP280(i2c)
-        #     if bmp.chipIdRegister():
-        #         bmp.reset()
-        #         time.sleep(1)
-        #         bmp.ctrlMeasureRegister(5, 5, 3)
-        #         bmp.configRegister(4, 4)
-        #         bmp.readCompensationRegister()
-        #         bmp.ctrlMeasureRegister(5, 5, 3)
-        #         print(bmp.rawMeasureRegister())
-        #         print(bmp.compensateT())
-        #         time.sleep(1)
-        #         print(bmp.rawMeasureRegister())
-        #         print(bmp.compensateT())
-        #         time.sleep(1)
-        #         print(bmp.rawMeasureRegister())
-        #         print(bmp.compensateT())
-        #         time.sleep(1)
-        #         print(bmp.rawMeasureRegister())
-        #         print(bmp.compensateT())
+    def onewire(self):
+        ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
+        print (ow.scan())               # return a list of devices on the bus
+        ow.reset()              # reset the bus
+        ds = ds18x20.DS18X20(ow)
+        roms = ds.scan()
+        ds.convert_temp()
+        for rom in roms:
+            self.lcd.writeText(str(ds.read_temp(rom)))
+            time.sleep(60)
 
-        #     pia = MCP23017(0, i2c)
+    def lcd2004(self):
+        self.lcd_io = LCD2004(0, self.i2c)
+        self.lcd_io.setBackLight(1)
+        self.lcd = HD44780(self.lcd_io)
+        self.lcd.clear()
+        self.lcd.home()
+        self.lcd.writeText("Hello World !")
 
-        #     matrix = IS31FL3731(0, i2c)
-        #     matrix.shutdown(1)
-        #     time.sleep(1)
-        # 
-        #     matrix.configurationRegister(0, 0)
-        #     matrix.pictureDisplayRegister(0)
-        #     matrix.displayOptionRegister(0, 1, 1)
-        #     matrix.autoplayControlRegister(0, 0, 0)
-        #     matrix.breathControlRegister(0, 0, 0, 0)
-        # 
-        #     led = bytearray(18)
-        #     blink = bytearray(18)
-        #     pwm = bytearray(144)
-        # 
-        #     for i in range(0, 18):
-        #         led[i] = 0
-        #         blink[i] = 0
-        # 
-        #     for i in range(0, 144):
-        #         pwm[i]=0xf
-        #     
-        #     for i in range(0, 8):
-        #         matrix.frameRegister(i, led, blink, pwm)
-        # 
-        #     while True:
-        #         for i in range(0, 18):
-        #             led[i] = 0xff
-        #             matrix.frameRegister(0, led, blink, pwm)
-        #             time.sleep_ms(10)
-        #         for i in range(0, 18):
-        #             led[17-i] = 0
-        #             matrix.frameRegister(0, led, blink, pwm)
-        #             time.sleep_ms(10)
-        #     matrix.shutdown(0)
+    def bmp280(self):
+        bmp = BMP280(self.i2c)
+        if bmp.chipIdRegister():
+            bmp.reset()
+            time.sleep(1)
+            bmp.ctrlMeasureRegister(5, 5, 3)
+            bmp.configRegister(4, 4)
+            bmp.readCompensationRegister()
+            bmp.ctrlMeasureRegister(5, 5, 3)
+            print(bmp.rawMeasureRegister())
+            print(bmp.compensateT())
+            time.sleep(1)
+            print(bmp.rawMeasureRegister())
+            print(bmp.compensateT())
+            time.sleep(1)
+            print(bmp.rawMeasureRegister())
+            print(bmp.compensateT())
+            time.sleep(1)
+            print(bmp.rawMeasureRegister())
+            print(bmp.compensateT())
 
-        #     t = DS1621(0, i2c)
-        #     t.start()
-        #     for i in range(0, 10):
-        #         print(t.readTemperature())
-        #     t.stop()
-                
-            rtc = DS1307(0, i2c, 6, self.callback)
-            rtc.setDate("10/11/22")
-            rtc.setTime("09:10:30")
-            rtc.setSquareWave(1)
-            rtc.setDayWeek(3)
-            rtc.setOut(0)
+    def is313731(self):
+        matrix = IS31FL3731(0, self.i2c)
+        matrix.shutdown(1)
+        time.sleep(1)
 
-            led = Pin(25, Pin.OUT)
-#             lcd.clear()
+        matrix.configurationRegister(0, 0)
+        matrix.pictureDisplayRegister(0)
+        matrix.displayOptionRegister(0, 1, 1)
+        matrix.autoplayControlRegister(0, 0, 0)
+        matrix.breathControlRegister(0, 0, 0, 0)
 
-        #     pontH1 = L298N(15, 10, 11)
-        #     pontH1.forward(65535)
-        # 
-        #     pontH2 = L298N(16, 13, 12)
-        #     pontH2.forward(65535)
-        #     
-        #     time.sleep(5)
-        # 
-        #     pontH1.off()
-        #     pontH2.off()
+        led = bytearray(18)
+        blink = bytearray(18)
+        pwm = bytearray(144)
 
-        #     mux.clear()
+        for i in range(0, 18):
+            led[i] = 0
+            blink[i] = 0
 
-test = Test_I2C()
-while True:
-    time.sleep(60)
+        for i in range(0, 144):
+            pwm[i]=0xf
+
+        for i in range(0, 8):
+            matrix.frameRegister(i, led, blink, pwm)
+
+        while True:
+            for i in range(0, 18):
+                led[i] = 0xff
+                matrix.frameRegister(0, led, blink, pwm)
+                time.sleep_ms(10)
+            for i in range(0, 18):
+                led[17-i] = 0
+                matrix.frameRegister(0, led, blink, pwm)
+                time.sleep_ms(10)
+        matrix.shutdown(0)
+
+    def ds1621(self):
+        t = DS1621(0, self.i2c)
+        t.start()
+        for i in range(0, 10):
+            print(t.readTemperature())
+        t.stop()
+    
+    def ds1307(self):
+        self.rtc = DS1307(0, self.i2c, 6, self.callback)
+        self.rtc.setDate("10/11/22")
+        self.rtc.setTime("09:10:30")
+        self.rtc.setSquareWave(1)
+        self.rtc.setDayWeek(3)
+        self.rtc.setOut(0)
+
+    def led(self):
+        self.led = Pin(25, Pin.OUT)
+
+    def l298h(self):
+        pontH1 = L298N(15, 10, 11)
+        pontH1.forward(65535)
+
+        pontH2 = L298N(16, 13, 12)
+        pontH2.forward(65535)
+        
+        time.sleep(5)
+
+        pontH1.off()
+        pontH2.off()
+
+try:
+    test = Test_I2C()
+    test.lcd2004()
+    test.onewire()
+    test.ds1307()
+    time.sleep(3600)
+except:
+    print("exception dans main !")

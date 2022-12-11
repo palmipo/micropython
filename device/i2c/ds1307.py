@@ -7,14 +7,17 @@ class DS1307(DeviceI2C):
 
     def __init__(self, address, bus, pin=0, callback=None):
         super().__init__(0x68 | (address & 0x01), bus)
-        self.pin = Pin(pin, Pin.IN, Pin.PULL_UP)
-        self.pin.irq(self.callback, Pin.IRQ_FALLING)
-        self.cb = callback
+        if pin != 0:
+            self.pin = Pin(pin, Pin.IN)#, Pin.PULL_UP)
+            self.pin.irq(callback, Pin.IRQ_FALLING)
     
-    def callback(self, pin):
-        state = machine.disable_irq()
-        self.cb()
-        machine.enable_irq(state)
+#     def callback(self, pin):
+#         state = machine.disable_irq()
+#           try:
+#             self.cb()
+#           except:
+#             print("Exception")
+#         machine.enable_irq(state)
 
     def setDayWeek(self, day):
         cmd = bytearray(2)
