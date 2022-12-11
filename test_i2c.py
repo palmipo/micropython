@@ -15,16 +15,13 @@ import ds18x20
 import time
 
 class Test_I2C:
-
     def callback(self, pin):
-        try:
-            texte = self.rtc.gatDate() + " " + self.rtc.getTime()
-            print("callback : " + texte)
-            lcd.writeText(texte)
-        except:
-            print("exception")
+        state = machine.disable_irq()
+        self.action_callback = True
+        machine.enable_irq(state)
 
     def __init__(self):
+        self.action_callback = False
         self.i2c = PicoI2C(0, 4, 5)
         circuits = self.i2c.scan()
         print("liste des circuits i2c presents sur le bus :")
@@ -48,7 +45,6 @@ class Test_I2C:
         ds.convert_temp()
         for rom in roms:
             self.lcd.writeText(str(ds.read_temp(rom)))
-            time.sleep(60)
 
     def lcd2004(self):
         self.lcd_io = LCD2004(0, self.i2c)
@@ -128,7 +124,7 @@ class Test_I2C:
         self.rtc.setTime("09:10:30")
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
-        self.rtc.setOut(0)
+#         self.rtc.setOut(0)
 
     def led(self):
         self.led = Pin(25, Pin.OUT)
@@ -148,8 +144,24 @@ class Test_I2C:
 try:
     test = Test_I2C()
     test.lcd2004()
+    test.lcd.clear()
     test.onewire()
     test.ds1307()
-    time.sleep(3600)
+    while True:
+        if test.action_callback == True:
+            try:
+                texte = test.rtc.getDate() + " " + test.rtc.getTime()
+#                 roms = test.ds.scan()
+#                 test.ds.convert_temp()
+#                 for rom in roms:
+#                     texte += (str(ds.read_temp(rom)))
+                test.lcd.home()
+                test.lcd.writeText(texte)
+            except:
+                print("exception")
+        test.action_callback = False
+        time.sleep_ms(100)
+    test.mux.clear()
+    print("FIN.")
 except:
     print("exception dans main !")
