@@ -1,23 +1,9 @@
 from devicei2c import DeviceI2C
-import rp2
-from machine import Pin
-import machine
 
 class DS1307(DeviceI2C):
 
-    def __init__(self, address, bus, pin=0, callback=None):
+    def __init__(self, address, bus):
         super().__init__(0x68 | (address & 0x01), bus)
-        if pin != 0:
-            self.pin = Pin(pin, Pin.IN, Pin.PULL_UP)
-            self.pin.irq(callback, Pin.IRQ_FALLING)
-    
-#     def callback(self, pin):
-#         state = machine.disable_irq()
-#           try:
-#             self.cb()
-#           except:
-#             print("Exception")
-#         machine.enable_irq(state)
 
     def setDayWeek(self, day):
         cmd = bytearray(2)

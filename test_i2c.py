@@ -20,8 +20,19 @@ class Test_I2C:
         self.action_callback = True
         machine.enable_irq(state)
 
+    def bt_callback(self, pin):
+        state = machine.disable_irq()
+        self.action_bt = True
+        machine.enable_irq(state)
+
+    def stop_callback(self, pin):
+        state = machine.disable_irq()
+        self.stop_bt = True
+        machine.enable_irq(state)
+
     def __init__(self):
         self.action_callback = False
+        self.stop_bt = False
         self.i2c = PicoI2C(0, 4, 5)
         circuits = self.i2c.scan()
         print("liste des circuits i2c presents sur le bus :")
@@ -35,6 +46,16 @@ class Test_I2C:
             circuits = self.i2c.scan()
             print("liste des circuits i2c presents sur le bus multiplexe :")
             print(circuits)
+
+
+        self.pin = Pin(8, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.bt_callback, Pin.IRQ_FALLING)
+
+        self.pin = Pin(9, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.bt_callback, Pin.IRQ_FALLING)
+
+        self.pin = Pin(10, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.stop_callback, Pin.IRQ_FALLING)
 
     def onewire(self):
         ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
@@ -119,12 +140,15 @@ class Test_I2C:
         t.stop()
     
     def ds1307(self):
-        self.rtc = DS1307(0, self.i2c, 6, self.callback)
+        self.rtc = DS1307(0, self.i2c)
         self.rtc.setDate("10/11/22")
         self.rtc.setTime("09:10:30")
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
 #         self.rtc.setOut(0)
+
+        self.pin = Pin(6, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.callback, Pin.IRQ_FALLING)
 
     def led(self):
         self.led = Pin(25, Pin.OUT)
@@ -147,7 +171,7 @@ try:
     test.lcd.clear()
     test.onewire()
     test.ds1307()
-    while True:
+    while test.stop_bt == False:
         if test.action_callback == True:
             try:
                 texte = test.rtc.getDate() + " " + test.rtc.getTime()
