@@ -25,6 +25,3 @@ lcd = HD44780(lcd_io)
 lcd.clear()
 lcd.home()
 lcd.writeText("Hello World !")
-while True:
-    #lcd_io.scrute()
-    True

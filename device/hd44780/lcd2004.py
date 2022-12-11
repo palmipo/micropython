@@ -6,18 +6,17 @@ import time
 
 class LCD2004(HD44780IO):
 
-    self.DB7 = 7
-    self.DB6 = 6
-    self.DB5 = 5
-    self.DB4 = 4
-    self.BACKLIGHT = 3
-    self.EN = 2
-    self.RW_ = 1
-    self.RS = 0
-
     def __init__(self, adresse, i2c):
         super().__init__()
         self.backlight = 0
+        self.DB7 = 7
+        self.DB6 = 6
+        self.DB5 = 5
+        self.DB4 = 4
+        self.BACKLIGHT = 3
+        self.EN = 2
+        self.RW_ = 1
+        self.RS = 0
 
         self.gpio = PCF8574T(adresse, i2c)
         self.gpio.setIODIR(0)

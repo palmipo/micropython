@@ -22,7 +22,6 @@ class ADA772(LCD2004):
 
     def __init__(self, adresse, i2c, isr=0, callback=None):
         super().__init__()
-        self.callback = callback
 
         self.gpio = MCP23017(adresse, i2c)
         self.gpio.setIOCON(0, 1, 0, 0, 0, 0, 0)
@@ -37,6 +36,7 @@ class ADA772(LCD2004):
         if isr != 0:
             self.pin = Pin(isr, Pin.IN, Pin.PULL_UP)
             self.pin.irq(self.scrute, Pin.IRQ_FALLING)
+            self.callback = callback
 
         self.pia = PIA_MCP23017(1, gpio)
         self.switchs = PIA_MCP23017(0, gpio)

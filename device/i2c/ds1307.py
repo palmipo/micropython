@@ -1,23 +1,32 @@
 from devicei2c import DeviceI2C
+import rp2
+from machine import Pin
+import machine
 
 class DS1307(DeviceI2C):
 
-    def __init__(self, address, bus):
+    def __init__(self, address, bus, pin=0, callback=None):
         super().__init__(0x68 | (address & 0x01), bus)
-
-    jour = ("Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche")
+        self.pin = Pin(pin, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.callback, Pin.IRQ_FALLING)
+        self.cb = callback
+    
+    def callback(self, pin):
+        state = machine.disable_irq()
+        self.cb()
+        machine.enable_irq(state)
 
     def setDayWeek(self, day):
         cmd = bytearray(2)
         cmd[0] = 0x03
-        cmd[1] = int(day) & 0x07
+        cmd[1] = day & 0x07
         self.busi2c.send(self.adresse, cmd)
 
     def getDayWeek(self):
         cmd = bytearray(1)
         cmd[0] = 0x03
         data = self.busi2c.transferer(self.adresse, cmd, 1)
-        return self.jour[int(data[0]) & 0x07]
+        return data[0] & 0x07
 
     #18/01/73
     def setDate(self, date):

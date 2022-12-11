@@ -1,16 +1,20 @@
 import rp2
 from machine import Pin
 
-class PiaPico(PIA):
+class PIA_PICO(PIA):
     
-    def __init__(self, nPin):
-        self.pin = Pin(nPin)
+    def __init__(self, nPin, cb):
+        self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.callback, Pin.IRQ_FALLING)
+        self.cb = cb
 
-    def cb(pin):
+    def callback(pin):
         state = machine.disable_irq()
-        print("callback 0")
+        self.cb()
         machine.enable_irq(state)
 
-    def setIODIR(self, value):
-        self.pin.init(Pin.IN, Pin.PULL_UP)
-        self.pin.irq(cb, Pin.IRQ_FALLING)
+    def setOutput(self, value):
+        self.pin.value(value)
+
+    def getInput(self):
+        return self.pin.value()
