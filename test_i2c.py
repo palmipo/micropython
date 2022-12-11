@@ -4,12 +4,12 @@ from picoi2c import PicoI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
 # from bmp280 import BMP280
-from ds1307 import DS1307
+# from ds1307 import DS1307
 # from ds1621 import DS1621
 # from mcp23017 import MCP23017
 # from l298n import L298N
-from lcd2004 import LCD2004
-from hd44780 import HD44780
+# from lcd2004 import LCD2004
+# from hd44780 import HD44780
 import time
 
 i2c = PicoI2C(0, 4, 5)
@@ -26,9 +26,9 @@ if (len(circuits) != 0):
     print("liste des circuits i2c presents sur le bus multiplexe :")
     print(circuits)
     
-    lcd_io = LCD2004(0, i2c)
-    lcd_io.setBackLight(1)
-    lcd = HD44780(lcd_io)
+#     lcd_io = LCD2004(0, i2c)
+#     lcd_io.setBackLight(1)
+#     lcd = HD44780(lcd_io)
 
 #     bmp = BMP280(i2c)
 #     if bmp.chipIdRegister():
@@ -93,36 +93,36 @@ if (len(circuits) != 0):
 #         print(t.readTemperature())
 #     t.stop()
         
-    rtc = DS1307(0, i2c)
-    rtc.setDate("10/11/22")
-    rtc.setTime("09:10:30")
+#     rtc = DS1307(0, i2c)
+#     rtc.setDate("10/11/22")
+#     rtc.setTime("09:10:30")
 #     rtc.setSquareWave(1)
 #     rtc.setMemory(0, 12)
 #     rtc.setDayWeek(3)
 #     rtc.setOut(0)
 #     print(rtc.getMemory(0))
 
-    led = Pin(25, Pin.OUT)
-    led_error = False
-    cpt = 0
-    lcd.clear()
-    while True:
-        try:
-            lcd.home()
-            lcd.writeText(str(" " + rtc.getDate() + " " + rtc.getTime()))
-            if ((cpt < 10) and (led_error == True)):
-                if led.value() == 1:
-                    led.off()
-                else:
-                    led.on()
-                    cpt += 1
-            if cpt >= 10:
-                cpt = 0
-                led_error = False
-                led.off()
-            time.sleep_ms(500)
-        except:
-            led_error = True
+#     led = Pin(25, Pin.OUT)
+#     led_error = False
+#     cpt = 0
+#     lcd.clear()
+#     while True:
+#         try:
+#             lcd.home()
+#             lcd.writeText(str(" " + rtc.getDate() + " " + rtc.getTime()))
+#             if ((cpt < 10) and (led_error == True)):
+#                 if led.value() == 1:
+#                     led.off()
+#                 else:
+#                     led.on()
+#                     cpt += 1
+#             if cpt >= 10:
+#                 cpt = 0
+#                 led_error = False
+#                 led.off()
+#             time.sleep(1)
+#         except:
+#             led_error = True
 
 #     pontH1 = L298N(15, 10, 11)
 #     pontH1.forward(65535)
