@@ -1,35 +1,27 @@
 import rp2
+import machine
 from machine import Pin
 from picoi2c import PicoI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
-# from bmp280 import BMP280
+from bmp280 import BMP280
 from ds1307 import DS1307
 # from ds1621 import DS1621
 # from mcp23017 import MCP23017
 # from l298n import L298N
 from lcd2004 import LCD2004
 from hd44780 import HD44780
+from rouecodeuse import RoueCodeuse
 import onewire
 import ds18x20
 import time
 
 class Test_I2C:
-    def callback(self, pin):
+    def callbackDs1307(self, pin):
         state = machine.disable_irq()
         self.action_callback = True
         machine.enable_irq(state)
-
-    def bt_callback(self, pin):
-        state = machine.disable_irq()
-        self.action_bt = True
-        machine.enable_irq(state)
-
-    def stop_callback(self, pin):
-        state = machine.disable_irq()
-        self.stop_bt = True
-        machine.enable_irq(state)
-
+        
     def __init__(self):
         self.action_callback = False
         self.stop_bt = False
@@ -42,20 +34,13 @@ class Test_I2C:
             self.mux = PCA9548A(0, self.i2c, 3)
             self.mux.reset()
             
-            self.mux.setCanal((1<<2) | (1<<7)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
+            self.mux.setCanal((1<<6)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
             circuits = self.i2c.scan()
             print("liste des circuits i2c presents sur le bus multiplexe :")
             print(circuits)
 
 
-        self.pin = Pin(8, Pin.IN, Pin.PULL_UP)
-        self.pin.irq(self.bt_callback, Pin.IRQ_FALLING)
-
-        self.pin = Pin(9, Pin.IN, Pin.PULL_UP)
-        self.pin.irq(self.bt_callback, Pin.IRQ_FALLING)
-
-        self.pin = Pin(10, Pin.IN, Pin.PULL_UP)
-        self.pin.irq(self.stop_callback, Pin.IRQ_FALLING)
+        self.code = RoueCodeuse(8, 9, 10)
 
     def onewire(self):
         ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
@@ -145,46 +130,35 @@ class Test_I2C:
         self.rtc.setTime("09:10:30")
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
-#         self.rtc.setOut(0)
 
-        self.pin = Pin(6, Pin.IN, Pin.PULL_UP)
-        self.pin.irq(self.callback, Pin.IRQ_FALLING)
+        self.pin6 = Pin(6, Pin.IN, Pin.PULL_UP)
+        self.pin6.irq(self.callbackDs1307, Pin.IRQ_FALLING)
 
     def led(self):
         self.led = Pin(25, Pin.OUT)
 
-    def l298h(self):
-        pontH1 = L298N(15, 10, 11)
-        pontH1.forward(65535)
-
-        pontH2 = L298N(16, 13, 12)
-        pontH2.forward(65535)
-        
-        time.sleep(5)
-
-        pontH1.off()
-        pontH2.off()
-
 try:
     test = Test_I2C()
+    test.bmp280()
     test.lcd2004()
     test.lcd.clear()
-    test.onewire()
+    test.lcd.writeText("Hello World !!!")
+    #test.onewire()
     test.ds1307()
-    while test.stop_bt == False:
-        if test.action_callback == True:
-            try:
-                texte = test.rtc.getDate() + " " + test.rtc.getTime()
+#     while test.stop_bt == False:
+#         if test.action_callback == True:
+#             try:
+#                 texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
 #                 roms = test.ds.scan()
 #                 test.ds.convert_temp()
 #                 for rom in roms:
 #                     texte += (str(ds.read_temp(rom)))
-                test.lcd.home()
-                test.lcd.writeText(texte)
-            except:
-                print("exception")
-        test.action_callback = False
-        time.sleep_ms(100)
+#                 test.lcd.home()
+#                 test.lcd.writeText(texte)
+#             except:
+#                 print("exception")
+#         test.action_callback = False
+#         time.sleep_ms(100)
     test.mux.clear()
     print("FIN.")
 except:
