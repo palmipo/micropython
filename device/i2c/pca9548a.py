@@ -5,13 +5,14 @@ class PCA9548A(DeviceI2C):
 
     def __init__(self, address, bus, reset_pin=0):
         super().__init__(0x70 | (address & 0x03), bus)
-        self.reset_ = Pin(reset_pin, Pin.OUT)
-        self.reset_.on()
+        if reset_pin != 0:
+            self.__reset = Pin(reset_pin, Pin.OUT)
+            self.__reset.on()
 
     def reset(self):
-        self.reset_.off()
+        self.__reset.off()
         time.sleep_ms(1)
-        self.reset_.on()
+        self.__reset.on()
 
     def clear(self):
         cmd = bytearray(1)

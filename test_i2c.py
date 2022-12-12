@@ -2,6 +2,7 @@ import rp2
 import machine
 from machine import Pin
 from picoi2c import PicoI2C
+from muxi2c import MuxI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
 from bmp280 import BMP280
@@ -31,14 +32,21 @@ class Test_I2C:
         print(circuits)
 
         if (len(circuits) != 0):
-            self.mux = PCA9548A(0, self.i2c, 3)
-            self.mux.reset()
-            
-            self.mux.setCanal((1<<6)) # 2 : (0x27)lcd2004 # 7 : (0x50)memeoire / (0x68)rtc
-            circuits = self.i2c.scan()
-            print("liste des circuits i2c presents sur le bus multiplexe :")
-            print(circuits)
+            self.pca9548a = PCA9548A(0, self.i2c, 3)
+            self.pca9548a.reset()
+            time.sleep_ms(100)
 
+            self.mux2 = MuxI2C(2, self.pca9548a, self.i2c)
+            print(self.mux2.scan())
+
+            self.mux3 = MuxI2C(3, self.pca9548a, self.i2c)
+            print(self.mux3.scan())
+
+            self.mux6 = MuxI2C(6, self.pca9548a, self.i2c)
+            print(self.mux6.scan())
+
+            self.mux7 = MuxI2C(7, self.pca9548a, self.i2c)
+            print(self.mux7.scan())
 
         self.code = RoueCodeuse(8, 9, 10)
 
@@ -53,7 +61,7 @@ class Test_I2C:
             self.lcd.writeText(str(ds.read_temp(rom)))
 
     def lcd2004(self):
-        self.lcd_io = LCD2004(0, self.i2c)
+        self.lcd_io = LCD2004(0, self.mux2)
         self.lcd_io.setBackLight(1)
         self.lcd = HD44780(self.lcd_io)
         self.lcd.clear()
@@ -61,7 +69,7 @@ class Test_I2C:
         self.lcd.writeText("Hello World !")
 
     def bmp280(self):
-        bmp = BMP280(self.i2c)
+        bmp = BMP280(self.mux3)
         if bmp.chipIdRegister():
             bmp.reset()
             time.sleep(1)
@@ -125,7 +133,7 @@ class Test_I2C:
         t.stop()
     
     def ds1307(self):
-        self.rtc = DS1307(0, self.i2c)
+        self.rtc = DS1307(0, self.mux7)
         self.rtc.setDate("10/11/22")
         self.rtc.setTime("09:10:30")
         self.rtc.setSquareWave(1)
@@ -143,23 +151,18 @@ try:
     test.lcd2004()
     test.lcd.clear()
     test.lcd.writeText("Hello World !!!")
-    #test.onewire()
     test.ds1307()
-#     while test.stop_bt == False:
-#         if test.action_callback == True:
-#             try:
-#                 texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
-#                 roms = test.ds.scan()
-#                 test.ds.convert_temp()
-#                 for rom in roms:
-#                     texte += (str(ds.read_temp(rom)))
-#                 test.lcd.home()
-#                 test.lcd.writeText(texte)
-#             except:
-#                 print("exception")
-#         test.action_callback = False
-#         time.sleep_ms(100)
-    test.mux.clear()
+    while test.stop_bt == False:
+        if test.action_callback == True:
+            try:
+                texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
+                test.lcd.home()
+                test.lcd.writeText(texte)
+            except:
+                print("exception")
+            test.action_callback = False
+        time.sleep_ms(100)
+    test.pca9548a.clear()
     print("FIN.")
 except:
     print("exception dans main !")

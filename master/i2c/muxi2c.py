@@ -1,35 +1,29 @@
 from busi2c import BusI2C
-
+import time
 class MuxI2C(BusI2C):
 
-    def __init__(self, voie, pca9548a):
+    def __init__(self, voie, pca9548a, i2c):
         super().__init__()
-        self.canal = voie
-        self.multiplexeur = pca9548a
+        self.__canal = voie
+        self.__multiplexeur = pca9548a
+        self.__multiplexeur.clear()
+        self.__busi2c = i2c
 
     def scan(self):
-        etat = self.multiplexeur.getCanal()
-        self.multiplexeur.setCanal((1 << self.canal) | etat)
-        scan = self.muliplexeur.busi2c.scan()
-        self.multiplexeur.setCanal(etat)
-        return scan
+        self.__multiplexeur.setCanal(1 << self.__canal)
+        res = self.__busi2c.scan()
+        return res
         
     def send(self, addr, cmd):
-        etat = self.multiplexeur.getCanal()
-        self.multiplexeur.setCanal((1 << self.canal) | etat)
-        self.muliplexeur.busi2c.send(addr, cmd)
-        self.multiplexeur.setCanal(etat)
+        self.__multiplexeur.setCanal(1 << self.__canal)
+        self.__busi2c.send(addr, cmd)
     
     def recv(self, addr, n_byte):
-        etat = self.multiplexeur.getCanal()
-        self.multiplexeur.setCanal((1 << self.canal) | etat)
-        data = self.muliplexeur.busi2c.recv(addr, n_byte)
-        self.multiplexeur.setCanal(etat)
+        self.__multiplexeur.setCanal(1 << self.__canal)
+        data = self.__busi2c.recv(addr, n_byte)
         return data
     
     def transferer(self, addr, cmd, n_byte):
-        etat = self.multiplexeur.getCanal()
-        self.multiplexeur.setCanal((1 << self.canal) | etat)
-        data = self.muliplexeur.busi2c.transferer(addr, cmd, n_byte)
-        self.multiplexeur.setCanal(etat)
+        self.__multiplexeur.setCanal(1 << self.__canal)
+        data = self.__busi2c.transferer(addr, cmd, n_byte)
         return data
