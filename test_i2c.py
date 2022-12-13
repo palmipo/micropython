@@ -42,6 +42,9 @@ class Test_I2C:
             self.mux3 = MuxI2C(3, self.pca9548a, self.i2c)
             print(self.mux3.scan())
 
+            self.mux5 = MuxI2C(5, self.pca9548a, self.i2c)
+            print(self.mux5.scan())
+
             self.mux6 = MuxI2C(6, self.pca9548a, self.i2c)
             print(self.mux6.scan())
 
@@ -69,25 +72,13 @@ class Test_I2C:
         self.lcd.writeText("Hello World !")
 
     def bmp280(self):
-        bmp = BMP280(self.mux3)
-        if bmp.chipIdRegister():
-            bmp.reset()
+        self.bmp = BMP280(self.mux3)
+        if self.bmp.chipIdRegister():
+            self.bmp.reset()
             time.sleep(1)
-            bmp.ctrlMeasureRegister(5, 5, 3)
-            bmp.configRegister(4, 4)
-            bmp.readCompensationRegister()
-            bmp.ctrlMeasureRegister(5, 5, 3)
-            print(bmp.rawMeasureRegister())
-            print(bmp.compensateT())
-            time.sleep(1)
-            print(bmp.rawMeasureRegister())
-            print(bmp.compensateT())
-            time.sleep(1)
-            print(bmp.rawMeasureRegister())
-            print(bmp.compensateT())
-            time.sleep(1)
-            print(bmp.rawMeasureRegister())
-            print(bmp.compensateT())
+            self.bmp.configRegister(4, 4)
+            self.bmp.readCompensationRegister()
+            self.bmp.ctrlMeasureRegister(5, 5, 3)
 
     def is313731(self):
         matrix = IS31FL3731(0, self.i2c)
@@ -134,8 +125,8 @@ class Test_I2C:
     
     def ds1307(self):
         self.rtc = DS1307(0, self.mux7)
-        self.rtc.setDate("10/11/22")
-        self.rtc.setTime("09:10:30")
+        self.rtc.setDate("12/12/22")
+        self.rtc.setTime("22:56:30")
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
 
@@ -156,6 +147,12 @@ try:
         if test.action_callback == True:
             try:
                 texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
+                mesuring, im_update = test.bmp.statusRegister()
+                while mesuring != 0:
+                    mesuring, im_update = test.bmp.statusRegister()
+                test.bmp.rawMeasureRegister()
+                t = test.bmp.compensateT()
+                texte += "temperature : " + str(t) + "  "
                 test.lcd.home()
                 test.lcd.writeText(texte)
             except:

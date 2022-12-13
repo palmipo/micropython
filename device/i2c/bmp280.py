@@ -71,7 +71,7 @@ class BMP280(DeviceI2C):
         #var1 = (((1 << 47) + var1)) * (self.dig_P1) >> 33
         var1 = ((1 << 47) * self.dig_P1) >> 33
         if var1 == 0:
-            return 0
+            return 0, 0
         
         p = 1048576 - self.raw_pressure
         p = (((p << 31) - var2) * 3125) / var1

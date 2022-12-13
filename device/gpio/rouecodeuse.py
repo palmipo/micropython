@@ -14,7 +14,7 @@ class RoueCodeuse:
         self.pinB.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING)
         self.pinBValue = self.pinB.value()
 
-        self.pinS = AntiRebond(pinSelect, self.cbS, 100)
+        self.pinS = AntiRebond(pinSelect, self.cbS, 200)
 
         self.newValue = 0
         self.oldValue = (self.pinAValue << 1) | self.pinBValue
