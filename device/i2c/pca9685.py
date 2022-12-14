@@ -5,42 +5,51 @@ class PCA9685(DeviceI2C):
     def __init__(self, adresse, i2c):
         super().__init__(0x40 | (adresse & 0x07), i2c)
         
-    def mode1(self, restart, extclk, ai, sleep, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
+    # frequence interne maxi 25MHz
+    # frequence externe maxi 50MHz
+    # prescaler = (frequence maxi / (4096 x frequence)) - 1
+    def mode1(self, freq, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
         cmd = arraybyte(2)
         cmd[0] = 0x00
-        cmd[1] = (restart & 0x01) << 7
-        cmd[1] |= (extclk & 0x01) << 6
-        cmd[1] |= (ai & 0x01) << 5
-        cmd[1] |= (sleep & 0x01) << 4
-        cmd[1] |= (sub1addr & 0x01) << 3
-        cmd[1] |= (sub2addr & 0x01) << 2
-        cmd[1] |= (sub3addr & 0x01) << 1
-        cmd[1] |= (allcalladdr & 0x01)
-        self.busi2c.send(self.adresse, cmd)
+        cmd[1] = 0x00
+        cmd[1] |= 1 << 5 # auto increment
+        #cmd[1] |= 1 << 4 # sleep mode
 
         if sub1addr != 0:
-            cmd = arraybyte(2)
-            cmd[0] = 0x02
-            cmd[1] = sub1addr
-            self.busi2c.send(self.adresse, cmd)
+            cmd[1] |= 0x01 << 3
+            addr = arraybyte(2)
+            addr[0] = 0x02
+            addr[1] = sub1addr
+            self.busi2c.send(self.adresse, addr)
 
         if sub2addr != 0:
-            cmd = arraybyte(2)
-            cmd[0] = 0x03
-            cmd[1] = sub2addr
-            self.busi2c.send(self.adresse, cmd)
+            cmd[1] |= 0x01 << 2
+            addr = arraybyte(2)
+            addr[0] = 0x03
+            addr[1] = sub2addr
+            self.busi2c.send(self.adresse, addr)
 
         if sub3addr != 0:
-            cmd = arraybyte(2)
-            cmd[0] = 0x04
-            cmd[1] = sub3addr
-            self.busi2c.send(self.adresse, cmd)
+            cmd[1] |= 0x01 << 1
+            addr = arraybyte(2)
+            addr[0] = 0x04
+            addr[1] = sub3addr
+            self.busi2c.send(self.adresse, addr)
 
         if allsubaddr != 0:
-            cmd = arraybyte(2)
-            cmd[0] = 0x05
-            cmd[1] = allsubaddr
+            cmd[1] |= 0x01
+            addr = arraybyte(2)
+            addr[0] = 0x05
+            addr[1] = allsubaddr
+            self.busi2c.send(self.adresse, addr)
+
+        prescaler = (25000000 / (4096 x freq)) - 1
+        if (prescaler >= 0x03):
+            # ecriture de la valeur du prescaler
+            cmd[0] = 0xfe
+            cmd[1] = prescaler & 0xff
             self.busi2c.send(self.adresse, cmd)
+        self.busi2c.send(self.adresse, cmd)
 
     def mode2(self, invrt, och, outdrv, outne):
         cmd = arraybyte(2)
@@ -73,10 +82,4 @@ class PCA9685(DeviceI2C):
         cmd[2] = (on & 0x1f00) >> 8
         cmd[3] = off & 0x00ff
         cmd[4] = (off & 0x1f00) >> 8
-        self.busi2c.send(self.adresse, cmd)
-
-    def prescale(self, valeur):
-        cmd = arraybyte(2)
-        cmd[0] = 0xfe
-        cmd[1] = valeur & 0xff
         self.busi2c.send(self.adresse, cmd)
