@@ -1,4 +1,5 @@
 from devicei2c import DeviceI2C
+import time
 
 class PCA9685(DeviceI2C):
     
@@ -48,6 +49,7 @@ class PCA9685(DeviceI2C):
 
         # sleep = 1 pour ecriture du prescaler
         self.busi2c.send(self.adresse, cmd | (1 << 4))
+        time.sleep_ms(1)
 
         prescaler = (25000000 / (4096 x freq)) - 1
         if (prescaler >= 0x03):
@@ -58,6 +60,7 @@ class PCA9685(DeviceI2C):
             self.busi2c.send(self.adresse, scl)
 
         self.busi2c.send(self.adresse, cmd)
+        time.sleep_ms(1)
 
     def mode2(self, invrt, och, outdrv, outne):
         cmd = arraybyte(2)
