@@ -8,9 +8,10 @@ class PCA9685(DeviceI2C):
     # frequence interne maxi 25MHz
     # frequence externe maxi 50MHz
     # prescaler = (frequence maxi / (4096 x frequence)) - 1
-    # subaddr1 = 0xE2 par defaut
-    # subaddr2 = 0xE4 par defaut
-    # subaddr3 = 0xE8 par defaut
+    # subaddr1 = 0x71 (0xE2) par defaut
+    # subaddr2 = 0x72 (0xE4) par defaut
+    # subaddr3 = 0x74 (0xE8) par defaut
+    # alladdrcall = 0x70 (0xE0) par defaut
     def mode1(self, freq, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
         cmd = arraybyte(2)
         cmd[0] = 0x00
@@ -21,28 +22,28 @@ class PCA9685(DeviceI2C):
             cmd[1] |= 0x01 << 3
             addr = arraybyte(2)
             addr[0] = 0x02
-            addr[1] = sub1addr
+            addr[1] = (sub1addr & 0x7f) << 1
             self.busi2c.send(self.adresse, addr)
 
         if sub2addr != 0:
             cmd[1] |= 0x01 << 2
             addr = arraybyte(2)
             addr[0] = 0x03
-            addr[1] = sub2addr
+            addr[1] = (sub2addr & 0x7F) << 1
             self.busi2c.send(self.adresse, addr)
 
         if sub3addr != 0:
             cmd[1] |= 0x01 << 1
             addr = arraybyte(2)
             addr[0] = 0x04
-            addr[1] = sub3addr
+            addr[1] = (sub3addr & 0x7f) << 1
             self.busi2c.send(self.adresse, addr)
 
         if allsubaddr != 0:
             cmd[1] |= 0x01
             addr = arraybyte(2)
             addr[0] = 0x05
-            addr[1] = allsubaddr
+            addr[1] = (allsubaddr & 0x7f) << 1
             self.busi2c.send(self.adresse, addr)
 
         prescaler = (25000000 / (4096 x freq)) - 1
