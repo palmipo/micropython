@@ -8,6 +8,9 @@ class PCA9685(DeviceI2C):
     # frequence interne maxi 25MHz
     # frequence externe maxi 50MHz
     # prescaler = (frequence maxi / (4096 x frequence)) - 1
+    # subaddr1 = 0xE2 par defaut
+    # subaddr2 = 0xE4 par defaut
+    # subaddr3 = 0xE8 par defaut
     def mode1(self, freq, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
         cmd = arraybyte(2)
         cmd[0] = 0x00
