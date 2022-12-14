@@ -13,7 +13,7 @@ class PCA9685(DeviceI2C):
         cmd[0] = 0x00
         cmd[1] = 0x00
         cmd[1] |= 1 << 5 # auto increment
-        #cmd[1] |= 1 << 4 # sleep mode
+        cmd[1] |= 1 << 4 # sleep mode
 
         if sub1addr != 0:
             cmd[1] |= 0x01 << 3
@@ -62,7 +62,7 @@ class PCA9685(DeviceI2C):
 
     def led(self, num, pourcent):
         valeur = pourcent * 4096 / 100
-        self.led(num, valeur, 4096-valeur)
+        self.led(num, 0, valeur)
 
     # ON = 4096
     # OFF = 4096
