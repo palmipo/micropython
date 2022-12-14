@@ -5,41 +5,41 @@ class PCA9685(DeviceI2C):
     def __init__(self, adresse, i2c):
         super().__init__(0x40 | (adresse & 0x07), i2c)
         
-    def mode1(self, restart, extclk, ai, sleep, sub1=0, sub2=0, sub3=0, allcall=0):
+    def mode1(self, restart, extclk, ai, sleep, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
         cmd = arraybyte(2)
         cmd[0] = 0x00
         cmd[1] = (restart & 0x01) << 7
         cmd[1] |= (extclk & 0x01) << 6
         cmd[1] |= (ai & 0x01) << 5
         cmd[1] |= (sleep & 0x01) << 4
-        cmd[1] |= (sub1 & 0x01) << 3
-        cmd[1] |= (sub2 & 0x01) << 2
-        cmd[1] |= (sub3 & 0x01) << 1
-        cmd[1] |= (allcall & 0x01)
+        cmd[1] |= (sub1addr & 0x01) << 3
+        cmd[1] |= (sub2addr & 0x01) << 2
+        cmd[1] |= (sub3addr & 0x01) << 1
+        cmd[1] |= (allcalladdr & 0x01)
         self.busi2c.send(self.adresse, cmd)
 
-        if sub1 != 0:
+        if sub1addr != 0:
             cmd = arraybyte(2)
             cmd[0] = 0x02
-            cmd[1] = sub1
+            cmd[1] = sub1addr
             self.busi2c.send(self.adresse, cmd)
 
-        if sub2 != 0:
+        if sub2addr != 0:
             cmd = arraybyte(2)
             cmd[0] = 0x03
-            cmd[1] = sub1
+            cmd[1] = sub2addr
             self.busi2c.send(self.adresse, cmd)
 
-        if sub3 != 0:
+        if sub3addr != 0:
             cmd = arraybyte(2)
             cmd[0] = 0x04
-            cmd[1] = sub1
+            cmd[1] = sub3addr
             self.busi2c.send(self.adresse, cmd)
 
-        if allsub != 0:
+        if allsubaddr != 0:
             cmd = arraybyte(2)
             cmd[0] = 0x05
-            cmd[1] = sub1
+            cmd[1] = allsubaddr
             self.busi2c.send(self.adresse, cmd)
 
     def mode2(self, invrt, och, outdrv, outne):
