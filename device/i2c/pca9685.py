@@ -13,7 +13,6 @@ class PCA9685(DeviceI2C):
         cmd[0] = 0x00
         cmd[1] = 0x00
         cmd[1] |= 1 << 5 # auto increment
-        cmd[1] |= 1 << 4 # sleep mode
 
         if sub1addr != 0:
             cmd[1] |= 0x01 << 3
@@ -45,10 +44,13 @@ class PCA9685(DeviceI2C):
 
         prescaler = (25000000 / (4096 x freq)) - 1
         if (prescaler >= 0x03):
+            #cmd[1] |= 1 << 4 # sleep mode
             # ecriture de la valeur du prescaler
-            cmd[0] = 0xfe
-            cmd[1] = prescaler & 0xff
-            self.busi2c.send(self.adresse, cmd)
+            scl = arraybyte(2)
+            scl[0] = 0xfe
+            scl[1] = prescaler & 0xff
+            self.busi2c.send(self.adresse, scl)
+
         self.busi2c.send(self.adresse, cmd)
 
     def mode2(self, invrt, och, outdrv, outne):
