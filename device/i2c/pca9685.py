@@ -1,6 +1,13 @@
 from devicei2c import DeviceI2C
 import time
 
+# import rp2
+# import machine
+# from machine import Pin
+# from picoi2c import PicoI2C
+# from muxi2c import MuxI2C
+# from pca9548a import PCA9548A
+
 class PCA9685(DeviceI2C):
     
     def __init__(self, adresse, i2c):
@@ -13,57 +20,62 @@ class PCA9685(DeviceI2C):
     # subaddr2 = 0x72 (0xE4) par defaut
     # subaddr3 = 0x74 (0xE8) par defaut
     # alladdrcall = 0x70 (0xE0) par defaut
-    def mode1(self, freq, sub1addr=0, sub2addr=0, sub3addr=0, allcalladdr=0):
-        cmd = arraybyte(2)
+    def mode1(self, freq, subaddr1=0, subaddr2=0, subaddr3=0, allcalladdr=0):
+        cmd = bytearray(2)
         cmd[0] = 0x00
-        cmd[1] = 0x00
-        cmd[1] |= 1 << 5 # auto increment
+        cmd[1] = 1 << 5 # auto increment
 
-        if sub1addr != 0:
+        if subaddr1 != 0:
             cmd[1] |= 0x01 << 3
-            addr = arraybyte(2)
-            addr[0] = 0x02
-            addr[1] = (sub1addr & 0x7f) << 1
-            self.busi2c.send(self.adresse, addr)
+            addr1 = bytearray(2)
+            addr1[0] = 0x02
+            addr1[1] = (subaddr1 & 0x7f) << 1
+            self.busi2c.send(self.adresse, addr1)
 
-        if sub2addr != 0:
+        if subaddr2 != 0:
             cmd[1] |= 0x01 << 2
-            addr = arraybyte(2)
-            addr[0] = 0x03
-            addr[1] = (sub2addr & 0x7F) << 1
-            self.busi2c.send(self.adresse, addr)
+            addr2 = bytearray(2)
+            addr2[0] = 0x03
+            addr2[1] = (subaddr2 & 0x7F) << 1
+            self.busi2c.send(self.adresse, addr2)
 
-        if sub3addr != 0:
+        if subaddr3 != 0:
             cmd[1] |= 0x01 << 1
-            addr = arraybyte(2)
-            addr[0] = 0x04
-            addr[1] = (sub3addr & 0x7f) << 1
-            self.busi2c.send(self.adresse, addr)
+            addr3 = bytearray(2)
+            addr3[0] = 0x04
+            addr3[1] = (subaddr3 & 0x7f) << 1
+            self.busi2c.send(self.adresse, addr3)
 
-        if allsubaddr != 0:
+        if allcalladdr != 0:
             cmd[1] |= 0x01
-            addr = arraybyte(2)
-            addr[0] = 0x05
-            addr[1] = (allsubaddr & 0x7f) << 1
-            self.busi2c.send(self.adresse, addr)
+            addr4 = bytearray(2)
+            addr4[0] = 0x05
+            addr4[1] = (allcalladdr & 0x7f) << 1
+            self.busi2c.send(self.adresse, addr4)
 
         # sleep = 1 pour ecriture du prescaler
-        self.busi2c.send(self.adresse, cmd | (1 << 4))
+        sleep = bytearray(2)
+        sleep[0] = 0
+        sleep[1] = cmd[1] | (1 << 4)
+        self.busi2c.send(self.adresse, sleep)
         time.sleep_ms(1)
 
-        prescaler = (25000000 / (4096 x freq)) - 1
+        prescaler = 25000000
+        prescaler /= 4096 * freq
+        prescaler -= 1
+        print(int(prescaler))
         if (prescaler >= 0x03):
             # ecriture de la valeur du prescaler
-            scl = arraybyte(2)
+            scl = bytearray(2)
             scl[0] = 0xfe
-            scl[1] = prescaler & 0xff
+            scl[1] = int(prescaler)
             self.busi2c.send(self.adresse, scl)
 
         self.busi2c.send(self.adresse, cmd)
         time.sleep_ms(1)
 
     def mode2(self, invrt, och, outdrv, outne):
-        cmd = arraybyte(2)
+        cmd = bytearray(2)
         cmd[0] = 0x01
         cmd[1] = (invrt & 0x01) << 4
         cmd[1] |= (och & 0x01) << 3
@@ -78,7 +90,7 @@ class PCA9685(DeviceI2C):
     # ON = 4096
     # OFF = 4096
     def led(self, num, on, off):
-        cmd = arraybyte(5)
+        cmd = bytearray(5)
         cmd[0] = 0x06 + num * 4
         cmd[1] = on & 0x00ff
         cmd[2] = (on & 0x1f00) >> 8
@@ -86,11 +98,46 @@ class PCA9685(DeviceI2C):
         cmd[4] = (off & 0x1f00) >> 8
         self.busi2c.send(self.adresse, cmd)
 
-    def allLed(self, num, on, off):
-        cmd = arraybyte(5)
+    def allLed(self, on, off):
+        cmd = bytearray(5)
         cmd[0] = 0xfa
         cmd[1] = on & 0x00ff
         cmd[2] = (on & 0x1f00) >> 8
         cmd[3] = off & 0x00ff
         cmd[4] = (off & 0x1f00) >> 8
         self.busi2c.send(self.adresse, cmd)
+
+    def allLedOn(self):
+        cmd = bytearray(5)
+        cmd[0] = 0xfa
+        cmd[1] = 0
+        cmd[2] = 1 << 4
+        cmd[3] = 0
+        cmd[4] = 0
+        self.busi2c.send(self.adresse, cmd)
+
+    def allLedOff(self):
+        cmd = bytearray(5)
+        cmd[0] = 0xfa
+        cmd[1] = 0
+        cmd[2] = 0
+        cmd[3] = 0
+        cmd[4] = 1 << 4
+        self.busi2c.send(self.adresse, cmd)
+
+
+# i2c = PicoI2C(0, 4, 5)
+# 
+# pca9548a = PCA9548A(0, i2c, 3)
+# pca9548a.reset()
+# time.sleep_ms(100)
+# 
+# mux6 = MuxI2C(6, pca9548a, i2c)
+# print(mux6.scan())
+# 
+# pca9685 = PCA9685(0, mux6)
+# pca9685.mode1(50)
+# pca9685.allLed(0, 2048)
+# 
+# pca9548a.clear()
+# print("FIN.")

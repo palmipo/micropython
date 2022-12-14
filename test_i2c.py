@@ -12,6 +12,7 @@ from ds1307 import DS1307
 # from l298n import L298N
 from lcd2004 import LCD2004
 from hd44780 import HD44780
+from pca9685 import PCA9685
 from rouecodeuse import RoueCodeuse
 import onewire
 import ds18x20
@@ -53,15 +54,24 @@ class Test_I2C:
 
         self.code = RoueCodeuse(8, 9, 10)
 
+    def pca8596(self):
+        self.pca9685 = PCA9685(0, self.mux6)
+        self.pca9685.mode1(50)
+        for i in range(1, 512):
+            self.pca9685.allLed(0, i)
+            time.sleep_ms(10)
+        self.pca9685.allLedOff()
+
     def onewire(self):
-        ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
-        print (ow.scan())               # return a list of devices on the bus
-        ow.reset()              # reset the bus
-        ds = ds18x20.DS18X20(ow)
-        roms = ds.scan()
-        ds.convert_temp()
-        for rom in roms:
-            self.lcd.writeText(str(ds.read_temp(rom)))
+        self.ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
+        print (self.ow.scan())               # return a list of devices on the bus
+        self.ow.reset()              # reset the bus
+        self.ds = ds18x20.DS18X20(self.ow)
+        roms = self.ds.scan()
+        self.ds.convert_temp()
+#         for rom in roms:
+#             time.sleep(60)
+#             self.lcd.writeText(ds.read_temp(rom))
 
     def lcd2004(self):
         self.lcd_io = LCD2004(0, self.mux2)
@@ -125,8 +135,8 @@ class Test_I2C:
     
     def ds1307(self):
         self.rtc = DS1307(0, self.mux7)
-        self.rtc.setDate("12/12/22")
-        self.rtc.setTime("22:56:30")
+        self.rtc.setDate("14/12/22")
+        self.rtc.setTime("20:06:30")
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
 
@@ -138,8 +148,10 @@ class Test_I2C:
 
 try:
     test = Test_I2C()
-    test.bmp280()
     test.lcd2004()
+    test.onewire()
+    test.pca8596()
+    test.bmp280()
     test.lcd.clear()
     test.lcd.writeText("Hello World !!!")
     test.ds1307()
