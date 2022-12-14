@@ -21,18 +21,16 @@ class HC_SR04:
         self.t1 = 0
         time.sleep_ms(60)
         delta = time.ticks_diff(self.t1, self.t0)
-        print(self.t0, self.t1, delta)
         return delta * 17165 / 1000000 # vitesse du son dans l'air 340 m/s
         
     def cb(self, pin):
         state = machine.disable_irq()
-        print("cb")
         if self.t0 == 0:
             self.t0 = time.ticks_cpu()
         else:
             self.t1 = time.ticks_cpu()
         machine.enable_irq(state)
 
-# sensor = HC_SR04(14, 15)
-# for i in range (0, 100):
-#     print(sensor.start())
+sensor = HC_SR04(14, 15)
+for i in range (0, 100):
+    print(sensor.start())

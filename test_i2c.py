@@ -1,6 +1,5 @@
 import rp2
 import machine
-from machine import Pin
 from picoi2c import PicoI2C
 from muxi2c import MuxI2C
 from pca9548a import PCA9548A
@@ -65,7 +64,7 @@ class Test_I2C:
         self.pca9685.allLedOff()
 
     def onewire(self):
-        self.ow = onewire.OneWire(Pin(7)) # create a OneWire bus on GPIO12
+        self.ow = onewire.OneWire(machine.Pin(7)) # create a OneWire bus on GPIO12
         print (self.ow.scan())               # return a list of devices on the bus
         self.ow.reset()              # reset the bus
         self.ds = ds18x20.DS18X20(self.ow)
@@ -142,17 +141,16 @@ class Test_I2C:
         self.rtc.setSquareWave(1)
         self.rtc.setDayWeek(3)
 
-        self.pin6 = Pin(6, Pin.IN, Pin.PULL_UP)
-        #Pin.irq(handler=None, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, *, priority=1, wake=None, hard=False)
-        self.pin6.irq(self.callbackDs1307, Pin.IRQ_FALLING, hard=True)
+        self.pin6 = machine.Pin(6, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.pin6.irq(self.callbackDs1307, machine.Pin.IRQ_FALLING, hard=True)
 
     def led(self):
-        self.led = Pin(25, Pin.OUT)
+        self.led = machine.Pin(25, machine.Pin.OUT)
 
 try:
     test = Test_I2C()
     test.lcd2004()
-    test.onewire()
+    #test.onewire()
     test.pca8596()
     test.bmp280()
     test.lcd.clear()
