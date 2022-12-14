@@ -46,9 +46,11 @@ class PCA9685(DeviceI2C):
             addr[1] = (allsubaddr & 0x7f) << 1
             self.busi2c.send(self.adresse, addr)
 
+        # sleep = 1 pour ecriture du prescaler
+        self.busi2c.send(self.adresse, cmd | (1 << 4))
+
         prescaler = (25000000 / (4096 x freq)) - 1
         if (prescaler >= 0x03):
-            #cmd[1] |= 1 << 4 # sleep mode
             # ecriture de la valeur du prescaler
             scl = arraybyte(2)
             scl[0] = 0xfe
