@@ -3,15 +3,17 @@ import time
 import machine
 from machine import Pin
 from antirebond import AntiRebond
+import micropython
+micropython.alloc_emergency_exception_buf(100)
 
 class RoueCodeuse:
     def __init__(self, pinA, pinB, pinSelect):
         self.pinA = Pin(pinA, Pin.IN, Pin.PULL_UP)
-        self.pinA.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING)
+        self.pinA.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING, hard=True)
         self.pinAValue = self.pinA.value()
 
         self.pinB = Pin(pinB, Pin.IN, Pin.PULL_UP)
-        self.pinB.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING)
+        self.pinB.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING, hard=True)
         self.pinBValue = self.pinB.value()
 
         self.pinS = AntiRebond(pinSelect, self.cbS, 200)

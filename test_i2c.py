@@ -17,6 +17,8 @@ from rouecodeuse import RoueCodeuse
 import onewire
 import ds18x20
 import time
+import micropython
+micropython.alloc_emergency_exception_buf(100)
 
 class Test_I2C:
     def callbackDs1307(self, pin):
@@ -141,7 +143,8 @@ class Test_I2C:
         self.rtc.setDayWeek(3)
 
         self.pin6 = Pin(6, Pin.IN, Pin.PULL_UP)
-        self.pin6.irq(self.callbackDs1307, Pin.IRQ_FALLING)
+        #Pin.irq(handler=None, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, *, priority=1, wake=None, hard=False)
+        self.pin6.irq(self.callbackDs1307, Pin.IRQ_FALLING, hard=True)
 
     def led(self):
         self.led = Pin(25, Pin.OUT)
