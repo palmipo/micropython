@@ -1,8 +1,11 @@
+import machine
 from bmp280 import BMP280
 
 class EnviroPHat:
-    def __init__(self, i2c):
+    def __init__(self, i2c, led):
         self.busi2c = i2c
+        self.led = machine.Pin(led, machine.Pin.OUT)
+        self.led.off()
 
 #     def ads1015(self):
 #         self.bmp = ADS1015(self.busi2c)
