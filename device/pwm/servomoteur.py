@@ -10,4 +10,4 @@ class ServoMoteur:
         self.pca9685.led(self.voie, 0, angle / 360 * 512)
         
     def stop(self):
-        self.pca9685.led(self.voie, 0, 4096)
+        self.pca9685.ledOff(self.voie)
