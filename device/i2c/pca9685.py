@@ -1,12 +1,11 @@
 from devicei2c import DeviceI2C
 import time
 
-# import rp2
-# import machine
-# from machine import Pin
-# from picoi2c import PicoI2C
-# from muxi2c import MuxI2C
-# from pca9548a import PCA9548A
+import rp2
+import machine
+from picoi2c import PicoI2C
+from muxi2c import MuxI2C
+from pca9548a import PCA9548A
 
 class PCA9685(DeviceI2C):
     
@@ -83,28 +82,42 @@ class PCA9685(DeviceI2C):
         cmd[1] |= (outne & 0x03)
         self.busi2c.send(self.adresse, cmd)
 
-    def led(self, num, pourcent):
-        valeur = pourcent * 4096 / 100
-        self.led(num, 0, valeur)
-
     # ON = 4096
     # OFF = 4096
     def led(self, num, on, off):
         cmd = bytearray(5)
         cmd[0] = 0x06 + num * 4
         cmd[1] = on & 0x00ff
-        cmd[2] = (on & 0x1f00) >> 8
+        cmd[2] = (on & 0x0f00) >> 8
         cmd[3] = off & 0x00ff
-        cmd[4] = (off & 0x1f00) >> 8
+        cmd[4] = (off & 0x0f00) >> 8
+        self.busi2c.send(self.adresse, cmd)
+
+    def ledOn(self, num):
+        cmd = bytearray(5)
+        cmd[0] = 0x06 + num * 4
+        cmd[1] = 0
+        cmd[2] = 1 << 4
+        cmd[3] = 0
+        cmd[4] = 0
+        self.busi2c.send(self.adresse, cmd)
+
+    def ledOff(self, num):
+        cmd = bytearray(5)
+        cmd[0] = 0x06 + num * 4
+        cmd[1] = 0
+        cmd[2] = 0
+        cmd[3] = 0
+        cmd[4] = 1 << 4
         self.busi2c.send(self.adresse, cmd)
 
     def allLed(self, on, off):
         cmd = bytearray(5)
         cmd[0] = 0xfa
         cmd[1] = on & 0x00ff
-        cmd[2] = (on & 0x1f00) >> 8
+        cmd[2] = (on & 0x0f00) >> 8
         cmd[3] = off & 0x00ff
-        cmd[4] = (off & 0x1f00) >> 8
+        cmd[4] = (off & 0x0f00) >> 8
         self.busi2c.send(self.adresse, cmd)
 
     def allLedOn(self):
@@ -126,18 +139,21 @@ class PCA9685(DeviceI2C):
         self.busi2c.send(self.adresse, cmd)
 
 
-# i2c = PicoI2C(0, 4, 5)
-# 
-# pca9548a = PCA9548A(0, i2c, 3)
-# pca9548a.reset()
-# time.sleep_ms(100)
-# 
-# mux6 = MuxI2C(6, pca9548a, i2c)
-# print(mux6.scan())
-# 
-# pca9685 = PCA9685(0, mux6)
-# pca9685.mode1(50)
-# pca9685.allLed(0, 2048)
-# 
-# pca9548a.clear()
-# print("FIN.")
+i2c = PicoI2C(0, 4, 5)
+try:
+    pca9548a = PCA9548A(0, i2c, 3)
+    pca9548a.reset()
+    time.sleep_ms(100)
+
+    mux6 = MuxI2C(6, pca9548a, i2c)
+    print(mux6.scan())
+
+    pca9685 = PCA9685(0, mux6)
+    pca9685.mode1(50)
+    for i in range(0, 512):
+        pca9685.allLed(0, i)
+        time.sleep_ms(10)
+finally:
+    pca9685.allLedOff()
+    pca9548a.clear()
+    print("FIN.")

@@ -1,14 +1,13 @@
 import rp2
 import time
 import machine
-from machine import Pin
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
 class AntiRebond:
     def __init__(self, pinA, cback, tempo=100):
-        self.pinA = Pin(pinA, Pin.IN, Pin.PULL_UP)
-        self.pinA.irq(self.cb, Pin.IRQ_FALLING, hard=True)
+        self.pinA = machine.Pin(pinA, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.pinA.irq(self.cb, machine.Pin.IRQ_FALLING, hard=True)
         self.callback = cback
         self.tempo = tempo
 

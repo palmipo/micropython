@@ -12,7 +12,6 @@ class PCF8574(DeviceI2C):
         self.iodir = value
         cmd = bytearray(1)
         cmd[0] = self.iodir
-        print("pcf8574 adresse : " + hex(self.adresse) + " port : " + hex(self.iodir))
         self.busi2c.send(self.adresse, cmd)
 
     def setOLAT(self, value):

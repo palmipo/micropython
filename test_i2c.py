@@ -4,7 +4,7 @@ from picoi2c import PicoI2C
 from muxi2c import MuxI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
-from bmp280 import BMP280
+# from bmp280 import BMP280
 from ds1307 import DS1307
 # from ds1621 import DS1621
 # from mcp23017 import MCP23017
@@ -12,18 +12,15 @@ from ds1307 import DS1307
 from lcd2004 import LCD2004
 from hd44780 import HD44780
 from pca9685 import PCA9685
-from rouecodeuse import RoueCodeuse
-import onewire
-import ds18x20
+from antirebond import AntiRebond
+from envirophat import EnviroPHat
+# import onewire
+# import ds18x20
 import time
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
 class Test_I2C:
-    def callbackDs1307(self, pin):
-        state = machine.disable_irq()
-        self.action_callback = True
-        machine.enable_irq(state)
         
     def __init__(self):
         self.action_callback = False
@@ -53,12 +50,15 @@ class Test_I2C:
             self.mux7 = MuxI2C(7, self.pca9548a, self.i2c)
             print(self.mux7.scan())
 
-        self.code = RoueCodeuse(8, 9, 10)
+        self.code = AntiRebond(10, self.cb_bt)
+
+    def cb_bt(self):
+        self.stop_bt = True
 
     def pca8596(self):
         self.pca9685 = PCA9685(0, self.mux6)
         self.pca9685.mode1(50)
-        for i in range(1, 512):
+        for i in range(0, 512):
             self.pca9685.allLed(0, i)
             time.sleep_ms(10)
         self.pca9685.allLedOff()
@@ -82,14 +82,8 @@ class Test_I2C:
         self.lcd.home()
         self.lcd.writeText("Hello World !")
 
-    def bmp280(self):
-        self.bmp = BMP280(self.mux3)
-        if self.bmp.chipIdRegister():
-            self.bmp.reset()
-            time.sleep(1)
-            self.bmp.configRegister(4, 4)
-            self.bmp.readCompensationRegister()
-            self.bmp.ctrlMeasureRegister(5, 5, 3)
+    def enviroPHat(self):
+        self.enviro = EnviroPHat(self.mux3, 2)
 
     def is313731(self):
         matrix = IS31FL3731(0, self.i2c)
@@ -134,6 +128,11 @@ class Test_I2C:
             print(t.readTemperature())
         t.stop()
     
+    def callbackDs1307(self, pin):
+        state = machine.disable_irq()
+        self.action_callback = True
+        machine.enable_irq(state)
+
     def ds1307(self):
         self.rtc = DS1307(0, self.mux7)
         self.rtc.setDate("14/12/22")
@@ -147,34 +146,27 @@ class Test_I2C:
     def led(self):
         self.led = machine.Pin(25, machine.Pin.OUT)
 
+test = Test_I2C()
 try:
-    test = Test_I2C()
     test.lcd2004()
     #test.onewire()
     test.pca8596()
-    test.bmp280()
+    test.enviroPHat()
     test.lcd.clear()
     test.lcd.writeText("Hello World !!!")
     test.ds1307()
     while test.stop_bt == False:
-        if test.action_callback == True:
-            try:
-                texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
-                mesuring, im_update = test.bmp.statusRegister()
-                while mesuring != 0:
-                    mesuring, im_update = test.bmp.statusRegister()
-                test.bmp.rawMeasureRegister()
-                t = test.bmp.compensateT()
-                texte += "temperature : " + str(t) + "  "
-                test.lcd.home()
-                test.lcd.writeText(texte)
-            except:
-                print("exception")
-            test.action_callback = False
+        try:
+            texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
+            t = test.enviro.bmp280()
+            texte += "temperature : " + str(t) + "  "
+            test.lcd.home()
+            test.lcd.writeText(texte)
+        except:
+            print("exception")
         time.sleep_ms(100)
     print("FIN.")
 except:
     print("exception dans main !")
 finally:
     test.pca9548a.clear()
-    test.busi2c.deinit()
