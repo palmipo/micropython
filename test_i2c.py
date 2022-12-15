@@ -172,7 +172,9 @@ try:
                 print("exception")
             test.action_callback = False
         time.sleep_ms(100)
-    test.pca9548a.clear()
     print("FIN.")
 except:
     print("exception dans main !")
+finally:
+    test.pca9548a.clear()
+    test.busi2c.deinit()
