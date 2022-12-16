@@ -37,18 +37,18 @@ class BMP280(DeviceI2C):
         buf = bytearray(1)
         buf[0] = 0x88
         data = self.busi2c.transferer(self.adresse, buf, 24)
-        self.dig_T1 = (data[0] << 8) | data[1]
-        self.dig_T2 = (1 << 16) - ((data[2] << 8) | data[3])
-        self.dig_T3 = (1 << 16) - ((data[4] << 8) | data[5])
-        self.dig_P1 = (data[6] << 8) | data[7]
-        self.dig_P2 = (1 << 16) - ((data[8] << 8) | data[9])
-        self.dig_P3 = (1 << 16) - ((data[10] << 8) | data[11])
-        self.dig_P4 = (1 << 16) - ((data[12] << 8) | data[13])
-        self.dig_P5 = (1 << 16) - ((data[14] << 8) | data[15])
-        self.dig_P6 = (1 << 16) - ((data[16] << 8) | data[17])
-        self.dig_P7 = (1 << 16) - ((data[18] << 8) | data[19])
-        self.dig_P8 = (1 << 16) - ((data[20] << 8) | data[21])
-        self.dig_P9 = (1 << 16) - ((data[22] << 8) | data[23])
+        self.dig_T1 = (data[1] << 8) | data[0]
+        self.dig_T2 = (1 << 16) - ((data[3] << 8) | data[2])
+        self.dig_T3 = (1 << 16) - ((data[5] << 8) | data[4])
+        self.dig_P1 = (data[7] << 8) | data[6]
+        self.dig_P2 = (1 << 16) - ((data[9] << 8) | data[8])
+        self.dig_P3 = (1 << 16) - ((data[11] << 8) | data[10])
+        self.dig_P4 = (1 << 16) - ((data[13] << 8) | data[12])
+        self.dig_P5 = (1 << 16) - ((data[15] << 8) | data[14])
+        self.dig_P6 = (1 << 16) - ((data[17] << 8) | data[16])
+        self.dig_P7 = (1 << 16) - ((data[19] << 8) | data[18])
+        self.dig_P8 = (1 << 16) - ((data[21] << 8) | data[20])
+        self.dig_P9 = (1 << 16) - ((data[23] << 8) | data[22])
 
     def compensateT(self):
         var1 = (((self.raw_temperature >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
