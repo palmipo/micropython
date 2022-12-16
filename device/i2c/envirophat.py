@@ -1,12 +1,6 @@
 import time
 import machine
 from bmp280 import BMP280
-
-import rp2
-import machine
-from picoi2c import PicoI2C
-from muxi2c import MuxI2C
-from pca9548a import PCA9548A
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
@@ -16,6 +10,10 @@ class EnviroPHat:
         self.led = machine.Pin(led, machine.Pin.OUT)
         self.led.off()
         self.bmp = BMP280(self.busi2c)
+        if self.bmp.chipIdRegister():
+            self.bmp.reset()
+            time.sleep(1)
+            self.bmp.configRegister(4, 4)
 
 #     def ads1015(self):
 #         self.bmp = ADS1015(self.busi2c)
@@ -24,22 +22,17 @@ class EnviroPHat:
 #     def lsm303d(self):
 #         self.bmp = LSM303D(self.busi2c)
     def bmp280(self):
-        if self.bmp.chipIdRegister():
-            self.bmp.reset()
-            time.sleep(1)
-            self.bmp.configRegister(4, 4)
-            self.bmp.readCompensationRegister()
-            self.bmp.ctrlMeasureRegister(5, 5, 3)
-            mesuring, im_update = self.bmp.statusRegister()
-            while mesuring != 0:
-                mesuring, im_update = self.bmp.statusRegister()
-            self.bmp.rawMeasureRegister()
-            t = self.bmp.compensateT()
-            return t
+        self.bmp.ctrlMeasureRegister(5, 5, 3)
+        return self.bmp.compensateT()
 
-# try:
-#     i2c = PicoI2C(0, 4, 5)
+# import rp2
+# import machine
+# from picoi2c import PicoI2C
+# from muxi2c import MuxI2C
+# from pca9548a import PCA9548A
 # 
+# i2c = PicoI2C(0, 4, 5)
+# try:
 #     pca9548a = PCA9548A(0, i2c, 3)
 #     pca9548a.reset()
 #     time.sleep_ms(100)
@@ -48,14 +41,13 @@ class EnviroPHat:
 #     print(mux3.scan())
 # 
 #     tst = EnviroPHat(mux3, 2)
-# 
-#     print(tst.bmp280())
-# 
+#     tst.bmp280()
+
 #     tst.led.on()
 #     time.sleep(1)
 #     tst.led.off()
-# except:
-#     print("exception dans main !")
+# except Exception as erreur:
+#     print(type(erreur))    # the exception instance
+#     print(erreur)    # the exception instance
 # finally:
-#     test.pca9548a.clear()
-#     test.busi2c.deinit()
+#     pca9548a.clear()

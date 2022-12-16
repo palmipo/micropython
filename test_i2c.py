@@ -4,7 +4,6 @@ from picoi2c import PicoI2C
 from muxi2c import MuxI2C
 from pca9548a import PCA9548A
 # from is31fl3731 import IS31FL3731
-# from bmp280 import BMP280
 from ds1307 import DS1307
 # from ds1621 import DS1621
 # from mcp23017 import MCP23017
@@ -159,14 +158,15 @@ try:
         try:
             texte = " " + test.rtc.getDate() + "  " + test.rtc.getTime() + " "
             t = test.enviro.bmp280()
-            texte += "temperature : " + str(t) + "  "
+            texte += "TEMPERATURE : " + str(t) + "  "
             test.lcd.home()
             test.lcd.writeText(texte)
         except:
             print("exception")
         time.sleep_ms(100)
     print("FIN.")
-except:
-    print("exception dans main !")
+except Exception as inst:
+    print(type(inst))
+    print(inst)
 finally:
     test.pca9548a.clear()
