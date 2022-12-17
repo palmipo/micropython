@@ -13,8 +13,8 @@ from hd44780 import HD44780
 from pca9685 import PCA9685
 from antirebond import AntiRebond
 from envirophat import EnviroPHat
-# import onewire
-# import ds18x20
+import onewire
+import ds18x20
 import time
 import micropython
 micropython.alloc_emergency_exception_buf(100)
@@ -50,28 +50,29 @@ class Test_I2C:
             print(self.mux7.scan())
 
         self.code = AntiRebond(10, self.cb_bt)
+        self.led = machine.Pin(25, machine.Pin.OUT)
 
     def cb_bt(self):
         self.stop_bt = True
 
     def pca8596(self):
-        self.pca9685 = PCA9685(0, self.mux6)
+        self.pca9685 = PCA9685(0, self.mux3)
         self.pca9685.mode1(50)
         for i in range(0, 512):
             self.pca9685.allLed(0, i)
             time.sleep_ms(10)
         self.pca9685.allLedOff()
 
-    def onewire(self):
+    def unFil(self):
         self.ow = onewire.OneWire(machine.Pin(7)) # create a OneWire bus on GPIO12
         print (self.ow.scan())               # return a list of devices on the bus
         self.ow.reset()              # reset the bus
         self.ds = ds18x20.DS18X20(self.ow)
         roms = self.ds.scan()
         self.ds.convert_temp()
-#         for rom in roms:
-#             time.sleep(60)
-#             self.lcd.writeText(ds.read_temp(rom))
+        for rom in roms:
+            time.sleep(1)
+            self.lcd.writeText(str(self.ds.read_temp(rom)))
 
     def lcd2004(self):
         self.lcd_io = LCD2004(0, self.mux2)
@@ -82,7 +83,7 @@ class Test_I2C:
         self.lcd.writeText("Hello World !")
 
     def enviroPHat(self):
-        self.enviro = EnviroPHat(self.mux3, 2)
+        self.enviro = EnviroPHat(self.mux6, 2)
 
     def is313731(self):
         matrix = IS31FL3731(0, self.i2c)
@@ -130,29 +131,25 @@ class Test_I2C:
     def callbackDs1307(self, pin):
         state = machine.disable_irq()
         self.action_callback = True
+        self.enviro.led.toggle()
         machine.enable_irq(state)
 
     def ds1307(self):
         self.rtc = DS1307(0, self.mux7)
         self.rtc.setDate("14/12/22")
         self.rtc.setTime("20:06:30")
-        self.rtc.setSquareWave(1)
+        self.rtc.setSquareWave(0)
         self.rtc.setDayWeek(3)
 
         self.pin6 = machine.Pin(6, machine.Pin.IN, machine.Pin.PULL_UP)
         self.pin6.irq(self.callbackDs1307, machine.Pin.IRQ_FALLING, hard=True)
 
-    def led(self):
-        self.led = machine.Pin(25, machine.Pin.OUT)
-
 test = Test_I2C()
 try:
     test.lcd2004()
-    #test.onewire()
+    test.unFil()
     test.pca8596()
     test.enviroPHat()
-    test.lcd.clear()
-    test.lcd.writeText("Hello World !!!")
     test.ds1307()
     while test.stop_bt == False:
         try:
@@ -161,6 +158,7 @@ try:
             texte += "TEMPERATURE : " + str(t) + "  "
             test.lcd.home()
             test.lcd.writeText(texte)
+            test.led.toggle()
         except:
             print("exception")
         time.sleep_ms(100)
