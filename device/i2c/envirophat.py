@@ -1,6 +1,7 @@
 import time
 import machine
 from bmp280 import BMP280
+from lsm303d import LSM303D
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
@@ -9,11 +10,17 @@ class EnviroPHat:
         self.busi2c = i2c
         self.led = machine.Pin(led, machine.Pin.OUT)
         self.led.off()
-        self.bmp = BMP280(self.busi2c)
-        if self.bmp.chipIdRegister():
-            self.bmp.reset()
+        self.temperature = BMP280(self.busi2c)
+        if self.temperature.chipIdRegister():
+            self.temperature.reset()
             time.sleep(1)
-            self.bmp.configRegister(3, 4)
+            self.temperature.configRegister(3, 4)
+        self.gyro = LSM303D(self.busi2c)
+        print(self.gyro.who_am_i())
+        self.gyro.ctrl5(1, 0, 0, 0, 0)
+        for i in range(0, 10):
+            time.sleep(1)
+            print(self.gyro.temp_out())
 
 #     def ads1015(self):
 #         self.bmp = ADS1015(self.busi2c)
@@ -22,8 +29,8 @@ class EnviroPHat:
 #     def lsm303d(self):
 #         self.bmp = LSM303D(self.busi2c)
     def bmp280(self):
-        self.bmp.ctrlMeasureRegister(2, 5, 3)
-        return self.bmp.compensateT()
+        self.temperature.ctrlMeasureRegister(2, 5, 3)
+        return self.temperature.compensateT()
 
 # import rp2
 # import machine
@@ -41,7 +48,7 @@ class EnviroPHat:
 #     print(mux3.scan())
 # 
 #     tst = EnviroPHat(mux3, 2)
-#     tst.bmp280()
+#     print(tst.bmp280())
 
 #     tst.led.on()
 #     time.sleep(1)
