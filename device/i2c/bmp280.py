@@ -13,12 +13,17 @@ class BMP280(DeviceI2C):
         im_update = data[0] & 0x01
         return mesuring, im_update
     
+    # osrs_t x2  : 010b
+    # osrs_p x16 : 101b
+    # mode       : normal 11b
     def ctrlMeasureRegister(self, osrs_t, osrs_p, mode):
         buf = bytearray(2)
         buf[0] = 0xf4
         buf[1] = ((osrs_t & 0x07) << 5) | ((osrs_p & 0x07) << 2) | (mode & 0x02)
         self.busi2c.send(self.adresse, buf)
 
+    # t_sb   3
+    # filtre 16
     def configRegister(self, t_sb, filtre):
         buf = bytearray(2)
         buf[0] = 0xf5

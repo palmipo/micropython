@@ -13,7 +13,7 @@ class EnviroPHat:
         if self.bmp.chipIdRegister():
             self.bmp.reset()
             time.sleep(1)
-            self.bmp.configRegister(4, 4)
+            self.bmp.configRegister(3, 4)
 
 #     def ads1015(self):
 #         self.bmp = ADS1015(self.busi2c)
@@ -22,7 +22,7 @@ class EnviroPHat:
 #     def lsm303d(self):
 #         self.bmp = LSM303D(self.busi2c)
     def bmp280(self):
-        self.bmp.ctrlMeasureRegister(5, 5, 3)
+        self.bmp.ctrlMeasureRegister(2, 5, 3)
         return self.bmp.compensateT()
 
 # import rp2

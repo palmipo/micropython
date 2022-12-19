@@ -68,9 +68,9 @@ class Test_I2C:
         print (self.ow.scan())               # return a list of devices on the bus
         self.ow.reset()              # reset the bus
         self.ds = ds18x20.DS18X20(self.ow)
-        roms = self.ds.scan()
+        self.roms = self.ds.scan()
         self.ds.convert_temp()
-        for rom in roms:
+        for rom in self.roms:
             time.sleep(1)
             self.lcd.writeText(str(self.ds.read_temp(rom)))
 
