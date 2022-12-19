@@ -9,9 +9,9 @@ class LSM303D(DeviceI2C):
 
     def temp_out(self):
         cmd = bytearray(1)
-        cmd[0] = 0x05;
+        cmd[0] = 0x31;
         data = self.busi2c.transferer(self.adresse, cmd, 2)
-        return ((data[1] << 8) | data[0])
+        return ((data[0] << 4) | (data[0] >> 4))
 
 #odr : data rate selection -> 0 power-down / 9 normal
 # lpen : low power enable -> 0 normal mode
