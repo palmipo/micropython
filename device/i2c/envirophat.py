@@ -5,6 +5,11 @@ from lsm303d import LSM303D
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
+# 0x49: ADS1015
+# 0x29: TCS3472
+# 0x1d: LSM303D
+# 0x77: BMP280
+
 class EnviroPHat:
     def __init__(self, i2c, led):
         self.busi2c = i2c

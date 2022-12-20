@@ -167,4 +167,5 @@ except Exception as inst:
     print(type(inst))
     print(inst)
 finally:
+    test.rtc.setOut(0)
     test.pca9548a.clear()
