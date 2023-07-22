@@ -22,12 +22,12 @@ class ModbusMsg03(ModbusMsg):
         return bitBuffer
 
     def decode(self, bitBuffer):
-        super.decode(bitBuffer)
+        buffer = super.decode(bitBuffer)
         nb = Champ(1, 1)
-        Codec.decode(bitBuffer, nb)
+        Codec.decode(buffer, nb)
         offset = 3
         res = array('H')
         for (i=0, i<nb.__valeur; i++):
-            res[i] = Codec.decode(bitBuffer, Champ(offset, 2))
+            res[i] = Codec.decode(buffer, Champ(offset, 2))
             offset += 2
         return res

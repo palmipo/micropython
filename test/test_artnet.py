@@ -14,7 +14,7 @@ print(wlan.ifconfig())
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 print(sock)
-print(sock.connect(socket.getaddrinfo("192.168.10.10", 0x1936)[0][-1]))
+print(sock.connect(socket.getaddrinfo("192.168.10.12", 0x1936)[0][-1]))
 time.sleep(1)
 dmx = bytearray(530)
 dmx[0] = 0x41
@@ -36,17 +36,18 @@ dmx[15] = 0		# Net
 dmx[16] = 0x02	# LengthHi
 dmx[17] = 0x00	# Length
 
-for i in range(255):
-    dmx[18] = i
+#for i in range(255):
+i=128
+dmx[18] = i
 # dmx[19] = 0x00
 # dmx[20] = 0x00
 # dmx[21] = 0x00
 # dmx[22] = 0x00
-    dmx[23] = 0xFF - i
+dmx[23] = 0xFF - i
 # dmx[24] = 0x00
 # dmx[25] = 0x00
-    print(sock.send(dmx))
-    time.sleep(0.1)
+print(sock.send(dmx))
+time.sleep(0.1)
 print(sock.close())
 
 wlan.disconnect()

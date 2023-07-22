@@ -12,3 +12,6 @@ class ModbusMsg(ModbusHeader):
         Codec.encode(bitBuffer, Champ(buffer, 0, buffer.len))
         Codec.encode(bitBuffer, self.__msgId)
         return bitBuffer
+
+    def decode(self, bitBuffer):
+        super.decode(bitBuffer)
