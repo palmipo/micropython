@@ -1,4 +1,4 @@
-class Rs232:
+class BusSerial:
         
     def send(self, cmd):
         raise NotImplementedError

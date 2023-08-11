@@ -1,9 +1,20 @@
-from machine import UART
+from picouart import PicoUart
+from modbusrtu import ModbusRtu
+from modbusmsg03 import ModbusMsg03
+from modbusmsg06 import ModbusMsg06
+from modbusexception import ModbusException
 
-uart = machine.UART(0, baudrate = 9600)
-print("UART Info : ", uart)
-#print(uart.read())
-uart.write("hello world")
-#while 1 :
-#    texte = uart.read()
-#    print (texte)
+uart = PicoUart(9600)
+modbus = ModbusRtu(uart)
+
+print("UART Info : ", modbus)
+
+try:
+    msg1 = ModbusMsg03(0x01, modbus)
+    bitBuffer1 = msg1.readHoldingRegisters(2, 1)
+    print(bitBuffer1)
+
+    msg2 = ModbusMsg06(0x01, modbus)
+    msg2.presetSingleRegister(1, 0xFFF)
+except ModbusException as e:
+    print("exception ", e)
