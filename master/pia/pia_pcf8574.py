@@ -1,7 +1,7 @@
-from pia import PIA
+from buspia import BusPia
 from pcf8574 import PCF8574
 
-class PIA_PCF8574(PIA):
+class PIA_PCF8574(BusPia):
   def __init__(self, pcf8574):
     super().__init__()
     self.pcf8574 = pcf8574

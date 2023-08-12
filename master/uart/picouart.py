@@ -1,7 +1,7 @@
 from machine import UART, Pin
-from busserial import BusSerial
+from busuart import BusUart
 
-class PicoUart(BusSerial):
+class PicoUart(BusUart):
     def __init__(self, bdrate):
         self.__uart = UART(0, baudrate = bdrate, tx=Pin(0), rx=Pin(1))
         

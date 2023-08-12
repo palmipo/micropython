@@ -1,7 +1,7 @@
 import rp2
 from machine import Pin, PWM
 
-class PwmMaster:
+class BusPwm:
     def __init__(self, pin):
         self.pwm = PWM(Pin(pin))
 

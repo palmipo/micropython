@@ -1,4 +1,4 @@
-class PIA:
+class BusPia:
    
   def setOutput(self, value):
     raise NotImplementedError

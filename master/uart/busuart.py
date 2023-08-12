@@ -1,4 +1,4 @@
-class BusSerial:
+class BusUart:
         
     def send(self, cmd):
         raise NotImplementedError

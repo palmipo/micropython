@@ -1,7 +1,7 @@
-from pia import PIA
+from buspia import BusPia
 from mcp23017 import MCP23017
 
-class PIA_MCP23017(PIA):
+class PIA_MCP23017(BusPia):
   def __init__(self, port, pia):
     super().__init__()
     self.port = port
