@@ -1,5 +1,5 @@
 from modbusmsg import ModbusMsg
-from codec import Codec
+from modbuscodec import ModbusCodec
 
 class ModbusMsg03(ModbusMsg):
     def __init__(self, slaveId, bus):
@@ -7,8 +7,8 @@ class ModbusMsg03(ModbusMsg):
         self.__bus = bus
         
     def readHoldingRegisters(self, dataAdress, nbReg):
-        self.__adresse = Codec.Champ(dataAdress, 16, 16)
-        self.__nb = Codec.Champ(nbReg, 32, 16)
+        self.__adresse = ModbusCodec.Champ(dataAdress, 16, 16)
+        self.__nb = ModbusCodec.Champ(nbReg, 32, 16)
         sendBuffer = self.encode()
         recvBuffer = self.__bus.transfer(sendBuffer, 3 + 2 * nbReg)
         return self.decode(recvBuffer)
@@ -16,22 +16,23 @@ class ModbusMsg03(ModbusMsg):
     def encode(self):
         buffer = super().encode()
         bitBuffer = bytearray(4 + len(buffer))
-        for i in range(len(buffer)):
-            bitBuffer[i] = buffer[i]
-        codec = Codec()
+        bitBuffer[0:len(buffer)] = buffer
+        codec = ModbusCodec()
         codec.encode(bitBuffer, self.__adresse)
         codec.encode(bitBuffer, self.__nb)
         return bitBuffer
 
     def decode(self, bitBuffer):
+        print(bitBuffer, len(bitBuffer))
         super().decode(bitBuffer)
-        __nbReg = Codec.Champ(0x00, 16, 8)
-        codec = Codec()
+        __nbReg = ModbusCodec.Champ(0x00, 16, 8)
+        codec = ModbusCodec()
         codec.decode(bitBuffer, __nbReg)
-        res = [__nbReg.valeur()]
-        offset = 3
-        for i in range(__nbReg.valeur()):
-            chp = Codec.Champ(0x00, offset, 16)
-            res[i] = codec.decode(bitBuffer, chp)
-            offset += 2
+        print(__nbReg.valeur())
+        res = [] * (__nbReg.valeur()>>1)
+        offset = 24
+        for i in range(__nbReg.valeur() >> 1):
+            chp = ModbusCodec.Champ(0x00, offset, 16)
+            print(hex(codec.decode(bitBuffer, chp)))
+            offset += 16
         return res

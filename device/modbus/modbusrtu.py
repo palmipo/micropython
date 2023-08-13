@@ -1,5 +1,4 @@
-# from codec import Codec
-import crcmod
+from modbusexception import ModbusException
 
 class ModbusRtu:
     def __init__(self, rs485):
@@ -7,29 +6,27 @@ class ModbusRtu:
     
     def transfer(self, sendBuffer, recvLen):
         print(sendBuffer, len(sendBuffer))
-        crc = self.__calculCrc(sendBuffer)
+        crc = self.__calcul_crc(sendBuffer)
         print(crc)
-#         buffer = bytearray(len(sendBuffer) + 2)
-#         for i in range(len(sendBuffer)):
-#             buffer[i] = sendBuffer[i]
-#         for i in range(len(crc)):
-#             buffer[i + len(sendBuffer)] = crc[i]
+
+        buffer = bytearray(len(sendBuffer) + 2)
+        buffer[0:len(sendBuffer)] = sendBuffer
+        buffer[len(sendBuffer):] = crc
         
-#         recvBuffer = self.__rs485.transferer(buffer, 2 + recvLen)
-#         print(recvBuffer)
-#         buffer = bytearray(len(recvBuffer) - 2)
-#         for i in range(len(buffer)):
-#             buffer[i] = recvBuffer[i]
-#         crc1 = self.calculCrc(buffer)
-#         crc2 = bytearray(2)
-#         for i in range(2):
-#             crc2[i] = recvBuffer[i + len(buffer)]
-#         return buffer
+        recvBuffer = self.__rs485.transfer(buffer, recvLen + 2)
+        print(recvBuffer, len(recvBuffer), recvLen)
+
+        buffer = recvBuffer[0:recvLen]
+        crc1 = recvBuffer[recvLen:]
+        crc2 = self.__calcul_crc(buffer)
+        print(crc1, crc2)
+        if crc1 != crc2:
+            raise ModbusException
+        return buffer
         
-        def __calculCrc(self, bitBuffer):
-            crc16 = crcmod.mkCrcFun(0x18005, rev=False, initCrc=0xffff)
-            print(hex(crc16(bitBuffer)))
-    
-buffer = bytearray(b'\x11\x03\x00\x6B\x00x03')
-rtu = ModbusRtu(0)
-rtu.transfer(buffer, 9)
+    def __calcul_crc(self, bitBuffer):
+        return bytearray(b'\x49\xAD')
+
+# buffer = bytearray(b'\x11\x03\x00\x6B\x00x03')
+# rtu = ModbusRtu(0)
+# rtu.transfer(buffer, 9)

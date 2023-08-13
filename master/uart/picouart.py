@@ -11,9 +11,9 @@ class PicoUart(BusUart):
 
     def recv(self, n_byte):
         #rxData = self.__uart.read(n_byte)
-        rxData = bytearray(b'\x01\x03\x01\x00\x00\x00\x00\x00')
+        rxData = bytearray(b'\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD')
         return rxData
 
-    def transferer(self, cmd, n_byte):
+    def transfer(self, cmd, n_byte):
         self.send(cmd)
         return self.recv(n_byte)

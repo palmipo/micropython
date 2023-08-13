@@ -1,6 +1,6 @@
 import sys
 
-class Codec:
+class ModbusCodec:
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
             self.__bitDepart = bitDepart
@@ -50,13 +50,13 @@ class Codec:
         return champ.valeur()
 
 # buf  = bytearray(8)
-# chp1 = Codec.Champ(0x11, 0, 8)
-# chp2 = Codec.Champ(0x03, 8, 8)
-# chp3 = Codec.Champ(0x006B, 16, 16)
-# chp4 = Codec.Champ(0x0003, 32, 16)
-# crc  = Codec.Champ(0x7687, 48, 16)
+# chp1 = ModbusCodec.Champ(0x11, 0, 8)
+# chp2 = ModbusCodec.Champ(0x03, 8, 8)
+# chp3 = ModbusCodec.Champ(0x006B, 16, 16)
+# chp4 = ModbusCodec.Champ(0x0003, 32, 16)
+# crc  = ModbusCodec.Champ(0x7687, 48, 16)
 # 
-# codec = Codec()
+# codec = ModbusCodec()
 # codec.encode(buf, chp1)
 # codec.encode(buf, chp2)
 # codec.encode(buf, chp3)
