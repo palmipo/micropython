@@ -26,14 +26,14 @@ class ModbusMsg06(ModbusMsg):
 
     def decode(self, bitBuffer):
         super().decode(bitBuffer)
-        address = Codec.Champ(0x00, 16, 16)
-        data = Codec.Champ(0x00, 32, 16)
+        reg_address = Codec.Champ(0x00, 16, 16)
+        reg_data = Codec.Champ(0x00, 32, 16)
 
         codec = Codec()
-        codec.decode(bitBuffer, address)
-        codec.decode(bitBuffer, data)
-        if address.__valeur != self.__address.__valeur:
+        address = codec.decode(bitBuffer, reg_address)
+        data = codec.decode(bitBuffer, reg_data)
+        if address != self.__address.valeur():
             raise ModbusException()
-        if data.__valeur != self.__data.__valeur:
+        if data != self.__data.valeur():
             raise ModbusException()
 

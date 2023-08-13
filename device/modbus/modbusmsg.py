@@ -21,5 +21,5 @@ class ModbusMsg(ModbusHeader):
         msgId = Codec.Champ(0x00, 8, 8)
         codec = Codec()
         codec.decode(bitBuffer, msgId)
-        if msgId.__valeur != self.__msgId.__valeur:
+        if msgId.valeur() != self.__msgId.valeur():
             raise ModbusException()
