@@ -23,7 +23,6 @@ class ModbusMsg03(ModbusMsg):
         return bitBuffer
 
     def decode(self, bitBuffer):
-        print(bitBuffer, len(bitBuffer))
         super().decode(bitBuffer)
         __nbReg = ModbusCodec.Champ(0x00, 16, 8)
         codec = ModbusCodec()
