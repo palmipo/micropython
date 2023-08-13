@@ -28,7 +28,7 @@ class ModbusMsg03(ModbusMsg):
         __nbReg = ModbusCodec.Champ(0x00, 16, 8)
         codec = ModbusCodec()
         codec.decode(bitBuffer, __nbReg)
-        print(__nbReg.valeur())
+
         res = [] * (__nbReg.valeur()>>1)
         offset = 24
         for i in range(__nbReg.valeur() >> 1):
