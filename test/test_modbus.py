@@ -1,10 +1,15 @@
 from picouart import PicoUart
 from modbusrtu import ModbusRtu
+from modbusexception import ModbusException
 from modbusmsg03 import ModbusMsg03
+from modbusmsg06 import ModbusMsg06
 
 
-rs485 = PicoUart(9600)
+rs485 = PicoUart(0)
 rtu = ModbusRtu(rs485)
-msg = ModbusMsg03(0x11, rtu)
-io = msg.readHoldingRegisters(0x006B, 3)
-print(io)
+fc03 = ModbusMsg03(0X1, rtu)
+io = fc03.readHoldingRegisters(0, 2)
+print(io[0])
+print(io[1])
+# fc06 = ModbusMsg06(0x4, rtu)
+# io = fc06.presetSingleRegister(0x0003, 0X0601)

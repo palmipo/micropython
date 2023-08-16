@@ -22,4 +22,6 @@ class ModbusMsg(ModbusHeader):
         codec = ModbusCodec()
         codec.decode(bitBuffer, msgId)
         if msgId.valeur() != self.__msgId.valeur():
-            raise ModbusException
+            raise ModbusException('msgId different de celui emis')
+        if (msgId.valeur() & 0x80) != 0x00:
+            raise ModbusException('msgId d\'erreur')

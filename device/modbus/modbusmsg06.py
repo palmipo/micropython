@@ -7,7 +7,7 @@ class ModbusMsg06(ModbusMsg):
         self.__bus = bus
         
     def presetSingleRegister(self, dataAdress, data):
-        self.__adresse = ModbusCodec.Champ(dataAdress, 16, 16)
+        self.__address = ModbusCodec.Champ(dataAdress, 16, 16)
         self.__data = ModbusCodec.Champ(data, 32, 16)
         sendBuffer = self.encode()
         recvBuffer = self.__bus.transfer(sendBuffer, 6)
@@ -19,7 +19,7 @@ class ModbusMsg06(ModbusMsg):
         bitBuffer[0:len(buffer)] = buffer
 
         codec = ModbusCodec()
-        codec.encode(bitBuffer, self.__adresse)
+        codec.encode(bitBuffer, self.__address)
         codec.encode(bitBuffer, self.__data)
         return bitBuffer
 

@@ -17,6 +17,7 @@ class ModbusMsg03(ModbusMsg):
         buffer = super().encode()
         bitBuffer = bytearray(4 + len(buffer))
         bitBuffer[0:len(buffer)] = buffer
+        
         codec = ModbusCodec()
         codec.encode(bitBuffer, self.__adresse)
         codec.encode(bitBuffer, self.__nb)
@@ -24,14 +25,15 @@ class ModbusMsg03(ModbusMsg):
 
     def decode(self, bitBuffer):
         super().decode(bitBuffer)
-        __nbReg = ModbusCodec.Champ(0x00, 16, 8)
-        codec = ModbusCodec()
-        codec.decode(bitBuffer, __nbReg)
+        nbReg = ModbusCodec.Champ(0x00, 16, 8)
 
-        res = [] * (__nbReg.valeur()>>1)
+        codec = ModbusCodec()
+        codec.decode(bitBuffer, nbReg)
+
+        res = bytearray(nbReg.valeur()>>1)
         offset = 24
-        for i in range(__nbReg.valeur() >> 1):
+        for i in range(nbReg.valeur() >> 1):
             chp = ModbusCodec.Champ(0x00, offset, 16)
-            print(hex(codec.decode(bitBuffer, chp)))
+            res[i] = codec.decode(bitBuffer, chp)
             offset += 16
         return res

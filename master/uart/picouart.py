@@ -2,8 +2,9 @@ from machine import UART, Pin
 from busuart import BusUart
 
 class PicoUart(BusUart):
-    def __init__(self, bdrate):
-        self.__uart = UART(0, baudrate = bdrate, tx=Pin(0), rx=Pin(1))
+    def __init__(self, bus):
+        self.__uart = UART(bus, baudrate=9600)
+        self.__uart.init(9600, bits=8, parity=None, stop=1)
         
     def send(self, cmd):
         self.__uart.write(cmd)
