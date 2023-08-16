@@ -37,3 +37,6 @@ class Elexol:
 		mac = rsp[0:10]
 		firmware = rsp[11:12]
 		return mac, firmware
+
+io = Elexol()
+print(io.identifyIO24Units())
