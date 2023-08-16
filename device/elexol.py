@@ -36,3 +36,4 @@ class Elexol:
 		rsp = self.__socket.recv(12)
 		mac = rsp[0:10]
 		firmware = rsp[11:12]
+		return mac, firmware
