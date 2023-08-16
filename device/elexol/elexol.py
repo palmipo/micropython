@@ -38,5 +38,5 @@ class Elexol:
 		firmware = rsp[11:12]
 		return mac, firmware
 
-io = Elexol()
+io = Elexol("192.168.10.10")
 print(io.identifyIO24Units())
