@@ -5,7 +5,7 @@ class ModbusMsg03(ModbusMsg):
     def __init__(self, slaveId, bus):
         super().__init__(slaveId, 0x03)
         self.__bus = bus
-        
+
     def readHoldingRegisters(self, dataAdress, nbReg):
         self.__adresse = ModbusCodec.Champ(dataAdress, 16, 16)
         self.__nb = ModbusCodec.Champ(nbReg, 32, 16)
@@ -17,7 +17,7 @@ class ModbusMsg03(ModbusMsg):
         buffer = super().encode()
         bitBuffer = bytearray(4 + len(buffer))
         bitBuffer[0:len(buffer)] = buffer
-        
+
         codec = ModbusCodec()
         codec.encode(bitBuffer, self.__adresse)
         codec.encode(bitBuffer, self.__nb)
@@ -30,10 +30,10 @@ class ModbusMsg03(ModbusMsg):
         codec = ModbusCodec()
         codec.decode(bitBuffer, nbReg)
 
-        res = bytearray(nbReg.valeur()>>1)
+        res = []
         offset = 24
         for i in range(nbReg.valeur() >> 1):
             chp = ModbusCodec.Champ(0x00, offset, 16)
-            res[i] = codec.decode(bitBuffer, chp)
+            res.append(codec.decode(bitBuffer, chp))
             offset += 16
         return res
