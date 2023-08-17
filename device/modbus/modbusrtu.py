@@ -23,7 +23,7 @@ class ModbusRtu:
         crc1 = recvBuffer[recvLen:]
         crc2 = self.__calcul_crc(buffer)
         if crc1 != crc2:
-            raise ModbusException("crc calculer different du crc recu !")
+            raise ModbusException("crc calcule different du crc recu !")
 
         return buffer
         
