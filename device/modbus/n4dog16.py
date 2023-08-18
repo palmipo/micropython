@@ -2,12 +2,11 @@ from modbusrtu import ModbusRtu
 from modbusexception import ModbusException
 from modbusmsg03 import ModbusMsg03
 from modbusmsg06 import ModbusMsg06
+from eletechsup import Eletechsup
 
-
-class N4DOG16:
+class N4DOG16(Eletechsup):
     def __init__(self, modbusId, rtu):
-        self.__modbusId = modbusId
-        self.__rtu = rtu
+        super().__init__(modbusId, rtu)
 
     def read(self, voie):
         fc03 = ModbusMsg03(self.__modbusId, self.__rtu)

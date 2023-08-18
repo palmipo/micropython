@@ -4,11 +4,15 @@ from modbusexception import ModbusException
 from modbusmsg03 import ModbusMsg03
 from modbusmsg06 import ModbusMsg06
 from r4dcb08 import R4DCB08
+from n4dog16 import N4DOG16
 
-rs485 = PicoUart(1)
-rtu = ModbusRtu(rs485)
-temperature = R4DCB08(1, rtu)
+rs1 = PicoUart(1)
+rtu1 = ModbusRtu(rs1)
+temperature = R4DCB08(1, rtu1)
 print(temperature.read(1)[0]/10)
 print(temperature.readAll())
-# fc03 = ModbusMsg03(0xff, rtu)
-# print("adresse module : " + fc03.readHoldingRegisters(0x00FE, 0x0001))
+
+rs0 = PicoUart(0)
+rtu0 = ModbusRtu(rs0)
+relay = N4DOG16(4, rtu0)
+relay.latch(4)
