@@ -2,7 +2,7 @@ import socket
 
 class ArtNet:
 
-	def __init__(self, protocol, portPysique, univers):
+	def __init__(self, protocol, portPhysique, univers):
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		trameDmx = bytearray(530)
 		trameDmx[0] = 'A'
@@ -18,7 +18,7 @@ class ArtNet:
 		trameDmx[10] = 0
 		trameDmx[11] = 0x0E
 		trameDmx[12] = 0
-		trameDmx[13] = portPysique & 0xFF
+		trameDmx[13] = portPhysique & 0xFF
 		trameDmx[14] = (univers & 0xFF00) >> 8
 		trameDmx[15] = (univers & 0x00FF)
 		trameDmx[16] = 0x02

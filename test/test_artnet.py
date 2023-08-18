@@ -13,7 +13,6 @@ time.sleep(5)
 print(wlan.ifconfig())
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-print(sock)
 print(sock.connect(socket.getaddrinfo("192.168.10.12", 0x1936)[0][-1]))
 time.sleep(1)
 dmx = bytearray(530)
