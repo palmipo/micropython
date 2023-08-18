@@ -11,9 +11,9 @@ class R4DCB08:
 
     def read(self, voie):
         fc03 = ModbusMsg03(self.__modbusId, self.__rtu)
-        return fc03.readHoldingRegisters(voie & 0x0F, 2)
+        return fc03.readHoldingRegisters(voie & 0x0F, 1)
 
     def readAll(self):
         fc03 = ModbusMsg03(self.__modbusId, self.__rtu)
-        return fc03.readHoldingRegisters(0, 16)
+        return fc03.readHoldingRegisters(0, 8)
 
