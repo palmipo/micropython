@@ -1,4 +1,4 @@
-class BusI2C:
+class I2CBus:
     
     def scan(self):
         raise NotImplementedError
@@ -9,5 +9,5 @@ class BusI2C:
     def recv(self, addr, n_byte):
         raise NotImplementedError
     
-    def transferer(self, addr, cmd, n_byte):
+    def transfer(self, addr, cmd, n_byte):
         raise NotImplementedError

@@ -1,4 +1,4 @@
-class Relay:
+class RelayBus:
     
     def read(self, voie):
         raise NotImplementedError

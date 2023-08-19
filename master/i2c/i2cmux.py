@@ -1,6 +1,6 @@
-from busi2c import BusI2C
-import time
-class MuxI2C(BusI2C):
+from i2cbus import I2CBus
+
+class I2CMux(I2CBus):
 
     def __init__(self, voie, pca9548a, i2c):
         super().__init__()

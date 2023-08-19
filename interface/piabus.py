@@ -1,4 +1,4 @@
-class BusPia:
+class PiaBus:
    
   def setOutput(self, value):
     raise NotImplementedError

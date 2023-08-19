@@ -1,8 +1,8 @@
 import rp2
 from machine import Pin, I2C
-from busi2c import BusI2C
+from i2cbus import I2CBus
 
-class PicoI2C(BusI2C):
+class I2CPico(I2CBus):
     def __init__(self, n_bus, sda_pin, scl_pin):
       super().__init__()
       self.busi2c = I2C(id=n_bus, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=400000)

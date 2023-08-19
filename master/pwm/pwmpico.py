@@ -1,12 +1,14 @@
 import rp2
 from machine import Pin, PWM
+from pwmbus import PwmBus
 
-class BusPwm:
+class PwmPico(PwmBus):
     def __init__(self, pin):
         self.pwm = PWM(Pin(pin))
 
     def setFrequency(self, freq):
-        pwm.periode(1/freq)
+        self.periode = 1/freq
+        self.pwm.periode(self.periode)
         
     def setDuty(self, pourcentage):
-        pwm.duty_ns(pourcentage * self.periode / 100)
+        self.pwm.duty_ns(pourcentage * self.periode / 100)
