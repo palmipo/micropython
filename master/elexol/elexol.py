@@ -43,6 +43,14 @@ class Elexol:
         cmd[2] = value & 0xFF
         self.__socket.send(cmd)
 
+    def getPullUpPort(self, port):
+        cmd = bytearray(2)
+        cmd[0] = 0x40
+        cmd[1] = 0x61 + (port & 0x03)
+        self.__socket.send(cmd)
+        rsp = self.__socket.recv(3)
+        return rsp[2]
+
     def setThreasholdPort(self, port, value):
         cmd = bytearray(3)
         cmd[0] = 0x23
@@ -50,12 +58,28 @@ class Elexol:
         cmd[2] = value & 0xFF
         self.__socket.send(cmd)
 
+    def getThreasholdPort(self, port):
+        cmd = bytearray(2)
+        cmd[0] = 0x23
+        cmd[1] = 0x61 + (port & 0x03)
+        self.__socket.send(cmd)
+        rsp = self.__socket.recv(3)
+        return rsp[2]
+
     def setSchmittPort(self, port, value):
         cmd = bytearray(3)
         cmd[0] = 0x24
         cmd[1] = 0x41 + (port & 0x03)
         cmd[2] = value & 0xFF
         self.__socket.send(cmd)
+
+    def getSchmittPort(self, port):
+        cmd = bytearray(2)
+        cmd[0] = 0x24
+        cmd[1] = 0x61 + (port & 0x03)
+        self.__socket.send(cmd)
+        rsp = self.__socket.recv(3)
+        return rsp[2]
     
     def identifyIO24Units(self):
         cmd = b'\x49\x4F\x32\x34'
