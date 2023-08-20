@@ -30,11 +30,11 @@ class ElexolRelay(RelayBus):
     def momentary(self, voie):
         val = self.__elexol.readPort(self.__port)
         self.__elexol.writePort(self.__port, val | (1 << voie))
-        time.delay(1)
+        time.sleep(1)
         self.__elexol.writePort(self.__port, val & ~(1 << voie))
 
     def delay(self, voie, tempo):
         val = self.__elexol.readPort(self.__port)
         self.__elexol.writePort(self.__port, val | (1 << voie))
-        time.ms_delay(tempo)
+        time.sleep_ms(tempo)
         self.__elexol.writePort(self.__port, val & ~(1 << voie))

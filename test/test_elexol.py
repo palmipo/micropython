@@ -11,8 +11,9 @@ io.setDirectionPort(0, 0xff)
 io.setDirectionPort(1, 0)
 io.setDirectionPort(2, 0)
 
+print(hex(io.readPort(0)))
+
 relay = ElexolRelay(io, 2)
 relay.momentary(2)
-
 io.deconnexion()
 
