@@ -1,109 +1,107 @@
+from piabus import PiaBus
+import framebuf
+
 int32_t TEMPO = 100
 int32_t TEMPO_1_2 = 50
 
-class HC1632:
+class HC1632(framebuf.FrameBuffer):
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
         self._data_pin = data_pin
         self._write_pin = write_pin
         self._cs_pin = cs_pin
 
-        self._write_pin.value(1)
-        self._data_pin.value(1)
-        self._cs_pin.value(1)
+        self._write_pin.setOutput(1)
+        self._data_pin.setOutput(1)
+        self._cs_pin.setOutput(1)
 
         self.init(master_mode)
 
+        self.width = 16
+        self.height = 24
+        self.buffer = bytearray(self.height * self.width)
+        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+
 
     def write_chipselect(self, valeur):
-        self._cs_pin.value(valeur?0:1)
+        self._cs_pin.setOutput(valeur?0:1)
         time.sleep_ms(TEMPO)
-
-
 
     def write_bit(valeur):
 
-        self._write_pin.value(0)
+        self._write_pin.setOutput(0)
         time.sleep_ms(TEMPO_1_2)
 
-        self._data_pin.value(valeur?1:0)
+        self._data_pin.setOutput(valeur?1:0)
         time.sleep_ms(TEMPO_1_2)
 
-        self._write_pin.value(1)
+        self._write_pin.setOutput(1)
         time.sleep_ms(TEMPO)
 
+    def write_sys(on):
 
+        write_chipselect(1)
 
-def write_sys(on):
+        write_bit(1)
+        write_bit(0)
+        write_bit(0)
 
-    write_chipselect(1)
+        write_bit(0)
+        write_bit(0)
+        write_bit(0)
+        write_bit(0)
 
-    write_bit(1)
-    write_bit(0)
-    write_bit(0)
+        write_bit(0)
+        write_bit(0)
+        write_bit(0)
+        write_bit(on)
 
-    write_bit(0)
-    write_bit(0)
-    write_bit(0)
-    write_bit(0)
+        write_bit(0)
 
-    write_bit(0)
-    write_bit(0)
-    write_bit(0)
-    write_bit(on)
+        write_chipselect(0)
 
-    write_bit(0)
+    def write_com_option(config):
 
-    write_chipselect(0)
+        write_chipselect(1)
 
+        write_bit(1)
+        write_bit(0)
+        write_bit(0)
 
+        write_bit(0)
+        write_bit(0)
+        write_bit(1)
+        write_bit(0)
 
-def write_com_option(config):
+        write_bit(config & 0x02) // a
+        write_bit(config & 0x01) // b
+        write_bit(0)
+        write_bit(0)
 
-    write_chipselect(1)
+        write_bit(0)
 
-    write_bit(1)
-    write_bit(0)
-    write_bit(0)
+        write_chipselect(0)
 
-    write_bit(0)
-    write_bit(0)
-    write_bit(1)
-    write_bit(0)
+    def write_mode(mode):
 
-    write_bit(config & 0x02) // a
-    write_bit(config & 0x01) // b
-    write_bit(0)
-    write_bit(0)
+        write_chipselect(1)
 
-    write_bit(0)
+        write_bit(1)
+        write_bit(0)
+        write_bit(0)
 
-    write_chipselect(0)
+        write_bit(0)
+        write_bit(0)
+        write_bit(0)
+        write_bit(1)
 
+        write_bit(mode)
+        write_bit(0)
+        write_bit(0)
+        write_bit(0)
 
+        write_bit(0)
 
-def write_mode(mode):
-
-    write_chipselect(1)
-
-    write_bit(1)
-    write_bit(0)
-    write_bit(0)
-
-    write_bit(0)
-    write_bit(0)
-    write_bit(0)
-    write_bit(1)
-
-    write_bit(mode)
-    write_bit(0)
-    write_bit(0)
-    write_bit(0)
-
-    write_bit(0)
-
-    write_chipselect(0)
-
-
+        write_chipselect(0)
 
     def write_led(on):
 
@@ -127,8 +125,6 @@ def write_mode(mode):
 
         write_chipselect(0)
 
-
-
     def write_blink(on):
 
         write_chipselect(1)
@@ -151,8 +147,6 @@ def write_mode(mode):
 
         write_chipselect(0)
 
-
-
     def write_led_pwm(intensity):
 
         write_chipselect(1)
@@ -174,8 +168,6 @@ def write_mode(mode):
         write_bit(0)
 
         write_chipselect(0)
-
-
 
     def write_led_buffer(buffer)
 
@@ -201,8 +193,6 @@ def write_mode(mode):
 
         write_chipselect(0)
 
-
-
     def write_led_pixel(quartet, buffer):
 
         write_chipselect(1)
@@ -222,7 +212,6 @@ def write_mode(mode):
             write_bit(buffer & (1<<i))
 
         write_chipselect(0)
-
 
     def init(master_mode):
 

@@ -24,14 +24,11 @@ class SAA1064(DeviceI2C):
         self.busi2c.send(self.adresse, cmd)
 
     def set(self, texte):
-        cpt = 0
-
-        for i in range(0, len(texte)):
-            valeur = self.transformation(texte[cpt])
-            if ((cpt+1) < len(texte)) && (texte[cpt + 1] == '.'):
-                valeur = valeur | 0x80
-            self.setDigit(i, valeur)
-            cpt += 1
+        i = 0
+        afficheur = bytearray(4)
+        for i in range(len(texte)):
+            afficheur[i] = self.transformation(texte[i])
+            self.setDigit(i, afficheur[i])
 
     def transformation(self, valeur):
         switch={
