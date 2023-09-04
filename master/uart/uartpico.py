@@ -2,9 +2,9 @@ from machine import UART
 from uartbus import UartBus
 
 class UartPico(UartBus):
-    def __init__(self, bus):
-        self.__uart = UART(bus, baudrate=9600)
-        self.__uart.init(9600, bits=8, parity=None, stop=1)
+    def __init__(self, bus, bdrate, pinTx, pinRx):
+        self.__uart = UART(bus, baudrate=bdrate, tx=Pin(pinTx), rx=Pin(pinRx))
+        self.__uart.init(bdrate, bits=8, parity=None, stop=1)
         
     def send(self, cmd):
         self.__uart.write(cmd)
