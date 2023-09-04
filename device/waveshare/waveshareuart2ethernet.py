@@ -4,8 +4,8 @@ import time
 class WaveshareUart2Ethernet(UartPico):
     def __init__(self, bus, pinCFG, pinReset):
         super().__init(bus)
-        self.pinCFG = Pin(pinCFG, Pin.OUT,Pin.PULL_UP)
-        self.pinRST = Pin(pinReset, Pin.OUT,Pin.PULL_UP)
+        self.pinCFG = Pin(pinCFG, Pin.OUT, Pin.PULL_UP)
+        self.pinRST = Pin(pinReset, Pin.OUT, Pin.PULL_UP)
         self.pinCFG.value(1)
         self.pinRST.value(1)
 
