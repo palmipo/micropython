@@ -5,7 +5,7 @@ import socket
 
 #wlan = network.WLAN(network.STA_IF)
 #wlan.active(True)
-#wlan.connect('batrahome', 'grenouillette-27')
+#wlan.connect('xxxx', 'xxxx')
 #while not wlan.isconnected() and wlan.status() >= 0:
 #  print("Waiting to connect:")
 #  time.sleep(1)

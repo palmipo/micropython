@@ -1,4 +1,18 @@
 from devicei2c import DeviceI2C
+import framebuf
+
+class ScrollPHatHd(framebuf.FrameBuffer):
+    def __init__(self, matrice):
+        self.width = 17
+        self.height = 7
+        self.pages = 8
+        self.matrice = matrice
+        self.buffer = bytearray(self.pages * self.width)
+        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+
+    def show(self):
+        for (b in self.buffer):
+        self.matrice.frameRegister(0, )
 
 class IS31FL3731(DeviceI2C):
 
