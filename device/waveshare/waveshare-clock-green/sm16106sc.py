@@ -1,12 +1,13 @@
 import rp2
+import time
 from machine import Pin
 
 class SM16106SC:
-    def __init__(self, pinSDI, pinLE, pinCLK, pinOE_):
-        self.pinSDI = Pin(pinSDI, Pin.out)
-        self.pinLE = Pin(pinLE, Pin.out)
-        self.pinCLK = Pin(pinCLK, Pin.out)
-        self.pinOE_ = Pin(pinOE_, Pin.out)
+    def __init__(self, pinCLK, pinSDI, pinLE, pinOE_):
+        self.pinSDI = Pin(pinSDI, Pin.OUT)
+        self.pinLE = Pin(pinLE, Pin.OUT)
+        self.pinCLK = Pin(pinCLK, Pin.OUT)
+        self.pinOE_ = Pin(pinOE_, Pin.OUT)
 
         self.pinSDI.off()
         self.pinCLK.off()
@@ -20,20 +21,21 @@ class SM16106SC:
 
         for b in data:
             for i in range(8):  
-                self.pinCLK.off()
+                self.pinCLK.value(0)
+                time.sleep_us(1)
                 self.pinSDI.value(b & 0x01)
-                self.pinCLK.on()
+                self.pinCLK.value(1)
                 b = b >> 1
-                timer.sleep_us(1)
+                time.sleep_us(1)
 
-        self.pinCLK.off()
+        self.pinCLK.value(0)
 
     def latch(self):
         self.pinLE.on()
-        timer.sleep_us(1)
+        #""time.sleep_us(1)
         self.pinLE.off()
 
     def OutputEnabled(self):
         self.pinOE_.off()
-        timer.sleep_us(1)
+        #time.sleep_us(1)
         self.pinOE_.on()
