@@ -32,10 +32,11 @@ class SM16106SC:
 
     def latch(self):
         self.pinLE.on()
-        #""time.sleep_us(1)
+        time.sleep_us(1)
         self.pinLE.off()
 
-    def OutputEnabled(self):
+    def OutputEnable(self):
         self.pinOE_.off()
-        #time.sleep_us(1)
+
+    def OutputDisable(self):
         self.pinOE_.on()
