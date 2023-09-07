@@ -10,10 +10,9 @@ class WaveshareClockGreen:
         self.i2c = I2CPico(1, 6, 7)
         #self.rtc = DS3231(0, i2c, 3)
 
-        self.row.setChannel(0x00)
-        data = b'\0xFF\0xFF'
-        self.column.send(data)
-        self.column.latch()
-        self.column.OutputEnabled()
-
 clock = WaveshareClockGreen()
+clock.row.setChannel(0x07)
+data = b'\0xFF\0xFF\0xFF\0xFF'
+clock.column.send(data)
+clock.column.latch()
+clock.column.OutputEnable()
