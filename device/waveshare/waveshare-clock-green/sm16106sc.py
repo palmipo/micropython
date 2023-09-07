@@ -15,24 +15,22 @@ class SM16106SC:
         self.pinOE_.on()
 
     def send(self, data):
-        self.pinOE_.on()
-        self.pinLE.off()
-        self.pinCLK.off()
+        self.pinCLK.value(0)
 
         for b in data:
             for i in range(8):  
                 self.pinCLK.value(0)
-                time.sleep_us(1)
+                
                 self.pinSDI.value(b & 0x01)
                 self.pinCLK.value(1)
+
                 b = b >> 1
-                time.sleep_us(1)
 
         self.pinCLK.value(0)
 
     def latch(self):
         self.pinLE.on()
-        time.sleep_us(1)
+        #time.sleep_us(1)
         self.pinLE.off()
 
     def OutputEnable(self):
