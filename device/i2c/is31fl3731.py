@@ -7,17 +7,22 @@ class ScrollPHatHd(framebuf.FrameBuffer):
         self.height = 7
         self.pages = 8
         self.matrice = matrice
-        self.buffer = bytearray(self.pages * self.width)
-        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+        self.buffer = bytearray(self.width * self.height)
+        super().__init__(self.buffer, self.width, self.height, framebuf.GS8)
 
     def show(self):
-        for (b in self.buffer):
-        self.matrice.frameRegister(0, )
+        self.matrice.show(buffer)
 
 class IS31FL3731(DeviceI2C):
 
     def __init__(self, address, bus):
         super().__init__(0x74 | (address & 0x03), bus)
+
+    def show(self  buffer):
+        data = byetarray(1 + len(buffer))
+        data[0] = 0x24
+        data[1:] = buffer
+        self.busi2c.send(self.adresse, data)
 
     def frameRegister(self, page, led, blink, pwm):
         buf = bytearray(2)
@@ -26,16 +31,14 @@ class IS31FL3731(DeviceI2C):
         self.busi2c.send(self.adresse, buf)
 
         data1 = bytearray(37)
-        data1[0] = 0
-        for i in range(0, 18):
-            data1[i+1] = led[i]
-            data1[i+19] = blink[i]
+        data1[0] = 0x00
+        data1[1:] = led
+        data1[19:] = blink
         self.busi2c.send(self.adresse, data1)
 
         data2 = bytearray(145)
         data2[0] = 0x24
-        for i in range(0, 144):
-            data2[i+1] = pwm[i]
+        data2[1:] = pwm
         self.busi2c.send(self.adresse, data2)
 
     def configurationRegister(self, mode, fs):
