@@ -18,24 +18,37 @@ class IS31FL3731(DeviceI2C):
     def __init__(self, address, bus):
         super().__init__(0x74 | (address & 0x03), bus)
 
-    def show(self  buffer):
+    def show(self, buffer):
         data = byetarray(1 + len(buffer))
         data[0] = 0x24
         data[1:] = buffer
         self.busi2c.send(self.adresse, data)
 
     def frameRegister(self, page, led, blink, pwm):
+        self.pageRegister(page)
+        self.ledRegister(led)
+        self.blinkRegister(blink)
+        self.pwmRegister(pwm)
+    
+    def pageRegister(self, page):
         buf = bytearray(2)
         buf[0] = 0xfd
         buf[1] = page & 0x07
         self.busi2c.send(self.adresse, buf)
 
-        data1 = bytearray(37)
+    def ledRegister(self, led):
+        data1 = bytearray(19)
         data1[0] = 0x00
         data1[1:] = led
-        data1[19:] = blink
         self.busi2c.send(self.adresse, data1)
 
+    def blinkRegister(self, blink):
+        data1 = bytearray(19)
+        data1[0] = 0x19
+        data1[1:] = blink
+        self.busi2c.send(self.adresse, data1)
+
+    def pwmRegister(self, pwm):
         data2 = bytearray(145)
         data2[0] = 0x24
         data2[1:] = pwm
