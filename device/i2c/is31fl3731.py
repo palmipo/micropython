@@ -11,18 +11,12 @@ class ScrollPHatHd(framebuf.FrameBuffer):
         super().__init__(self.buffer, self.width, self.height, framebuf.GS8)
 
     def show(self):
-        self.matrice.show(buffer)
+        self.matrice.pwmRegister(buffer)
 
 class IS31FL3731(DeviceI2C):
 
     def __init__(self, address, bus):
         super().__init__(0x74 | (address & 0x03), bus)
-
-    def show(self, buffer):
-        data = byetarray(1 + len(buffer))
-        data[0] = 0x24
-        data[1:] = buffer
-        self.busi2c.send(self.adresse, data)
 
     def frameRegister(self, page, led, blink, pwm):
         self.pageRegister(page)
