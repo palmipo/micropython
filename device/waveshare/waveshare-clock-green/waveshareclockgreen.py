@@ -11,24 +11,18 @@ class WaveshareClockGreen:
         self.i2c = I2CPico(1, 6, 7)
         #self.rtc = DS3231(0, i2c, 3)
 
-buffer = bytearray(22 * 7)
-frame = framebuf.FrameBuffer(buffer, 22, 7, framebuf.MONO_HLSB)
-frame.text('H', 0, 0)
-data = [bytearray(4), bytearray(4), bytearray(4), bytearray(4), bytearray(4), bytearray(4), bytearray(4), bytearray(4)]
+buffer = bytearray(24 * 8)
+#frame = framebuf.FrameBuffer(buffer, 24, 8, framebuf.MONO_HLSB)
+#frame.text('H', 0, 1)
+#frame.fill(2)
+
+print(buffer)
+
 clock = WaveshareClockGreen()
 clock.column.OutputEnable()
-j = 0
-for i in range(1,8):
-    data[i][0] = buffer[j]
-    j+=1
-    data[i][1] = buffer[j]
-    j+=1
-    data[i][2] = buffer[j]
-    j+=1
-    data[i][3] = 0x00
 
 while True:
     for i in range(8):
-        clock.column.send(data[i])
+        clock.column.send(buffer[i*24:i*24+24])
         clock.row.setChannel(i)
         clock.column.latch()

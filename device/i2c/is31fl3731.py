@@ -1,17 +1,4 @@
 from devicei2c import DeviceI2C
-import framebuf
-
-class ScrollPHatHd(framebuf.FrameBuffer):
-    def __init__(self, matrice):
-        self.width = 17
-        self.height = 7
-        self.pages = 8
-        self.matrice = matrice
-        self.buffer = bytearray(self.width * self.height)
-        super().__init__(self.buffer, self.width, self.height, framebuf.GS8)
-
-    def show(self):
-        self.matrice.pwmRegister(buffer)
 
 class IS31FL3731(DeviceI2C):
 
@@ -31,22 +18,22 @@ class IS31FL3731(DeviceI2C):
         self.busi2c.send(self.adresse, buf)
 
     def ledRegister(self, led):
-        data1 = bytearray(19)
-        data1[0] = 0x00
-        data1[1:] = led
-        self.busi2c.send(self.adresse, data1)
+        buf = bytearray(19)
+        buf[0] = 0x00
+        buf[1:] = led
+        self.busi2c.send(self.adresse, buf)
 
     def blinkRegister(self, blink):
-        data1 = bytearray(19)
-        data1[0] = 0x19
-        data1[1:] = blink
-        self.busi2c.send(self.adresse, data1)
+        buf = bytearray(19)
+        buf[0] = 0x19
+        buf[1:] = blink
+        self.busi2c.send(self.adresse, buf)
 
     def pwmRegister(self, pwm):
-        data2 = bytearray(145)
-        data2[0] = 0x24
-        data2[1:] = pwm
-        self.busi2c.send(self.adresse, data2)
+        buf = bytearray(145)
+        buf[0] = 0x24
+        buf[1:] = pwm
+        self.busi2c.send(self.adresse, buf)
 
     def configurationRegister(self, mode, fs):
         buf = bytearray(2)
