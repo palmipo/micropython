@@ -3,6 +3,7 @@ import time
 from machine import Pin
 
 class SM16106SC:
+    TEMPO = 1
     def __init__(self, pinCLK, pinSDI, pinLE, pinOE_):
         self.pinSDI = Pin(pinSDI, Pin.OUT)
         self.pinLE = Pin(pinLE, Pin.OUT)
@@ -20,9 +21,11 @@ class SM16106SC:
         for b in data:
             for i in range(8):  
                 self.pinCLK.value(0)
+                time.sleep_us(self.TEMPO)
                 
                 self.pinSDI.value(b & 0x01)
                 self.pinCLK.value(1)
+                time.sleep_us(self.TEMPO)
 
                 b = b >> 1
 
@@ -30,7 +33,7 @@ class SM16106SC:
 
     def latch(self):
         self.pinLE.on()
-        #time.sleep_us(1)
+        time.sleep_us(self.TEMPO)
         self.pinLE.off()
 
     def OutputEnable(self):

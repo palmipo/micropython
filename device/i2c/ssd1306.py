@@ -3,20 +3,14 @@ import time
  
 
 class SSD1306(DeviceI2C):
-    def __init__(self, width, heght, addr, bus):
-        self.heght = heght
+    def __init__(self, width, height, addr, bus):
+        self.height = height
         self.width = width
         super().__init__(0x3C | (addr & 0x01), bus)
 
-    def init_display(self):
-        self.setDisplayON(0)
-        self.setMemoryAddressingMode(0)
-        self.setDisplayStartLine(0)
-        self.setDisplayON(1)
-
     def initDisplay(self):
         self.setDisplayOFF()
-        self.setMultiplexRatio(self.heght)
+        self.setMultiplexRatio(self.height - 1)
         self.setDisplayOffset(0x00)
         self.setDisplayStartLine(0x00)
         self.setSegmentRemap(0x00)
