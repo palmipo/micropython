@@ -11,7 +11,7 @@ class SSD1306(DeviceI2C):
     def initDisplay(self):
         self.setDisplayOFF()
         self.setMemoryAddressingMode(0)
-        self.setDisplayStartLine()
+        self.setDisplayStartLine(0)
         self.setSegmentRemap(1)
         self.setMultiplexRatio(self.height - 1)
         self.setCOMOutputScanDirection(1)
@@ -47,6 +47,7 @@ class SSD1306(DeviceI2C):
         cmd[0] = 0x80 # Co=1 D/C=0
         cmd[1:] = reg
         self.busi2c.send(self.adresse, cmd)
+        time.sleep_ms(10)
 
     def setContrastControl(self, valeur):
         cmd = bytearray(2)
@@ -54,10 +55,10 @@ class SSD1306(DeviceI2C):
         cmd[1] = valeur & 0xFF
         self.write_cmd(cmd)
 
-    def setChargePumpSetting(self, enable):
+    def setChargePump(self, valeur):
         cmd = bytearray(2)
         cmd[0] = 0x8D
-        cmd[1] = 0x10 | ((enable & 0x01) << 2)
+        cmd[1] = 0x10 | ((valeur & 0x1) << 2)
         self.write_cmd(cmd)
 
     def setEntireDisplayON(self):
@@ -89,6 +90,103 @@ class SSD1306(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0xAE
         self.write_cmd(cmd)
+
+    def setLowerColumnStartAddressForPageAddressingMode(self, setColumnStartAddressRegister):
+        cmd = bytearray(1)
+        cmd[0] = setColumnStartAddressRegister & 0x0F
+        self.write_cmd(cmd)
+        cmd[0] = 0x10 | (setColumnStartAddressRegister >> 4)
+        self.write_cmd(cmd)
+
+    def setMemoryAddressingMode(self, mode):
+        cmd = bytearray(2)
+        cmd[0] = 0x20
+        cmd[1] = mode & 0x03
+        self.write_cmd(cmd)
+
+    def setColumnAddress(self, columnStartAddress, columnEndAddress):
+        cmd = bytearray(3)
+        cmd[0] = 0x21
+        cmd[1] = columnStartAddress & 0x7F
+        cmd[2] = columnEndAddress & 0x7F
+        self.write_cmd(cmd)
+
+    def setPageAddress(self, pageStartAddress, pageEndAddress):
+        cmd = bytearray(3)
+        cmd[0] = 0x22
+        cmd[1] = pageStartAddress & 0x07
+        cmd[2] = pageEndAddress & 0x07
+        self.write_cmd(cmd)
+
+    def setPageStartAddress(self, pageAddressMode):
+        cmd = bytearray(3)
+        cmd[0] = 0xB0
+        cmd[1] = pageAddressMode & 0x07
+        self.write_cmd(cmd)
+
+    def setDisplayStartLine(self, displayStartLine):
+        cmd = bytearray(1)
+        cmd[0] = 0x40 | (displayStartLine & 0x3F)
+        self.write_cmd(cmd)
+
+    def setSegmentRemap(self):
+        cmd = bytearray(1)
+        cmd[0] = 0xA0
+        self.write_cmd(cmd)
+
+    def setSegmentRemapInversed(self):
+        cmd = bytearray(1)
+        cmd[0] = 0xA1
+        self.write_cmd(cmd)
+
+    def setMultiplexRatio(self, valeur):
+        cmd = bytearray(2)
+        cmd[0] = 0xA8
+        cmd[1] = valeur & 0x3F
+        self.write_cmd(cmd)
+
+    def setCOMOutputScanDirection(self, remappedMode):
+        cmd = bytearray(1)
+        cmd[0] = 0xC0 | ((remappedMode & 0x01) << 3)
+        self.write_cmd(cmd)
+
+    def setDisplayOffset(self, offset):
+        cmd = bytearray(2)
+        cmd[0] = 0xD3
+        cmd[1] = offset & 0x3F
+        self.write_cmd(cmd)
+
+    def SetCOMPinsHardwareConfiguration(self, comPinConfiguration):
+        cmd = bytearray(2)
+        cmd[0] = 0xDA
+        cmd[1] = ((comPinConfiguration & 0x03) << 4) | 0x02
+        self.write_cmd(cmd)
+
+    def setDisplayClockDivideRatioOscillatorFrequency(self, divideRatio, oscillatorFrequency):
+        cmd = bytearray(2)
+        cmd[0] = 0xD5
+        cmd[1] = ((oscillatorFrequency & 0x0F) << 4) | (divideRatio & 0x0F)
+        self.write_cmd(cmd)
+
+    def setPrechargePeriod(self, phase1, phase2):
+        cmd = bytearray(2)
+        cmd[0] = 0xD9
+        cmd[1] = ((phase2 & 0x0F) << 4) | (phase1 & 0x0F)
+        self.write_cmd(cmd)
+
+    def setVCOMHDeselectLevel(self, level):
+        cmd = bytearray(2)
+        cmd[0] = 0xDB
+        cmd[1] = (level & 0x07) << 4
+        self.write_cmd(cmd)
+
+    def nop(self):
+        cmd = bytearray(1)
+        cmd[0] = 0xE3
+        self.write_cmd(cmd)
+
+    def getStatusRegister(self):
+        return self.read_data()
 
     def rightHorizontalScrollSetup(self, startPageAddress, setTimeInterval, endPageAddress):
         cmd = bytearray(7)
@@ -148,89 +246,3 @@ class SSD1306(DeviceI2C):
         cmd[1] = setRowsInTopFixedArea & 0x3F
         cmd[2] = setRowsInScrollArea & 0x7F
         self.write_cmd(cmd)
-
-    def setLowerColumnStartAddressForPageAddressingMode(self, setColumnStartAddressRegister):
-        cmd = bytearray(1)
-        cmd[0] = setColumnStartAddressRegister & 0x0F
-        self.write_cmd(cmd)
-        cmd[0] = 0x10 | (setColumnStartAddressRegister >> 4)
-        self.write_cmd(cmd)
-
-    def setMemoryAddressingMode(self, mode):
-        cmd = bytearray(2)
-        cmd[0] = 0x20
-        cmd[1] = mode & 0x03
-        self.write_cmd(cmd)
-
-    def setColumnAddress(self, columnStartAddress, columnEndAddress):
-        cmd = bytearray(3)
-        cmd[0] = 0x21
-        cmd[1] = columnStartAddress & 0x7F
-        cmd[2] = columnEndAddress & 0x7F
-        self.write_cmd(cmd)
-
-    def setPageAddress(self, pageStartAddress, pageEndAddress):
-        cmd = bytearray(3)
-        cmd[0] = 0x22
-        cmd[1] = pageStartAddress & 0x07
-        cmd[2] = pageEndAddress & 0x07
-        self.write_cmd(cmd)
-
-    def setDisplayStartLine(self, displayStartLine):
-        cmd = bytearray(1)
-        cmd[0] = 0x40 | (displayStartLine & 0x3F)
-        self.write_cmd(cmd)
-
-    def setSegmentRemap(self, columnAddress0MappedtoSEG0):
-        cmd = bytearray(1)
-        cmd[0] = 0xA0 | (columnAddress0MappedtoSEG0 & 0x01)
-        self.write_cmd(cmd)
-
-    def setMultiplexRatio(self, valeur):
-        cmd = bytearray(2)
-        cmd[0] = 0xA8
-        cmd[1] = valeur & 0x3F
-        self.write_cmd(cmd)
-
-    def setCOMOutputScanDirection(self, remappedMode):
-        cmd = bytearray(1)
-        cmd[0] = 0xC0 | ((remappedMode & 0x01) << 3)
-        self.write_cmd(cmd)
-
-    def setDisplayOffset(self, offset):
-        cmd = bytearray(2)
-        cmd[0] = 0xD3
-        cmd[1] = offset & 0x3F
-        self.write_cmd(cmd)
-
-    def SetCOMPinsHardwareConfiguration(self, comPinConfiguration):
-        cmd = bytearray(2)
-        cmd[0] = 0xDA
-        cmd[1] = ((comPinConfiguration & 0x03) << 4) | 0x02
-        self.write_cmd(cmd)
-
-    def setDisplayClockDivideRatioOscillatorFrequency(self, ratio):
-        cmd = bytearray(2)
-        cmd[0] = 0xD5
-        cmd[1] = ratio & 0xFF
-        self.write_cmd(cmd)
-
-    def setPrechargePeriod(self, phase):
-        cmd = bytearray(2)
-        cmd[0] = 0xD9
-        cmd[1] = phase & 0xFF
-        self.write_cmd(cmd)
-
-    def setVCOMHDeselectLevel(self, level):
-        cmd = bytearray(2)
-        cmd[0] = 0xDB
-        cmd[1] = (level & 0x07) << 4
-        self.write_cmd(cmd)
-
-    def nop(self):
-        cmd = bytearray(1)
-        cmd[0] = 0xE3
-        self.write_cmd(cmd)
-
-    def getStatusRegister(self):
-        return self.read_data()
