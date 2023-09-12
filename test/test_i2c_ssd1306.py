@@ -19,10 +19,11 @@ buffer = bytearray(width * (height >> 3))
 
 display = SSD1306(width, height, 0, i2c)
 display.init_display()
+display.setDisplayON()
 
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_VLSB)
 frame.fill(0)
-frame.text('Hello World !!!', 0, 56)
+frame.text('Hello World !!!', 0, 0)
 display.show(buffer)
 
 time.sleep(2)
