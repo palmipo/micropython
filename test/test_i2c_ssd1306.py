@@ -13,7 +13,7 @@ print(hex(i2c.scan()[0]))
  
 
 width = 128
-height = 64
+height = 32
 
 buffer = bytearray(width * (height >> 3))
 
@@ -22,7 +22,7 @@ display.init_display()
 display.setDisplayON()
 
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_VLSB)
-frame.fill(0)
+frame.fill(0xFF)
 frame.text('Hello World !!!', 0, 0)
 display.show(buffer)
 

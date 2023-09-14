@@ -1,5 +1,6 @@
 from machine import UART
 from uartbus import UartBus
+from machine import Pin
 
 class UartPico(UartBus):
     def __init__(self, bus, bdrate, pinTx, pinRx):
@@ -8,6 +9,7 @@ class UartPico(UartBus):
         
     def send(self, cmd):
         self.__uart.write(cmd)
+        print(cmd)
 
     def recv(self, n_byte):
         rxData = self.__uart.read(n_byte)
