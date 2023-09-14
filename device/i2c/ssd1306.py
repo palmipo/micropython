@@ -51,7 +51,7 @@ class SSD1306(DeviceI2C):
         self.write_cmd(0xAF)
 
     def show(self, buffer):
-        for page in range(0, self.height >> 3): #8):
+        for page in range(0, self.height >> 3):
             self.write_cmd(0xB0 + page)
             self.write_cmd(0x02)
             self.write_cmd(0x10)
