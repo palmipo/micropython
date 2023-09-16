@@ -1,0 +1,5 @@
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect(('192.168.1.125', 2222))
+sock.send("Hello World !!!".encode())
+sock.send("quit".encode())
+sock.close()
