@@ -3,8 +3,8 @@ import time
  
 
 class OLED_0_91(SSD1306):
-    def __init__(self, width, height, addr, bus):
-        super().__init__(width, height, addr, bus)
+    def __init__(self, addr, bus):
+        super().__init__(128, 32, addr, bus)
 
     def init_display(self):
         self.__write_cmd__(0xAE)
@@ -50,30 +50,30 @@ class OLED_0_91(SSD1306):
             for num in range(0, self.width):
                 self.__write_data__(buffer[page * self.width + num])
 
-from i2cpico import I2CPico
-import framebuf
-import time
-
-
-i2c = I2CPico(0, 4, 5)
-print(hex(i2c.scan()[0]))
- 
-
-width = 128
-height = 32
-
-buffer = bytearray(width * (height >> 3))
-
-display = OLED_0_91(width, height, 0, i2c)
-display.init_display()
-display.setDisplayON()
-display.setEntireDisplayON()
-time.sleep(1)
-display.setEntireDisplayOFF()
-
-frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_VLSB)
-frame.text('192.168.001.xxx', 0, 0)
-display.show(buffer)
-
-time.sleep(5)
-display.setDisplayOFF()
+# from i2cpico import I2CPico
+# import framebuf
+# import time
+# 
+# 
+# i2c = I2CPico(0, 4, 5)
+# print(hex(i2c.scan()[0]))
+#  
+# 
+# width = 128
+# height = 32
+# 
+# buffer = bytearray(width * (height >> 3))
+# 
+# display = OLED_0_91(width, height, 0, i2c)
+# display.init_display()
+# display.setDisplayON()
+# display.setEntireDisplayON()
+# time.sleep(1)
+# display.setEntireDisplayOFF()
+# 
+# frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_VLSB)
+# frame.text('192.168.001.xxx', 0, 0)
+# display.show(buffer)
+# 
+# time.sleep(5)
+# display.setDisplayOFF()

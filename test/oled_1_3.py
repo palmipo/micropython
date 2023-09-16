@@ -3,8 +3,8 @@ import time
  
 
 class OLED_1_3(SSD1306):
-    def __init__(self, width, height, addr, bus):
-        super().__init__(width, height, addr, bus)
+    def __init__(self, addr, bus):
+        super().__init__(128, 64, addr, bus)
 
     def init_display(self):
         self.__write_cmd__(0xAE)
@@ -43,8 +43,6 @@ class OLED_1_3(SSD1306):
         
         self.__write_cmd__(0xDB)
         self.__write_cmd__(0x08)
-        
-        self.__write_cmd__(0xAF)
 
     def show(self, buffer):
         for page in range(0, self.height >> 3):
@@ -53,3 +51,4 @@ class OLED_1_3(SSD1306):
             self.__write_cmd__(0x10)
             for num in range(0, self.width):
                 self.__write_data__(buffer[page * self.width + num])
+
