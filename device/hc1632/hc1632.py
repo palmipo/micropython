@@ -8,7 +8,7 @@ class Matrice(framebuf.FrameBuffer):
     def __init__(self, width, height, HC1632List):
         self.width = width
         self.height = height
-        self.buffer = bytearray(self.height * self.width)
+        self.buffer = bytearray(self.height * self.width >> 3)
         super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
 
     def show(self):
