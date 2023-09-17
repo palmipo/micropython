@@ -7,11 +7,13 @@ import sys
 import time
 
 class WaveshareClockGreen:
-    def __init__(self):
+    def __init__(self, width, height):
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         self.i2c = I2CPico(1, 6, 7)
         #self.rtc = DS3231(0, i2c, 3)
+        self.width = width
+        self.height = height
         self.picture = bytearray(36)
 
     class Champ:
@@ -49,10 +51,10 @@ class WaveshareClockGreen:
             champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
 
 
-    def show(self, buffer):
+    def show(self, buffer, x, y):
         for i in range(8):
             if i < 7:
-                self.encode(self.Champ(self.picture, 32*i+34, 22), self.Champ(buffer, 80*i, 22))
+                self.encode(self.Champ(self.picture, 32*i+34, 22), self.Champ(buffer, self.width * (i), 22))
             clock.column.send(self.picture[i<<2:(i<<2)+4])
             clock.row.setChannel(i)
             clock.column.latch()
@@ -79,14 +81,23 @@ Hourly = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 AutoLight =  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00'
 
 
-clock = WaveshareClockGreen()
+width = 128
+height = 7
+clock = WaveshareClockGreen(width, height)
 clock.column.OutputEnable()
 
-buffer = bytearray(80 * 7 // 8)
-frame = framebuf.FrameBuffer(buffer, 80, 7, framebuf.MONO_HMSB) # 154 bits / 20 octets
+buffer = bytearray(width * height // 8)
+frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
 frame.fill(0)
 frame.text('14:30', 0, 0, 1)
 
+i=0
 while True:
-    clock.show(buffer)
+    clock.show(buffer, i, 0)
     frame.scroll(-1,0)
+    if i > 128:
+        i=0
+        frame.fill(0)
+        frame.text('Hello World !!!', 0, 0)
+    i+=1
+        
