@@ -6,7 +6,14 @@ import framebuf
 import sys
 import time
 
-class Codec:
+class WaveshareClockGreen:
+    def __init__(self):
+        self.row = SM5166P(16, 18, 22)
+        self.column = SM16106SC(10, 11, 12, 13)
+        self.i2c = I2CPico(1, 6, 7)
+        #self.rtc = DS3231(0, i2c, 3)
+        self.picture = bytearray(36)
+
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
             self.__bitDepart = bitDepart
@@ -41,12 +48,15 @@ class Codec:
         
             champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
 
-class WaveshareClockGreen:
-    def __init__(self):
-        self.row = SM5166P(16, 18, 22)
-        self.column = SM16106SC(10, 11, 12, 13)
-        self.i2c = I2CPico(1, 6, 7)
-        #self.rtc = DS3231(0, i2c, 3)
+
+    def show(self, buffer):
+        for i in range(8):
+            if i < 7:
+                self.encode(self.Champ(self.picture, 32*i+34, 22), self.Champ(buffer, 80*i, 22))
+            clock.column.send(self.picture[i<<2:(i<<2)+4])
+            clock.row.setChannel(i)
+            clock.column.latch()
+
 
 Monday = b'\x18\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 Tuesday = b'\xC0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -69,25 +79,14 @@ Hourly = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 AutoLight =  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00'
 
 
-buffer = bytearray(21)
-frame = framebuf.FrameBuffer(buffer, 22, 7, framebuf.MONO_HMSB) # 154 bits / 20 octets
-# for x in range(22):
-#     for y in range(7):
-#         frame.pixel(x, y, 1)
 clock = WaveshareClockGreen()
 clock.column.OutputEnable()
 
-codec = Codec()
-picture = bytearray(36)
-
+buffer = bytearray(80 * 7 // 8)
+frame = framebuf.FrameBuffer(buffer, 80, 7, framebuf.MONO_HMSB) # 154 bits / 20 octets
 frame.fill(0)
 frame.text('14:30', 0, 0, 1)
 
-for i in range(7):
-    codec.encode(Codec.Champ(picture, 32*i+34, 22), Codec.Champ(buffer, 24*i, 22))
-#picture = picture | led1
 while True:
-    for i in range(8):
-        clock.column.send(picture[i<<2:(i<<2)+4])
-        clock.row.setChannel(i)
-        clock.column.latch()
+    clock.show(buffer)
+    frame.scroll(-1,0)
