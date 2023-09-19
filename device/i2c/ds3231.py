@@ -1,8 +1,9 @@
-from devicei2c import DeviceI2C
+from ds1307 import DS1307
+from machine import Pin
 
-class DS3231(DeviceI2C):
-    def __init__(self, adresse, i2c, pinSQW):
-        super().__init__(0x68 | (address & 0x01), bus)
+class DS3231(DS1307):
+    def __init__(self, address, bus, pinSQW):
+        super().__init__(address, bus)
         self.pinSQW = Pin(pinSQW, Pin.IN, Pin.PULL_UP)
         self.pinSQW.irq(self.callback, Pin.IRQ_FALLING)
 
@@ -10,3 +11,4 @@ class DS3231(DeviceI2C):
         state = machine.disable_irq()
         self.cb()
         machine.enable_irq(state)
+

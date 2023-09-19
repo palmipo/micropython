@@ -1,7 +1,7 @@
 from sm5166 import SM5166P
 from sm16106 import SM16106SC
 from i2cpico import I2CPico
-#from ds3231 import DS3231
+from ds3231 import DS3231
 import framebuf
 import sys
 import time
@@ -11,10 +11,10 @@ class WaveshareClockGreen:
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         self.i2c = I2CPico(1, 6, 7)
-        #self.rtc = DS3231(0, i2c, 3)
+        self.rtc = DS3231(0, self.i2c, 3)
         self.width = width
         self.height = height
-        self.picture = bytearray(36)
+        self.picture = bytearray(4)
 
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
@@ -49,13 +49,18 @@ class WaveshareClockGreen:
             valeur = (champSrc.__valeur[octet] & (1 << bit)) >> bit
         
             champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
-
+#             print(i_octet, i_bit, octet, bit)
 
     def show(self, buffer, x, y):
         for i in range(8):
-            if i < 7:
-                self.encode(self.Champ(self.picture, 32*i+34, 22), self.Champ(buffer, self.width * (i), 22))
-            clock.column.send(self.picture[i<<2:(i<<2)+4])
+            if i == 0:
+                self.picture[0] = 0
+                self.picture[1] = 0
+                self.picture[2] = 0
+                self.picture[3] = 0
+            else:
+                self.encode(self.Champ(self.picture, 2, 22), self.Champ(buffer, x + self.width * (y + i-1), 22))
+            clock.column.send(self.picture)
             clock.row.setChannel(i)
             clock.column.latch()
 
@@ -85,6 +90,9 @@ width = 128
 height = 7
 clock = WaveshareClockGreen(width, height)
 clock.column.OutputEnable()
+ic = clock.i2c.scan()
+for i in ic:
+    print(hex(i))
 
 buffer = bytearray(width * height // 8)
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
@@ -93,11 +101,12 @@ frame.text('14:30', 0, 0, 1)
 
 i=0
 while True:
-    clock.show(buffer, i, 0)
+    clock.show(buffer, 0, 0)
     frame.scroll(-1,0)
-    if i > 128:
+    if i >= width:
         i=0
         frame.fill(0)
         frame.text('Hello World !!!', 0, 0)
     i+=1
+#     print(i)
         
