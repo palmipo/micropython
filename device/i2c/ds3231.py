@@ -5,27 +5,26 @@ import machine
 micropython.alloc_emergency_exception_buf(100)
 
 class DS3231(DeviceI2C):
-    def __init__(self, address, bus, pinSQW, cb=None):
+    def __init__(self, address, bus, pinSQW, cb):
         super().__init__(0x68 | (address & 0x01), bus)
 
+        self.cb = cb
         self.pinSQW = machine.Pin(pinSQW, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb != None:
-            self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
-            self.cb = cb
+        self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
     def __callback__(self, pin):
-#         try:
-            state = machine.disable_irq()
+        state = machine.disable_irq()
+        try:
             self.cb(pin)
-            machine.enable_irq(state)
-#         except exception:
-#             print('exception callback')
+        except BaseException:
+            print('DS3231 exception callback')
+        machine.enable_irq(state)
 
 
     def setDayWeek(self, day):
         cmd = bytearray(2)
         cmd[0] = 0x03
-        cmd[1] = day & 0x07
+        cmd[1] = ord(day) & 0x07
         self.busi2c.send(self.adresse, cmd)
 
     def getDayWeek(self):
@@ -62,9 +61,7 @@ class DS3231(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0x00
         data = self.busi2c.transferer(self.adresse, cmd, 3)
-        print(data.decode())
         res = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F) + ":" + str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F) + ":" + str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
-        print(res)
         return res
 
     def setControlRegister(self, CONV, SqwareWaveFrequency, INTCN, A2IE, A1IE):
@@ -74,7 +71,7 @@ class DS3231(DeviceI2C):
 
         cmd = bytearray(2)
         cmd[0] = 0x0E
-        cmd[1] = ((CONV & 0x01) << 5) | ((CONV & 0x01) << 5) | ((SqwareWaveFrequency & 0x03) << 3) | ((INTCN & 0x01) << 2) | ((A2IE & 0x01) << 1) | (A1IE & 0x01)
+        cmd[1] = ((CONV & 0x01) << 5) | ((SqwareWaveFrequency & 0x03) << 3) | ((INTCN & 0x01) << 2) | ((A2IE & 0x01) << 1) | (A1IE & 0x01)
         self.busi2c.send(self.adresse, cmd)
         
     def getTemperature(self):

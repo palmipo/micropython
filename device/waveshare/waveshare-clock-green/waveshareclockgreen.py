@@ -2,20 +2,45 @@ from sm5166 import SM5166P
 from sm16106 import SM16106SC
 from i2cpico import I2CPico
 from ds3231 import DS3231
+import micropython
+import machine
+
+micropython.alloc_emergency_exception_buf(100)
 
 class WaveshareClockGreen:
     def __init__(self, width, height):
-        self.row = SM5166P(16, 18, 22)
-        self.column = SM16106SC(10, 11, 12, 13)
-        self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231(0, self.i2c, 3)#, self.__irq__)
-        self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
         self.width = width
         self.height = height
         self.picture = bytearray(4)
 
+        self.row = SM5166P(16, 18, 22)
+        self.column = SM16106SC(10, 11, 12, 13)
+        
+        self.i2c = I2CPico(1, 6, 7)
+        self.rtc = DS3231(0, self.i2c, 3, self.__irq__)
+        self.rtc.setControlRegister(0x01, 0x03, 0x00, 0x00, 0x00)
+
+        self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.K0.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+
+        self.K1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.K1.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        
+        self.K2 = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
+        self.K2.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        
+        self.buzzer = machine.Pin(14, machine.Pin.OUT)
+
+    def __callback__(self, pin):
+        state = machine.disable_irq()
+        try:
+            print('bouton pressed {}'.format(pin.value()))
+        except BaseException:
+            print('WaveshareClockGreen exception callback')
+        machine.enable_irq(state)
+
     def __irq__(self, pin):
-        print('irq !')
+        self.buzzer.toggle()
 
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
