@@ -2,17 +2,13 @@ from sm5166 import SM5166P
 from sm16106 import SM16106SC
 from i2cpico import I2CPico
 from ds3231 import DS3231
-# import framebuf
-# import sys
-# import time
-# import ntptime
 
 class WaveshareClockGreen:
     def __init__(self, width, height):
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231(0, self.i2c, 3, self.__irq__)
+        self.rtc = DS3231(0, self.i2c, 3)#, self.__irq__)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
         self.width = width
         self.height = height

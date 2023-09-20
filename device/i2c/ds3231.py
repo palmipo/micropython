@@ -5,12 +5,13 @@ import machine
 micropython.alloc_emergency_exception_buf(100)
 
 class DS3231(DeviceI2C):
-    def __init__(self, address, bus, pinSQW, cb):
+    def __init__(self, address, bus, pinSQW, cb=None):
         super().__init__(0x68 | (address & 0x01), bus)
 
         self.pinSQW = machine.Pin(pinSQW, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
-        self.cb = cb
+        if cb != None:
+            self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+            self.cb = cb
 
     def __callback__(self, pin):
 #         try:
@@ -46,7 +47,7 @@ class DS3231(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0x04
         data = self.busi2c.transferer(self.adresse, cmd, 3)
-        return str((ord(data[0]) & 0x30) >> 4) + str(ord(data[0]) & 0x0F) + "/" + str((ord(data[1]) & 0x10) >> 4) + str(ord(data[1]) & 0x0F) + "/" + str((ord(data[2]) & 0xF0) >> 4) + str(ord(data[2]) & 0x0F)
+        return str(((data[0]) & 0x30) >> 4) + str((data[0]) & 0x0F) + "/" + (((data[1]) & 0x10) >> 4) + str((data[1]) & 0x0F) + "/" + str(((data[2]) & 0xF0) >> 4) + str((data[2]) & 0x0F)
 
     #18:25:59
     def setTime(self, hour):
@@ -61,20 +62,10 @@ class DS3231(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0x00
         data = self.busi2c.transferer(self.adresse, cmd, 3)
-        print(data)
-        return str((ord(data[2]) & 0x30) >> 4) + str(ord(data[2]) & 0x0F) + ":" + str((ord(data[1]) & 0x70) >> 4) + str(ord(data[1]) & 0x0F) + ":" + str((ord(data[0]) & 0x70) >> 4) + str(ord(data[0]) & 0x0F)
-
-    def setOut(self, etat):
-        cmd = bytearray(2)
-        cmd[0] = 0x07
-        cmd[1] = (etat & 0x01) << 7
-        self.busi2c.send(self.adresse, cmd)
-
-    def setSquareWave(self, freq):
-        cmd = bytearray(2)
-        cmd[0] = 0x07
-        cmd[1] = (freq & 0x03) | (1 << 4)
-        self.busi2c.send(self.adresse, cmd)
+        print(data.decode())
+        res = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F) + ":" + str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F) + ":" + str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
+        print(res)
+        return res
 
     def setControlRegister(self, CONV, SqwareWaveFrequency, INTCN, A2IE, A1IE):
         (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
