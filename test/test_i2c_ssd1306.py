@@ -50,11 +50,16 @@ for ic in mux7.scan():
 matrix = ScrollPHatHd(mux7)
 # matrix.fill(0xf)
 # matrix.show()
-for y in range(matrix.height):
-    for x in range(matrix.width):
-        matrix.pixel(x, y, 0xF)
-        matrix.show()
-#         time.sleep(1)
+# for y in range(matrix.height):
+#     for x in range(matrix.width):
+#         matrix.pixel(x, y, 0xF)
+#         matrix.show()
+#         time.sleep_ms(100)
+y=2
+for x in range(matrix.width):
+    matrix.pixel(x, y, 0xF)
+    matrix.show()
+    time.sleep_ms(100)
 
 
 rtc = DS1307(0, mux1)

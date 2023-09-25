@@ -4,8 +4,8 @@ import time
 
 class ScrollPHatHd(framebuf.FrameBuffer):
     def __init__(self, i2c):
-        self.width = 18
-        self.height = 8
+        self.width = 8
+        self.height = 18
         self.buffer = bytearray(self.width * self.height)
         super().__init__(self.buffer, self.width, self.height, framebuf.GS8)
 
