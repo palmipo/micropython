@@ -1,7 +1,7 @@
 from devicei2c import DeviceI2C
-# from picoi2c import PicoI2C
 import machine
 import time
+
 class PCA9548A(DeviceI2C):
 
     def __init__(self, address, bus, reset_pin=0):

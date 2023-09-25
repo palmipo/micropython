@@ -1,7 +1,7 @@
 from sm5166 import SM5166P
 from sm16106 import SM16106SC
 from i2cpico import I2CPico
-from ds3231 import DS3231
+from ds3231_sqw import DS3231_SQW
 import micropython
 import machine
 
@@ -17,8 +17,8 @@ class WaveshareClockGreen:
         self.column = SM16106SC(10, 11, 12, 13)
         
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231(0, self.i2c, 3, self.__irq__)
-        self.rtc.setControlRegister(0x01, 0x03, 0x00, 0x00, 0x00)
+        self.rtc = DS3231_SQW(0, self.i2c, 3, self.__irq__)
+        self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
         self.K0.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)

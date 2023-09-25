@@ -1,10 +1,8 @@
 import ntptime
 import network
-import time
 import framebuf
 import sys
 import time
-import ntptime
 from waveshareclockgreen import WaveshareClockGreen
 
 # wlan = network.WLAN(network.STA_IF)
@@ -37,7 +35,7 @@ buffer = bytearray(width * height // 8)
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
 frame.fill(0)
 temp = clock.rtc.getTemperature()
-frame.text(str(float(temp)) + ' degres Celsius', 10, 0)
+frame.text("{} degres Celsius".format(str(float(temp))), 10, 0)
 
 i=0
 while True:

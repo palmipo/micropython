@@ -1,25 +1,8 @@
 from devicei2c import DeviceI2C
-import micropython
-import machine
-
-micropython.alloc_emergency_exception_buf(100)
 
 class DS3231(DeviceI2C):
-    def __init__(self, address, bus, pinSQW, cb):
+    def __init__(self, address, bus):
         super().__init__(0x68 | (address & 0x01), bus)
-
-        self.cb = cb
-        self.pinSQW = machine.Pin(pinSQW, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
-
-    def __callback__(self, pin):
-        state = machine.disable_irq()
-        try:
-            self.cb(pin)
-        except BaseException:
-            print('DS3231 exception callback')
-        machine.enable_irq(state)
-
 
     def setDayWeek(self, day):
         cmd = bytearray(2)
