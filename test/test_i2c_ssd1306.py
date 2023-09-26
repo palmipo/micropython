@@ -5,6 +5,8 @@ from i2cmux import I2CMux
 from pca9548a import PCA9548A
 from ds1307 import DS1307
 from scrollphathd import ScrollPHatHd
+from lcd2004 import LCD2004
+from hd44780 import HD44780
 # import ntptime
 # import network
 import framebuf
@@ -24,7 +26,7 @@ import time
 # time.sleep(10)
 
 i2c = I2CPico(0, 4, 5) 
-circuits = i2c.scan()
+# circuits = i2c.scan()
 
 switch = PCA9548A(0, i2c, 3)
 switch.reset()
@@ -35,32 +37,22 @@ switch.reset()
 # lHeure = "{:2}:{:2}:{:2}".format(str(data_tuple[3]), str(data_tuple[4]), str(data_tuple[5]))
 
 mux0 = I2CMux(0, switch, i2c)
-mux0.scan()
-for ic in mux0.scan():
-    print(hex(ic))
-
 mux1 = I2CMux(1, switch, i2c)
-for ic in mux1.scan():
-    print(hex(ic))
-
+mux6 = I2CMux(6, switch, i2c)
 mux7 = I2CMux(7, switch, i2c)
-for ic in mux7.scan():
-    print(hex(ic))
+
+lcd_io = LCD2004(0, mux6)
+lcd_io.setBackLight(1)
+lcd = HD44780(lcd_io)
+lcd.clear()
+
 
 matrix = ScrollPHatHd(mux7)
-# matrix.fill(0xf)
-# matrix.show()
-# for y in range(matrix.height):
-#     for x in range(matrix.width):
-#         matrix.pixel(x, y, 0xF)
-#         matrix.show()
-#         time.sleep_ms(100)
-y=2
-for x in range(matrix.width):
-    matrix.pixel(x, y, 0xF)
-    matrix.show()
-    time.sleep_ms(100)
-
+for y in range(matrix.height):
+    for x in range(matrix.width):
+        matrix.pixel(x, y, 0xF)
+        matrix.show()
+        time.sleep_ms(100)
 
 rtc = DS1307(0, mux1)
 # rtc.setDate('18/01/73')
@@ -77,10 +69,21 @@ display.setEntireDisplayOFF()
 
 buffer = bytearray(display.width * (display.height >> 3))
 frame = framebuf.FrameBuffer(buffer, display.width, display.height, framebuf.MONO_VLSB)
-frame.text('Hello World !!!', 0, 0)
-frame.text(rtc.getTime(), 0, 11)
-frame.text(rtc.getDate(), 0, 22)
-display.show(buffer)
+
+while True:
+    frame.fill(0)
+    frame.text('Hello World !!!', 0, 0)
+    frame.text(rtc.getTime(), 0, 11)
+    frame.text(rtc.getDate(), 0, 22)
+    display.show(buffer)
+
+    lcd.home()
+    lcd.writeText("Hello World !!!")
+    lcd.setDDRAMAdrress(32)
+    lcd.writeText(rtc.getTime())
+    lcd.setDDRAMAdrress(20)
+    lcd.writeText(rtc.getDate())
+    time.sleep_ms(500)
 
 time.sleep(5)
 display.setDisplayOFF()

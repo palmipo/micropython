@@ -5,15 +5,18 @@ from i2cbus import I2CBus
 class I2CPico(I2CBus):
     def __init__(self, n_bus, sda_pin, scl_pin):
       super().__init__()
-      self.busi2c = I2C(id=n_bus, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=100000)
+      self.busi2c = I2C(id=n_bus, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=400000)
 
     def scan(self):
         return self.busi2c.scan()
         
     def send(self, addr, cmd):
-        n_ack = self.busi2c.writeto(addr, cmd)
-        if (len(cmd) != n_ack):
-            print(n_ack)
+#         print (cmd)
+        try:
+            self.busi2c.writeto(addr, cmd)
+        except OSError:
+            print("erreur send i2c")
+            pass
     
     def recv(self, addr, n_byte):
         return self.busi2c.readfrom(addr, n_byte)

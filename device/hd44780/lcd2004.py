@@ -1,6 +1,6 @@
 from hd44780io import HD44780IO
 from pcf8574t import PCF8574T
-from pia_pcf8574 import PIA_PCF8574
+from piapcf8574 import PiaPcf8574
 import time
 
 
@@ -21,7 +21,7 @@ class LCD2004(HD44780IO):
         self.gpio = PCF8574T(adresse, i2c)
         self.gpio.setIODIR(0)
 
-        self.pia = PIA_PCF8574(self.gpio)
+        self.pia = PiaPcf8574(self.gpio)
 
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
