@@ -1,19 +1,21 @@
 from piabus import PiaBus
-import framebuf
+import framebuf, time
+from piapico import PiaPico
 
-int32_t TEMPO = 100
-int32_t TEMPO_1_2 = 50
+TEMPO = 0
+# TEMPO_1_2 = 1
 
 class Matrice(framebuf.FrameBuffer):
-    def __init__(self, width, height, HC1632List):
+    def __init__(self, width, height, matrice):
         self.width = width
         self.height = height
+        self.matrice = matrice
         self.buffer = bytearray(self.height * self.width >> 3)
-        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+        super().__init__(self.buffer, self.width, self.height, framebuf.MONO_HMSB)
 
     def show(self):
-        for HC1632 matrice in HC1632List:
-            matrice.write_led_buffer()
+        self.matrice[0].write_led_buffer(0, self.buffer[0:16*24-1])
+        self.matrice[1].write_led_buffer(0, self.buffer[16*24:])
 
 class HC1632:
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
@@ -22,169 +24,211 @@ class HC1632:
         self._cs_pin = cs_pin
 
         self._write_pin.setOutput(1)
-        self._data_pin.setOutput(1)
+        self._data_pin.setOutput(0)
         self._cs_pin.setOutput(1)
 
-        self.init(master_mode)
+        self.__init_matrix__(master_mode)
 
-    def write_chipselect(self, valeur):
-        self._cs_pin.setOutput(valeur?0:1)
+    def __write_chipselect__(self, valeur):
+        if valeur == 0:
+            self._cs_pin.setOutput(1)
+        else:
+            self._cs_pin.setOutput(0)
         time.sleep_ms(TEMPO)
 
-    def write_bit(valeur):
+    def __write_bit__(self, valeur):
         self._write_pin.setOutput(0)
-        time.sleep_ms(TEMPO_1_2)
-        self._data_pin.setOutput(valeur?1:0)
-        time.sleep_ms(TEMPO_1_2)
+        #time.sleep_ms(TEMPO_1_2)
+
+        self._data_pin.setOutput(valeur)
+#         time.sleep_ms(TEMPO_1_2)
+        time.sleep_ms(TEMPO)
+
         self._write_pin.setOutput(1)
         time.sleep_ms(TEMPO)
 
-    def write_sys(on):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(on)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_sys__(self, on):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(on)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_com_option(config):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(1)
-        write_bit(0)
-        write_bit(config & 0x02) // a
-        write_bit(config & 0x01) // b
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_com_option__(self, config):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(config & 0x02) # a
+        self.__write_bit__(config & 0x01) # b
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_mode(mode):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(1)
-        write_bit(mode)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_mode__(self, mode):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(mode)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_led(on):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(1)
-        write_bit(on)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_led__(self, on):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(on)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_blink(on):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(on)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_blink__(self, on):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(on)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_led_pwm(intensity):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(0)
-        write_bit(1)
-        write_bit(0)
-        write_bit(1)
-        write_bit(0)
-        write_bit(intensity & 0x08)
-        write_bit(intensity & 0x04)
-        write_bit(intensity & 0x02)
-        write_bit(intensity & 0x01)
-        write_bit(0)
-        write_chipselect(0)
+    def __write_led_pwm__(self, intensity):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(intensity & 0x08)
+        self.__write_bit__(intensity & 0x04)
+        self.__write_bit__(intensity & 0x02)
+        self.__write_bit__(intensity & 0x01)
+        self.__write_bit__(0)
+        self.__write_chipselect__(0)
 
-    def write_led_buffer(buffer)
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(1)
-        /* address */
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        write_bit(0)
-        /* data */
+    def write_led_buffer(self, address, buffer):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+
+        # address
+        for i in range(7):
+            self.__write_bit__(address & (1<<(6-i)))
+
+        # data
         for octet in buffer:
             for i in range(8):
-                write_bit((octet & (1<<i)) >> i)
-        write_chipselect(0)
+                self.__write_bit__((octet & (1<<i)) >> i)
 
-    def write_led_pixel(quartet, buffer):
-        write_chipselect(1)
-        write_bit(1)
-        write_bit(0)
-        write_bit(1)
-        /* address */
-        for (int32_t i=0 i<7 ++i)
-            write_bit(quartet & (1<<(6-i)))
-        /* data */
-        for (int32_t i=0 i<4 ++i)
-            write_bit(buffer & (1<<i))
-        write_chipselect(0)
+        self.__write_chipselect__(0)
 
-    def init(master_mode):
-        // SYS DIS
-        write_sys(0)
+    def write_led_pixel(self, address, buffer):
+        self.__write_chipselect__(1)
+        self.__write_bit__(1)
+        self.__write_bit__(0)
+        self.__write_bit__(1)
+        # address
+        for i in range(7):
+            self.__write_bit__(address & (1<<(6-i)))
+        # data
+        for i in range(4):
+            self.__write_bit__(buffer & (1<<i))
+        self.__write_chipselect__(0)
+
+    def __init_matrix__(self, master_mode):
+        # SYS DIS
+        self.__write_sys__(0)
         time.sleep_ms(TEMPO)
-        // COM OPTION
-        write_com_option(1)
+        
+        # COM OPTION
+        self.__write_com_option__(1)
         time.sleep_ms(TEMPO)
-        // MASTER MODE
-        write_mode(master_mode)
+        
+        # MASTER MODE
+        self.__write_mode__(master_mode)
         time.sleep_ms(TEMPO)
-        // SYS ON
-        write_sys(1)
+        
+        # SYS ON
+        self.__write_sys__(1)
         time.sleep_ms(TEMPO)
-        // LED ON
-        write_led(1)
+        
+        # LED ON
+        self.__write_led__(1)
         time.sleep_ms(TEMPO)
-        write_blink(0)
+        
+        self.__write_blink__(0)
         time.sleep_ms(TEMPO)
-        write_led_pwm(0x0F)
+        
+        self.__write_led_pwm__(0x0F)
         time.sleep_ms(TEMPO)
 
+data_pin = PiaPico(8)
+write_pin = PiaPico(9)
+cs_pin1 = PiaPico(10)
+cs_pin2 = PiaPico(11)
+
+width = 16
+height = 24*2
+buffer = bytearray(height * width >> 3)
+frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB)
+frame.fill(11)
+
+mat1 = HC1632(data_pin, write_pin, cs_pin1, 0)
+mat2 = HC1632(data_pin, write_pin, cs_pin2, 1)
+mat1.write_led_buffer(0, buffer[0:48])
+mat2.write_led_buffer(0, buffer[48:])
+print(len(buffer))
+print(buffer[0:47])
+print(buffer[48:])
+# matrice = []
+# matrice.append(HC1632(data_pin, write_pin, cs_pin1, 1))
+# matrice.append(HC1632(data_pin, write_pin, cs_pin2, 0))
+# paint = Matrice(16 * 5, 24 * 2, led2)
+# paint = Matrice(16, 24 * 2, matrice)
+# paint.fill(0)
+# paint.show()
+# paint.text("Loulou", 0, 0)
+# paint.show()
+# for y in range(paint.height):
+#     for x in range(paint.width):
+#         paint.pixel(x, y, 1)
+#         paint.show()
+#         time.sleep_ms(1)
