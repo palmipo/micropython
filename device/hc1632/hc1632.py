@@ -202,25 +202,24 @@ class HC1632:
 
 data_pin = PiaPico(8)
 write_pin = PiaPico(9)
-cs_pin1 = PiaPico(10)
-cs_pin2 = PiaPico(11)
+cs_pin = []
+cs_pin.append(PiaPico(10))
+cs_pin.append(PiaPico(11))
+cs_pin.append(PiaPico(12))
+cs_pin.append(PiaPico(13))
+cs_pin.append(PiaPico(14))
+cs_pin.append(PiaPico(15))
 
-width = 16
-height = 24*2
+width = 16 * 5
+height = 24 * 2
 buffer = bytearray(height * width >> 3)
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB)
-frame.fill(11)
+frame.fill(1)
 
-mat1 = HC1632(data_pin, write_pin, cs_pin1, 0)
-mat2 = HC1632(data_pin, write_pin, cs_pin2, 1)
-mat1.write_led_buffer(0, buffer[0:48])
-mat2.write_led_buffer(0, buffer[48:])
-print(len(buffer))
-print(buffer[0:47])
-print(buffer[48:])
-# matrice = []
-# matrice.append(HC1632(data_pin, write_pin, cs_pin1, 1))
-# matrice.append(HC1632(data_pin, write_pin, cs_pin2, 0))
+matrice = []
+matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
+for i in range(1, len(cs_pin)):
+    matrice.append(HC1632(data_pin, write_pin, cs_pin[i], 1))
 # paint = Matrice(16 * 5, 24 * 2, led2)
 # paint = Matrice(16, 24 * 2, matrice)
 # paint.fill(0)
