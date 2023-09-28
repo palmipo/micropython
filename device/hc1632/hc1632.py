@@ -5,24 +5,28 @@ from piapico import PiaPico
 TEMPO = 0
 
 class Matrice(framebuf.FrameBuffer):
-    def __init__(self, matrice):
-        self.width = 5
-        self.height = 2
-        self.matrice = matrice
-        self.buffer = bytearray(16 * self.height * 24 * self.width >> 3)
-        super().__init__(self.buffer, 16 * self.width, 24 * self.height, framebuf.MONO_HMSB)
+    def __init__(self, data_pin, write_pin, cs_pin):
+        self.buffer = bytearray(16 * 5 * 24 * 2 >> 3)
+        super().__init__(self.buffer, 16 * 5, 24 * 2, framebuf.MONO_HMSB)
 
-    def show(self):
-        for j in range(self.height):
-            for i in range(self.width):
-                self.matrice[i*self.width].write_led_buffer(j*16*self.width, self.buffer[2*i:2*i-1])
+        self.matrice = []
+        self.matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
+        for i in range(1, len(cs_pin)):
+            self.matrice.append(HC1632(data_pin, write_pin, cs_pin[i], 0))
+    
+def show(self):
+        for j in range(2):
+            for y in range(24):
+                for i in range(5):
+                    index = 2*i + 10*y + 240*j
+                    self.matrice[i+5*j].write_led_buffer(16*y, self.buffer[index:index+1])
 
 class HC1632:
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
         self._data_pin = data_pin
         self._write_pin = write_pin
         self._cs_pin = cs_pin
-        self.widthb= 16
+        self.width = 16
         self.height = 24
 
         self._write_pin.setOutput(1)
@@ -40,10 +44,7 @@ class HC1632:
 
     def __write_bit__(self, valeur):
         self._write_pin.setOutput(0)
-        #time.sleep_ms(TEMPO_1_2)
-
         self._data_pin.setOutput(valeur)
-#         time.sleep_ms(TEMPO_1_2)
         time.sleep_ms(TEMPO)
 
         self._write_pin.setOutput(1)
@@ -211,19 +212,17 @@ cs_pin.append(PiaPico(12))
 cs_pin.append(PiaPico(13))
 cs_pin.append(PiaPico(14))
 cs_pin.append(PiaPico(15))
+cs_pin.append(PiaPico(16))
+cs_pin.append(PiaPico(17))
+cs_pin.append(PiaPico(18))
+cs_pin.append(PiaPico(19))
 
-matrice = []
-matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
-for i in range(1, len(cs_pin)):
-    matrice.append(HC1632(data_pin, write_pin, cs_pin[i], 0))
+paint = Matrice(data_pin, write_pin, cs_pin)
+paint.fill(0)
+paint.show()
 
-paint = Matrice(matrice)
-# paint.fill(0)
-# paint.show()
-# paint.text("Loulou", 0, 0)
-# paint.show()
-# for y in range(paint.height):
-#     for x in range(paint.width):
-#         paint.pixel(x, y, 1)
-#         paint.show()
-#         time.sleep_ms(1)
+paint.text("Loulou", 0, 0)
+paint.show()
+
+
+
