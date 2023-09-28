@@ -2,32 +2,35 @@ from piabus import PiaBus
 import framebuf, time
 from piapico import PiaPico
 
-TEMPO = 0
+TEMPO = 10
 
 class Matrice(framebuf.FrameBuffer):
-    def __init__(self, data_pin, write_pin, cs_pin):
-        self.buffer = bytearray(16 * 5 * 24 * 2 >> 3)
-        super().__init__(self.buffer, 16 * 5, 24 * 2, framebuf.MONO_HMSB)
+    def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
+        self.hauteur = hauteur
+        self.largeur = largeur
+        self.buffer = bytearray((HC1632.largeur * largeur * HC1632.hauteur * hauteur) >> 3)
+        super().__init__(self.buffer, HC1632.largeur * largeur, HC1632.hauteur * hauteur, framebuf.MONO_HMSB)
 
         self.matrice = []
         self.matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
         for i in range(1, len(cs_pin)):
             self.matrice.append(HC1632(data_pin, write_pin, cs_pin[i], 0))
     
-def show(self):
-        for j in range(2):
-            for y in range(24):
-                for i in range(5):
-                    index = 2*i + 10*y + 240*j
-                    self.matrice[i+5*j].write_led_buffer(16*y, self.buffer[index:index+1])
+    def show(self):
+        for j in range(self.hauteur):
+            for y in range(HC1632.hauteur):
+                for i in range(self.largeur):
+                    index = (HC1632.largeur >> 3) * i + ((HC1632.largeur * self.largeur) >> 3) * y + ((HC1632.hauteur * HC1632.largeur * self.largeur) >> 3) * j
+                    print(i+self.largeur*j, HC1632.largeur*y, index, self.buffer[index:index+2])
+                    self.matrice[i+self.largeur*j].write_led_buffer(HC1632.largeur*y, self.buffer[index:index+2])
 
 class HC1632:
+    largeur = 16
+    hauteur = 24
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
         self._data_pin = data_pin
         self._write_pin = write_pin
         self._cs_pin = cs_pin
-        self.width = 16
-        self.height = 24
 
         self._write_pin.setOutput(1)
         self._data_pin.setOutput(0)
@@ -40,15 +43,15 @@ class HC1632:
             self._cs_pin.setOutput(1)
         else:
             self._cs_pin.setOutput(0)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
 
     def __write_bit__(self, valeur):
         self._write_pin.setOutput(0)
         self._data_pin.setOutput(valeur)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
 
         self._write_pin.setOutput(1)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
 
     def __write_sys__(self, on):
         self.__write_chipselect__(1)
@@ -174,34 +177,35 @@ class HC1632:
         # data
         for i in range(4):
             self.__write_bit__(buffer & (1<<i))
+            
         self.__write_chipselect__(0)
 
     def __init_matrix__(self, master_mode):
         # SYS DIS
         self.__write_sys__(0)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         # COM OPTION
         self.__write_com_option__(1)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         # MASTER MODE
         self.__write_mode__(master_mode)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         # SYS ON
         self.__write_sys__(1)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         # LED ON
         self.__write_led__(1)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         self.__write_blink__(0)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
         
         self.__write_led_pwm__(0x0F)
-        time.sleep_ms(TEMPO)
+        time.sleep_us(TEMPO)
 
 data_pin = PiaPico(8)
 write_pin = PiaPico(9)
@@ -217,12 +221,21 @@ cs_pin.append(PiaPico(17))
 cs_pin.append(PiaPico(18))
 cs_pin.append(PiaPico(19))
 
-paint = Matrice(data_pin, write_pin, cs_pin)
-paint.fill(0)
+# for i in range(10):
+#     aff = HC1632(data_pin, write_pin, cs_pin[i], 1)
+#     buf = bytearray(16*24>>3)
+#     buf[0] = 0xFF
+#     buf[1] = 0xFF
+#     aff.write_led_buffer(16, buf)
+
+paint = Matrice(1, 2, data_pin, write_pin, cs_pin)
+# paint.fill(0)
+# paint.show()
+paint.pixel(0, 0, 1)
+paint.pixel(8, 0, 1)
+paint.pixel(0, 1, 1)
+paint.pixel(0, 24, 1)
+paint.pixel(8, 47, 1)
 paint.show()
-
-paint.text("Loulou", 0, 0)
-paint.show()
-
-
-
+# paint.text("Loulou", 0, 0)
+# paint.show()
