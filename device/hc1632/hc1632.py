@@ -2,7 +2,7 @@ from piabus import PiaBus
 import framebuf, time
 from piapico import PiaPico
 
-TEMPO = 100
+TEMPO = 0
 
 class Matrice(framebuf.FrameBuffer):
     def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
@@ -200,40 +200,22 @@ class HC1632:
 data_pin = PiaPico(8)
 write_pin = PiaPico(9)
 cs_pin = []
-cs_pin.append(PiaPico(10))
-cs_pin.append(PiaPico(11))
-cs_pin.append(PiaPico(12))
-cs_pin.append(PiaPico(13))
 cs_pin.append(PiaPico(14))
+cs_pin.append(PiaPico(12))
+cs_pin.append(PiaPico(10))
 cs_pin.append(PiaPico(15))
+cs_pin.append(PiaPico(13))
+cs_pin.append(PiaPico(11))
 # cs_pin.append(PiaPico(16))
 # cs_pin.append(PiaPico(17))
 # cs_pin.append(PiaPico(18))
 # cs_pin.append(PiaPico(19))
 
-# aff1 = HC1632(data_pin, write_pin, cs_pin[0], 1)
-# aff2 = HC1632(data_pin, write_pin, cs_pin[1], 0)
-# aff3 = HC1632(data_pin, write_pin, cs_pin[2], 0)
-# aff4 = HC1632(data_pin, write_pin, cs_pin[3], 0)
-# aff5 = HC1632(data_pin, write_pin, cs_pin[4], 0)
-# aff6 = HC1632(data_pin, write_pin, cs_pin[5], 0)
-# buf = bytearray(16*24>>3)
-# for i in range(16*24/8):
-#     buf[i] = 0xFF
-# aff1.write_led_buffer(0, buf)
-# aff2.write_led_buffer(0, buf)
-# aff3.write_led_buffer(0, buf)
-# aff4.write_led_buffer(0, buf)
-# aff5.write_led_buffer(0, buf)
-# aff6.write_led_buffer(0, buf)
-
 paint = Matrice(3, 2, data_pin, write_pin, cs_pin)
-paint.fill(1)
+paint.fill(0)
 paint.show()
-# paint.pixel(0, 0, 1)
-# paint.pixel(0, 24, 1)
-# for i in range(25):
-#     paint.pixel(0, i, 1)
-# paint.show()
-# paint.text("Loulou 1er", 0, 0)
-# paint.show()
+paint.text("Loulou", 0, 0)
+paint.text("Le", 0, 10)
+paint.text("Super", 0, 20)
+paint.text("Héro", 0, 30)
+paint.show()
