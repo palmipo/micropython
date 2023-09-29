@@ -2,7 +2,7 @@ from piabus import PiaBus
 import framebuf, time
 from piapico import PiaPico
 
-TEMPO = 10
+TEMPO = 999
 
 class Matrice(framebuf.FrameBuffer):
     def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
@@ -21,8 +21,8 @@ class Matrice(framebuf.FrameBuffer):
             for y in range(HC1632.hauteur):
                 for i in range(self.largeur):
                     index = (HC1632.largeur >> 3) * i + ((HC1632.largeur * self.largeur) >> 3) * y + ((HC1632.hauteur * HC1632.largeur * self.largeur) >> 3) * j
-                    print(i+self.largeur*j, HC1632.largeur*y, index, self.buffer[index:index+2])
-                    self.matrice[i+self.largeur*j].write_led_buffer(HC1632.largeur*y, self.buffer[index:index+2])
+                    print(i+self.largeur*j, (HC1632.largeur>>2)*y, index, self.buffer[index:index+2])
+                    self.matrice[i+self.largeur*j].write_led_buffer((HC1632.largeur>>2)*y, self.buffer[index:index+2])
 
 class HC1632:
     largeur = 16
@@ -33,7 +33,7 @@ class HC1632:
         self._cs_pin = cs_pin
 
         self._write_pin.setOutput(1)
-        self._data_pin.setOutput(0)
+        self._data_pin.setOutput(1)
         self._cs_pin.setOutput(1)
 
         self.__init_matrix__(master_mode)
@@ -47,7 +47,11 @@ class HC1632:
 
     def __write_bit__(self, valeur):
         self._write_pin.setOutput(0)
-        self._data_pin.setOutput(valeur)
+        
+        if valeur != 0:
+            self._data_pin.setOutput(1)
+        else:
+            self._data_pin.setOutput(0)
         time.sleep_us(TEMPO)
 
         self._write_pin.setOutput(1)
@@ -166,20 +170,6 @@ class HC1632:
 
         self.__write_chipselect__(0)
 
-    def write_led_pixel(self, address, buffer):
-        self.__write_chipselect__(1)
-        self.__write_bit__(1)
-        self.__write_bit__(0)
-        self.__write_bit__(1)
-        # address
-        for i in range(7):
-            self.__write_bit__(address & (1<<(6-i)))
-        # data
-        for i in range(4):
-            self.__write_bit__(buffer & (1<<i))
-            
-        self.__write_chipselect__(0)
-
     def __init_matrix__(self, master_mode):
         # SYS DIS
         self.__write_sys__(0)
@@ -216,26 +206,34 @@ cs_pin.append(PiaPico(12))
 cs_pin.append(PiaPico(13))
 cs_pin.append(PiaPico(14))
 cs_pin.append(PiaPico(15))
-cs_pin.append(PiaPico(16))
-cs_pin.append(PiaPico(17))
-cs_pin.append(PiaPico(18))
-cs_pin.append(PiaPico(19))
+# cs_pin.append(PiaPico(16))
+# cs_pin.append(PiaPico(17))
+# cs_pin.append(PiaPico(18))
+# cs_pin.append(PiaPico(19))
 
-# for i in range(10):
-#     aff = HC1632(data_pin, write_pin, cs_pin[i], 1)
-#     buf = bytearray(16*24>>3)
-#     buf[0] = 0xFF
-#     buf[1] = 0xFF
-#     aff.write_led_buffer(16, buf)
+aff1 = HC1632(data_pin, write_pin, cs_pin[0], 1)
+aff2 = HC1632(data_pin, write_pin, cs_pin[1], 0)
+aff3 = HC1632(data_pin, write_pin, cs_pin[2], 0)
+aff4 = HC1632(data_pin, write_pin, cs_pin[3], 0)
+aff5 = HC1632(data_pin, write_pin, cs_pin[4], 0)
+aff6 = HC1632(data_pin, write_pin, cs_pin[5], 0)
+buf = bytearray(16*24>>3)
+for i in range(16*24/8):
+    buf[i] = 0xFF
+aff1.write_led_buffer(0, buf)
+aff2.write_led_buffer(0, buf)
+aff3.write_led_buffer(0, buf)
+aff4.write_led_buffer(0, buf)
+aff5.write_led_buffer(0, buf)
+aff6.write_led_buffer(0, buf)
 
-paint = Matrice(1, 2, data_pin, write_pin, cs_pin)
+# paint = Matrice(1, 2, data_pin, write_pin, cs_pin)
 # paint.fill(0)
 # paint.show()
-paint.pixel(0, 0, 1)
-paint.pixel(8, 0, 1)
-paint.pixel(0, 1, 1)
-paint.pixel(0, 24, 1)
-paint.pixel(8, 47, 1)
-paint.show()
-# paint.text("Loulou", 0, 0)
+# paint.pixel(0, 0, 1)
+# paint.pixel(0, 24, 1)
+# for i in range(25):
+#     paint.pixel(0, i, 1)
+# paint.show()
+# paint.text("Loulou 1er", 0, 0)
 # paint.show()
