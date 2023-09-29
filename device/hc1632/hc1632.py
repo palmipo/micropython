@@ -2,14 +2,14 @@ from piabus import PiaBus
 import framebuf, time
 from piapico import PiaPico
 
-TEMPO = 999
+TEMPO = 100
 
 class Matrice(framebuf.FrameBuffer):
     def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
         self.hauteur = hauteur
         self.largeur = largeur
-        self.buffer = bytearray((HC1632.largeur * largeur * HC1632.hauteur * hauteur) >> 3)
-        super().__init__(self.buffer, HC1632.largeur * largeur, HC1632.hauteur * hauteur, framebuf.MONO_HMSB)
+        self.buffer = bytearray((HC1632.largeur * self.largeur * HC1632.hauteur * self.hauteur) >> 3)
+        super().__init__(self.buffer, HC1632.largeur * self.largeur, HC1632.hauteur * self.hauteur, framebuf.MONO_HMSB)
 
         self.matrice = []
         self.matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
@@ -21,7 +21,7 @@ class Matrice(framebuf.FrameBuffer):
             for y in range(HC1632.hauteur):
                 for i in range(self.largeur):
                     index = (HC1632.largeur >> 3) * i + ((HC1632.largeur * self.largeur) >> 3) * y + ((HC1632.hauteur * HC1632.largeur * self.largeur) >> 3) * j
-                    print(i+self.largeur*j, (HC1632.largeur>>2)*y, index, self.buffer[index:index+2])
+#                     print(i+self.largeur*j, (HC1632.largeur>>2)*y, index, self.buffer[index:index+2])
                     self.matrice[i+self.largeur*j].write_led_buffer((HC1632.largeur>>2)*y, self.buffer[index:index+2])
 
 class HC1632:
@@ -228,12 +228,12 @@ cs_pin.append(PiaPico(15))
 # aff6.write_led_buffer(0, buf)
 
 paint = Matrice(3, 2, data_pin, write_pin, cs_pin)
-paint.fill(0)
+paint.fill(1)
 paint.show()
 # paint.pixel(0, 0, 1)
 # paint.pixel(0, 24, 1)
 # for i in range(25):
 #     paint.pixel(0, i, 1)
 # paint.show()
-paint.text("Loulou 1er", 0, 0)
-paint.show()
+# paint.text("Loulou 1er", 0, 0)
+# paint.show()
