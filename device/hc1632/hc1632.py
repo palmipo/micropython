@@ -1,32 +1,11 @@
 from piabus import PiaBus
-import framebuf, time
-from piapico import PiaPico
-
-TEMPO = 0
-
-class Matrice(framebuf.FrameBuffer):
-    def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
-        self.hauteur = hauteur
-        self.largeur = largeur
-        self.buffer = bytearray((HC1632.largeur * self.largeur * HC1632.hauteur * self.hauteur) >> 3)
-        super().__init__(self.buffer, HC1632.largeur * self.largeur, HC1632.hauteur * self.hauteur, framebuf.MONO_HMSB)
-
-        self.matrice = []
-        self.matrice.append(HC1632(data_pin, write_pin, cs_pin[0], 1))
-        for i in range(1, len(cs_pin)):
-            self.matrice.append(HC1632(data_pin, write_pin, cs_pin[i], 0))
-    
-    def show(self):
-        for j in range(self.hauteur):
-            for y in range(HC1632.hauteur):
-                for i in range(self.largeur):
-                    index = (HC1632.largeur >> 3) * i + ((HC1632.largeur * self.largeur) >> 3) * y + ((HC1632.hauteur * HC1632.largeur * self.largeur) >> 3) * j
-#                     print(i+self.largeur*j, (HC1632.largeur>>2)*y, index, self.buffer[index:index+2])
-                    self.matrice[i+self.largeur*j].write_led_buffer((HC1632.largeur>>2)*y, self.buffer[index:index+2])
+import time
 
 class HC1632:
-    largeur = 16
-    hauteur = 24
+    WIDTH = 16
+    HEIGHT = 24
+    TEMPO = 0
+
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
         self._data_pin = data_pin
         self._write_pin = write_pin
@@ -43,7 +22,7 @@ class HC1632:
             self._cs_pin.setOutput(1)
         else:
             self._cs_pin.setOutput(0)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
 
     def __write_bit__(self, valeur):
         self._write_pin.setOutput(0)
@@ -52,10 +31,10 @@ class HC1632:
             self._data_pin.setOutput(1)
         else:
             self._data_pin.setOutput(0)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
 
         self._write_pin.setOutput(1)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
 
     def __write_sys__(self, on):
         self.__write_chipselect__(1)
@@ -173,50 +152,26 @@ class HC1632:
     def __init_matrix__(self, master_mode):
         # SYS DIS
         self.__write_sys__(0)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         # COM OPTION
         self.__write_com_option__(1)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         # MASTER MODE
         self.__write_mode__(master_mode)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         # SYS ON
         self.__write_sys__(1)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         # LED ON
         self.__write_led__(1)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         self.__write_blink__(0)
-        time.sleep_us(TEMPO)
+        time.sleep_us(HC1632.TEMPO)
         
         self.__write_led_pwm__(0x0F)
-        time.sleep_us(TEMPO)
-
-data_pin = PiaPico(8)
-write_pin = PiaPico(9)
-cs_pin = []
-cs_pin.append(PiaPico(14))
-cs_pin.append(PiaPico(12))
-cs_pin.append(PiaPico(10))
-cs_pin.append(PiaPico(15))
-cs_pin.append(PiaPico(13))
-cs_pin.append(PiaPico(11))
-# cs_pin.append(PiaPico(16))
-# cs_pin.append(PiaPico(17))
-# cs_pin.append(PiaPico(18))
-# cs_pin.append(PiaPico(19))
-
-paint = Matrice(3, 2, data_pin, write_pin, cs_pin)
-paint.fill(0)
-paint.show()
-paint.text("Loulou", 0, 0)
-paint.text("Le", 0, 10)
-paint.text("Nouveau", 0, 20)
-paint.text("Super", 0, 30)
-paint.text("Hero", 0, 40)
-paint.show()
+        time.sleep_us(HC1632.TEMPO)
