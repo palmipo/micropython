@@ -5,6 +5,7 @@ from hc1632matrix import Hc1632Matrix
 import micropython
 import machine
 import network, time, ntptime, ubinascii
+import onewire, ds18x20
 
 micropython.alloc_emergency_exception_buf(100)
 
@@ -88,13 +89,25 @@ class Aff:
 # clientsocket.close()
 # sock.close()
 
+ow = onewire.OneWire(machine.Pin(6)) # create a OneWire bus on GPIO12
+print(ow.scan())               # return a list of devices on the bus
+ow.reset()              # reset the bus
+ds = ds18x20.DS18X20(ow)
+roms = ds.scan()
+print(roms)
+ds.convert_temp()
+time.sleep_ms(750)
+for rom in roms:
+    print(ds.read_temp(rom))
+
 i=0
 aff = Aff()
 while True:
     if maj == 1:
+        ds.convert_temp()
         aff.paint.fill(0)
         aff.paint.text(aff.wlan.ifconfig()[0], 0, 0)
-        aff.paint.scroll(i, 0)
+        aff.paint.text('{}'.format(ds.read_temp(roms[0])), 0, 20)
         aff.paint.text(aff.rtc.getDate(), 0, 30)
         aff.paint.text(aff.rtc.getTime(), 0, 40)
         aff.paint.show()

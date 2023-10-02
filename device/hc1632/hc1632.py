@@ -173,5 +173,5 @@ class HC1632:
         self.__write_blink__(0)
         time.sleep_us(HC1632.TEMPO)
         
-        self.__write_led_pwm__(0x0F)
+        self.__write_led_pwm__(0x07)
         time.sleep_us(HC1632.TEMPO)
