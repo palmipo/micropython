@@ -4,7 +4,7 @@ import time
 class HC1632:
     WIDTH = 16
     HEIGHT = 24
-    TEMPO = 0
+    TEMPO = 1
 
     def __init__(self, data_pin, write_pin, cs_pin, master_mode):
         self._data_pin = data_pin

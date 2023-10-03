@@ -100,21 +100,16 @@ time.sleep_ms(750)
 for rom in roms:
     print(ds.read_temp(rom))
 
-i=0
 aff = Aff()
 while True:
     if maj == 1:
-        ds.convert_temp()
         aff.paint.fill(0)
         aff.paint.text(aff.wlan.ifconfig()[0], 0, 0)
-        aff.paint.text('{}'.format(ds.read_temp(roms[0])), 0, 20)
+        aff.paint.text('{:02}'.format(ds.read_temp(roms[0])), 0, 20)
         aff.paint.text(aff.rtc.getDate(), 0, 30)
         aff.paint.text(aff.rtc.getTime(), 0, 40)
         aff.paint.show()
-        maj = 0
-        i -= 5
-        if i==10:
-            i=0
+        ds.convert_temp()
 
 # wlan.disconnect()
 
