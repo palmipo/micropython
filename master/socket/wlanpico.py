@@ -1,7 +1,7 @@
 import network, time
 
 class WLanPico(WLanBus):
-    def open(self):
+    def connection(self):
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(True)
         self.wlan.connect('domoticus', '9foF2sxArWU5')
@@ -9,5 +9,5 @@ class WLanPico(WLanBus):
             time.sleep(1)
         time.sleep(5)
 
-    def close(self):
+    def disconnection(self):
         wlan.disconnect()

@@ -4,11 +4,11 @@ class SocketUdp(SocketBus):
     def __init__(self):
         super.__init__()
 
-    def connexion(self, adresse, port):
+    def connection(self, adresse, port):
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.__socket.connect(socket.getaddrinfo(adresse, port)[0][-1])
 
-    def deconnexion(self):
+    def disconnection(self):
         self.__socket.close()
 
     def send(self, cmd):

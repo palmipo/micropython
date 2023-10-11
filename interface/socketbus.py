@@ -1,9 +1,9 @@
 class SocketBus:
 
-    def connexion(self, adresse, port):
+    def connection(self, adresse, port):
         raise NotImplementedError
 
-    def deconnexion(self):
+    def disconnection(self):
         raise NotImplementedError
 
     def send(self, cmd):

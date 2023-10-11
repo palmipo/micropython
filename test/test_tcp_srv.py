@@ -1,4 +1,5 @@
-import network, time, socket, select
+import network, time, socket, select, ntptime
+
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
@@ -7,6 +8,11 @@ while not wlan.isconnected() and wlan.status() >= 0:
     time.sleep(1)
 time.sleep(5)
 print (wlan)
+
+ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
+# data_tuple = time.localtime()
+# laDate = "{:2}:{:2}:{:2}".format(str(data_tuple[2]), str(data_tuple[1]), str(data_tuple[0]))
+# lHeure = "{:2}:{:2}:{:2}".format(str(data_tuple[3]), str(data_tuple[4]), str(data_tuple[5]))
 
 sock_srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock_srv.bind((wlan.ifconfig()[0], 2222))
