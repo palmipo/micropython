@@ -7,40 +7,80 @@ import machine
 
 micropython.alloc_emergency_exception_buf(100)
 
-class WaveshareClockGreen:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
+
+class WaveshareGreenClockApps:
+    def cb_up(self):
+        raise NotImplementedError
+
+    def cb_down(self):
+        raise NotImplementedError
+
+    def cb_rtc(self):
+        raise NotImplementedError
+    
+    def next(self):
+        raise NotImplementedError
+
+class WaveshareGreenClock:
+    def __init__(self):
+        self.apps_curent = 0
+        self.apps = []
+
         self.picture = bytearray(4)
 
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231_SQW(0, self.i2c, 3, self.__irq__)
+        self.rtc = DS3231_SQW(0, self.i2c, 3, self.irq)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K0.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K0.irq(handler=self.callback_down, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
         self.K1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K1.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K1.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
         
         self.K2 = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K2.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K2.irq(handler=self.callback_up, trigger=machine.Pin.IRQ_FALLING, hard=True)
         
         self.buzzer = machine.Pin(14, machine.Pin.OUT)
 
-    def __callback__(self, pin):
+    def addApps(self, app):
+        self.apps_curent = 0
+        self.apps.append(app)
+
+    def callback(self, pin):
         state = machine.disable_irq()
         try:
-            print('bouton pressed {}'.format(pin.value()))
-        except BaseException:
-            print('WaveshareClockGreen exception callback')
-        machine.enable_irq(state)
+            self.apps_current += 1
+            if len(self.apps_current) == self.apps_current:
+                self.apps_curent = 0
+        except:
+            print('exception')
+        finally:
+            machine.enable_irq(state)
 
-    def __irq__(self, pin):
-        self.buzzer.toggle()
+    def callback_up(self, pin):
+        state = machine.disable_irq()
+        try:
+            self.apps[self.apps_curent].cb_up()
+        except:
+            pass
+        finally:
+            machine.enable_irq(state)
+
+    def callback_down(self, pin):
+        state = machine.disable_irq()
+        try:
+            self.apps[self.apps_curent].cb_down()
+        except:
+            pass
+        finally:
+            machine.enable_irq(state)
+
+    def irq(self, pin):
+        self.apps_curent.cb_rtc()
 
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
@@ -75,9 +115,8 @@ class WaveshareClockGreen:
             valeur = (champSrc.__valeur[octet] & (1 << bit)) >> bit
         
             champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
-#             print(i_octet, i_bit, octet, bit)
 
-    def show(self, buffer, x, y):
+    def show(self, buffer, width, height):
         for i in range(8):
             if i == 0:
                 self.picture[0] = 0
@@ -85,7 +124,7 @@ class WaveshareClockGreen:
                 self.picture[2] = 0
                 self.picture[3] = 0
             else:
-                self.encode(self.Champ(self.picture, 2, 22), self.Champ(buffer, x + self.width * (y + i-1), 22))
+                self.encode(self.Champ(self.picture, 2, 22), self.Champ(buffer, width * (i-1), 22))
             self.column.send(self.picture)
             self.row.setChannel(i)
             self.column.latch()

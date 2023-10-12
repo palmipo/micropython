@@ -15,9 +15,10 @@ class DS3231_SQW(DS3231):
 
     def __callback__(self, pin):
         state = machine.disable_irq()
-#         try:
-#             self.cb(pin)
-#         except BaseException:
-#             print('DS3231 exception callback')
-        machine.enable_irq(state)
+        try:
+            self.cb(pin)
+        except:
+            pass
+        finally:
+            machine.enable_irq(state)
 

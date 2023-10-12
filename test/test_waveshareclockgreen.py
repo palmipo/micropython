@@ -1,10 +1,5 @@
 import ntptime, network, framebuf, sys, time
-from waveshareclockgreen import WaveshareClockGreen
-
-width = 256
-height = 7
-clock = WaveshareClockGreen(width, height)
-clock.column.OutputEnable()
+from wavesharegreenclock import WaveshareGreenClock, WaveshareGreenClockApps
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
@@ -20,8 +15,32 @@ time.sleep(10)
 
 ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
 data_tuple = time.localtime()
-laDate = "{:02}:{:02}:{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
 lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+
+class AppTemperature(WaveshareGreenClockApps):
+    def __init__(self):
+        pass
+    
+    def cb_up(self):
+        print('up')
+
+    def next(self):
+        print('next')
+
+    def cb_down(self):
+        print('down')
+
+    def cb_rtc(self):
+        print('rtc')
+
+
+width = 256
+height = 7
+app_tempe = AppTemperature()
+clock = WaveshareGreenClock()
+clock.addApps(app_tempe)
+clock.column.OutputEnable()
 clock.rtc.setDate(laDate)
 clock.rtc.setDayWeek(str(data_tuple[6]))
 clock.rtc.setTime(lHeure)
@@ -34,7 +53,7 @@ frame.text("{} degres".format(str(float(temp))), 10, 0)
 
 i=0
 while True:
-    clock.show(buffer, 0, 0)
+    clock.show(buffer, width, height)
     frame.scroll(-1,0)
     if i >= width:
         i=0
