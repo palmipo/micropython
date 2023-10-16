@@ -18,7 +18,7 @@ class WaveshareGreenClockApps:
     def cb_rtc(self):
         raise NotImplementedError
     
-    def next(self):
+    def run(self):
         raise NotImplementedError
 
 class WaveshareGreenClock:
@@ -54,7 +54,7 @@ class WaveshareGreenClock:
         state = machine.disable_irq()
         try:
             self.apps_current += 1
-            if len(self.apps_current) == self.apps_current:
+            if len(self.apps_current) <= self.apps_current:
                 self.apps_curent = 0
         except:
             print('exception')
@@ -80,7 +80,7 @@ class WaveshareGreenClock:
             machine.enable_irq(state)
 
     def irq(self, pin):
-        self.apps_curent.cb_rtc()
+        self.apps[self.apps_curent].cb_rtc()
 
     class Champ:
         def __init__(self, valeur, bitDepart, nbBit):
@@ -117,7 +117,7 @@ class WaveshareGreenClock:
             champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
 
     def show(self, buffer, width, height):
-        for i in range(8):
+        for i in range(height + 1):
             if i == 0:
                 self.picture[0] = 0
                 self.picture[1] = 0

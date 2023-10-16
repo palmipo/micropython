@@ -11,12 +11,9 @@ wlan.active(True)
 wlan.connect('domoticus', '9foF2sxArWU5')
 while not wlan.isconnected() and wlan.status() >= 0:
     time.sleep(1)
-time.sleep(10)
+time.sleep(5)
 
 ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-data_tuple = time.localtime()
-laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 
 class AppTemperature(WaveshareGreenClockApps):
     def __init__(self):
@@ -25,8 +22,8 @@ class AppTemperature(WaveshareGreenClockApps):
     def cb_up(self):
         print('up')
 
-    def next(self):
-        print('next')
+    def run(self):
+        temp = clock.rtc.getTemperature()
 
     def cb_down(self):
         print('down')
@@ -34,6 +31,9 @@ class AppTemperature(WaveshareGreenClockApps):
     def cb_rtc(self):
         print('rtc')
 
+data_tuple = time.localtime()
+laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 
 width = 256
 height = 7
@@ -49,7 +49,7 @@ buffer = bytearray((width * height) >> 3)
 frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
 frame.fill(0)
 temp = clock.rtc.getTemperature()
-frame.text("{} degres".format(str(float(temp))), 10, 0)
+frame.text("{}".format(str(float(temp))), 10, 0)
 
 i=0
 while True:
