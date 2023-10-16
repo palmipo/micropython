@@ -7,32 +7,13 @@ import machine
 
 micropython.alloc_emergency_exception_buf(100)
 
-
-class WaveshareGreenClockApps:
-    def cb_up(self):
-        raise NotImplementedError
-
-    def cb_down(self):
-        raise NotImplementedError
-
-    def cb_rtc(self):
-        raise NotImplementedError
-    
-    def run(self):
-        raise NotImplementedError
-
 class WaveshareGreenClock:
     def __init__(self):
-        self.apps_curent = 0
-        self.apps = []
-
-        self.picture = bytearray(4)
-
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231_SQW(0, self.i2c, 3, self.irq)
+        self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
@@ -45,107 +26,33 @@ class WaveshareGreenClock:
         self.K2.irq(handler=self.callback_up, trigger=machine.Pin.IRQ_FALLING, hard=True)
         
         self.buzzer = machine.Pin(14, machine.Pin.OUT)
-
-    def addApps(self, app):
-        self.apps_curent = 0
-        self.apps.append(app)
+        
+        self.cb_up = False
+        self.cb_center = False
+        self.cb_down = False
+        self.cb_rtc = False
 
     def callback(self, pin):
         state = machine.disable_irq()
-        try:
-            self.apps_current += 1
-            if len(self.apps_current) <= self.apps_current:
-                self.apps_curent = 0
-        except:
-            print('exception')
-        finally:
-            machine.enable_irq(state)
+        self.cb_center = True
+        machine.enable_irq(state)
 
     def callback_up(self, pin):
         state = machine.disable_irq()
-        try:
-            self.apps[self.apps_curent].cb_up()
-        except:
-            pass
-        finally:
-            machine.enable_irq(state)
+        self.cb_up = True
+        machine.enable_irq(state)
 
     def callback_down(self, pin):
         state = machine.disable_irq()
-        try:
-            self.apps[self.apps_curent].cb_down()
-        except:
-            pass
-        finally:
-            machine.enable_irq(state)
+        self.cb_down = True
+        machine.enable_irq(state)
 
-    def irq(self, pin):
-        self.apps[self.apps_curent].cb_rtc()
+    def callback_rtc(self, pin):
+        self.cb_rtc = True
 
-    class Champ:
-        def __init__(self, valeur, bitDepart, nbBit):
-            self.__bitDepart = bitDepart
-            self.__nbBit = nbBit
-            self.__valeur = valeur
-
-        def valeur(self):
-            return self.__valeur
-
-        def nbByte(self):
-            nb = self.__nbBit >> 3
-            if (self.__nbBit % 8) > 0:
-                nb = 1 + (self.__nbBit >> 3)
-            return nb
-
-        def nbBit(self):
-            return self.__nbBit
-
-        def bitDepart(self):
-            return self.__bitDepart
-
-    def encode(self, champDst, champSrc):
-        for i in range(champSrc.nbBit()):
-            
-            i_octet = (champDst.bitDepart() + i) >> 3
-            i_bit = champDst.bitDepart() + i - (i_octet << 3)
-
-            octet = (champSrc.bitDepart() + i) >> 3
-            bit = champSrc.bitDepart() + i - (octet << 3)
-
-            valeur = (champSrc.__valeur[octet] & (1 << bit)) >> bit
-        
-            champDst.__valeur[i_octet] = (champDst.__valeur[i_octet] & ~(1 << i_bit)) | (valeur << i_bit)
-
-    def show(self, buffer, width, height):
-        for i in range(height + 1):
-            if i == 0:
-                self.picture[0] = 0
-                self.picture[1] = 0
-                self.picture[2] = 0
-                self.picture[3] = 0
-            else:
-                self.encode(self.Champ(self.picture, 2, 22), self.Champ(buffer, width * (i-1), 22))
-            self.column.send(self.picture)
+    # matrice de 4 * 8 bits
+    def show(self, buffer):
+        for i in range(8):
+            self.column.send(buffer[i*4 : i*4+4])
             self.row.setChannel(i)
             self.column.latch()
-
-
-# Monday = b'\x18\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Tuesday = b'\xC0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Wednesday = b'\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Thurday = b'\x00\x30\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Friday = b'\x00\x80\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Saturday = b'\x00\x00\x00\x0C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Sunday = b'\x00\x00\x00\x60\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# led1 = b'\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# led2 = b'\x20\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# MoveOn = b'\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# AlarmOn = b'\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# CountDown = b'\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# °F = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# °C = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# AM = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# PM = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# CountUp = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-# Hourly = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00'
-# AutoLight =  b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00'
