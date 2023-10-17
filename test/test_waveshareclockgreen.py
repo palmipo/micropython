@@ -35,27 +35,54 @@ from wavesharegreenclockcodec import WaveshareGreenClockCodec
 # 
 # 
 # class AppCompteur(WaveshareGreenClockApps):
-#     def __init__(self):
-#         width = 256
-#         height = 7
-#         buffer = bytearray((width * height) >> 3)
-#         frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
-#         frame.fill(0)
-#         temp = clock.rtc.getTemperature()
-#         frame.text("{}".format(str(float(temp))), 10, 0)
-#     
-#     def cb_up(self):
-#         print('up')
-# 
-#     def run(self, buffer):
-#         temp = clock.rtc.getTemperature()
-# 
-#     def cb_down(self):
-#         print('down')
-# 
-#     def cb_rtc(self):
-#         print('rtc')
-# 
+    # def __init__(self):
+        # width = 256
+        # height = 7
+        # buffer = bytearray((width * height) >> 3)
+        # frame = framebuf.FrameBuffer(buffer, width, height, framebuf.MONO_HMSB) # 154 bits / 20 octets
+        # frame.fill(0)
+        # temp = clock.rtc.getTemperature()
+        # frame.text("{}".format(str(float(temp))), 10, 0)
+    
+    # def cb_up(self):
+        # print('up')
+
+    # def run(self, buffer):
+        # temp = clock.rtc.getTemperature()
+
+    # def cb_down(self):
+        # print('down')
+
+    # def cb_rtc(self):
+        # print('rtc')
+
+class AppCompteur(WaveshareGreenClockApps):
+    def __init__(self):
+        self.codec = WaveshareGreenClockCodec()
+        self.ascii = WaveshareGreenClockAscii()
+        self.cpt_gauche = 0
+        self.cpt_droit = 0
+
+    def cb_up(self):
+        self.cpt_gauche += 1
+
+    def cb_down(self):
+        self.cpt_droit += 1
+
+    def cb_rtc(self):
+        print('rtc')
+
+    def run(self, buffer):
+        clock.column.OutputDisable()
+        texte = '{}:{}'.format(str(self.cpt_gauche), str(self.cpt_droit)) 
+        offset = 0
+        for i in range(len(texte)):
+            (a, w, h) = self.ascii.encode(texte[i])
+            for j in range(h):
+                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+            offset += w + 1
+        clock.column.OutputEnable()
+
 class AppTemperature(WaveshareGreenClockApps):
     def __init__(self):
         self.codec = WaveshareGreenClockCodec()
@@ -86,11 +113,10 @@ class AppTemperature(WaveshareGreenClockApps):
 
 
 buffer = bytearray(4*8)
-app_temp = AppTemperature()
+app_temp = AppCompteur()
 clock = WaveshareGreenClock()
 clock.column.OutputEnable()
 
 while True:
     app_temp.run(buffer)
     clock.show(buffer)
-        
