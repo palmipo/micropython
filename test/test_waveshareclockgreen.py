@@ -114,8 +114,8 @@ class AppTemperature(WaveshareGreenClockApps):
 
 
 buffer = bytearray(4*8)
-app = AppTime()
-# app = AppCompteur()
+# app = AppTime()
+app = AppCompteur()
 # app = AppTemperature()
 clock = WaveshareGreenClock(app.cb_up, app.cb_center, app.cb_down, app.cb_rtc)
 clock.column.OutputEnable()
