@@ -4,6 +4,9 @@ class WaveshareGreenClockApps:
     def cb_up(self):
         raise NotImplementedError
 
+    def cb_center(self):
+        raise NotImplementedError
+
     def cb_down(self):
         raise NotImplementedError
 
