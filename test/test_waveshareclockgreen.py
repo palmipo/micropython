@@ -5,33 +5,15 @@ from wavesharegreenclockascii import WaveshareGreenClockAscii5x7
 from wavesharegreenclockcodec import WaveshareGreenClockCodec
 from wavesharegreenclocktag import WaveshareGreenClockTag
 
-# ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-# clock.rtc.setDate(laDate)
-# clock.rtc.setDayWeek(str(data_tuple[6]))
-# clock.rtc.setTime(lHeure)
-# data_tuple = time.localtime()
-# laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-# lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-
 class AppTime(WaveshareGreenClockApps):
     def __init__(self):
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii5x7()
         self.tag = WaveshareGreenClockTag()
-
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        wlan.connect('domoticus', '9foF2sxArWU5')
-        while not wlan.isconnected() and wlan.status() >= 0:
-            time.sleep(1)
-        time.sleep(10)
-        
+        self.rtc = False
 
     def cb_up(self):
-        ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-        clock.rtc.setDate(laDate)
-        clock.rtc.setDayWeek(str(data_tuple[6]))
-        clock.rtc.setTime(lHeure)
+        pass
 
     def cb_center(self):
         pass
@@ -40,18 +22,19 @@ class AppTime(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        pass
+        self.rtc = True
 
     def run(self, buffer):
-        data_tuple = time.localtime()
-        lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
-        
-        offset = 0
-        for i in range(len(lHeure)):
-            (a, w, h) = self.ascii.encode(lHeure[i])
-            for j in range(h):
-                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
-            offset += w + 1
+        if self.rtc == True:
+            data_tuple = time.localtime()
+            lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
+            
+            offset = 0
+            for i in range(len(lHeure)):
+                (a, w, h) = self.ascii.encode(lHeure[i])
+                for j in range(h):
+                    self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                offset += w + 1
 
 class AppCompteur(WaveshareGreenClockApps):
     def __init__(self):
@@ -113,15 +96,30 @@ class AppTemperature(WaveshareGreenClockApps):
 
 
 
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect('domoticus', '9foF2sxArWU5')
+while not wlan.isconnected() and wlan.status() >= 0:
+    time.sleep(1)
+time.sleep(10)
+
 buffer = bytearray(4*8)
-# app = AppTime()
-app = AppCompteur()
+app = AppTime()
+# app = AppCompteur()
 # app = AppTemperature()
 clock = WaveshareGreenClock(app.cb_up, app.cb_center, app.cb_down, app.cb_rtc)
-clock.column.OutputEnable()
+
+ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
+data_tuple = time.localtime()
+laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+clock.rtc.setDate(laDate)
+clock.rtc.setDayWeek(str(data_tuple[6]))
+clock.rtc.setTime(lHeure)
 
 while True:
     for i in range(len(buffer)):
         buffer[i] = 0
     app.run(buffer)
     clock.show(buffer)
+

@@ -40,37 +40,27 @@ class WaveshareGreenClock:
 
     def callback(self, pin):
         state = machine.disable_irq()
-        try:
-            self.cb_center()
-        except:
-            pass
-        finally:
-            machine.enable_irq(state)
+        self.cb_center()
+        machine.enable_irq(state)
 
     def callback_up(self, pin):
         state = machine.disable_irq()
-        try:
-            self.cb_up()
-        except:
-            pass
-        finally:
-            machine.enable_irq(state)
+        self.cb_up()
+        machine.enable_irq(state)
 
     def callback_down(self, pin):
         state = machine.disable_irq()
-        try:
-            self.cb_down()
-        except:
-            pass
-        finally:
-            machine.enable_irq(state)
+        self.cb_down()
+        machine.enable_irq(state)
 
     def callback_rtc(self, pin):
         self.cb_rtc()
 
     # matrice de 4 * 8 bits
     def show(self, buffer):
+        self.column.OutputEnable()
         for i in range(8):
             self.column.send(buffer[i*4 : i*4+4])
             self.row.setChannel(i)
             self.column.latch()
+        self.column.OutputDisable()
