@@ -14,11 +14,13 @@ class PiaPico(PiaBus):
 
     def callback(pin):
         state = machine.disable_irq()
-        self.cb()
-        machine.enable_irq(state)
+        try:
+            self.cb()
+        finally:
+            machine.enable_irq(state)
 
-    def setOutput(self, value):
+    def set(self, value):
         self.pin.value(value)
 
-    def getInput(self):
+    def get(self):
         return self.pin.value()

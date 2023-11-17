@@ -1,7 +1,7 @@
 class PiaBus:
    
-  def setOutput(self, value):
+  def set(self, value):
     raise NotImplementedError
     
-  def getInput(self):
+  def get(self):
     raise NotImplementedError

@@ -21,6 +21,6 @@ class I2CPico(I2CBus):
     def recv(self, addr, n_byte):
         return self.busi2c.readfrom(addr, n_byte)
     
-    def transferer(self, addr, cmd, n_byte):
+    def transfer(self, addr, cmd, n_byte):
         self.busi2c.writeto(addr, cmd, False)
         return self.busi2c.readfrom(addr, n_byte)

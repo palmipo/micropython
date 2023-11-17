@@ -6,9 +6,9 @@ class PiaPcf8574(PiaBus):
     super().__init__()
     self.pcf8574 = pcf8574
     
-  def setOutput(self, value):
+  def set(self, value):
     self.pcf8574.setOLAT(value)
 
-  def getInput(self):
+  def get(self):
     value = self.pcf8574.getGPIO()
     return value

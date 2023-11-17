@@ -7,9 +7,9 @@ class PiaMCP23017(PiaBus):
     self.port = port
     self.pia = pia
     
-  def setOutput(self, value):
+  def set(self, value):
     self.pia.setOLAT(self.port, value)
    
-  def getInput(self):
+  def get(self):
     value = self.pia.getGPIO(self.port)
     return value

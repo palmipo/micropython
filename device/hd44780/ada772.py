@@ -9,7 +9,7 @@ import time
 
 class ADA772(LCD2004):
 
-    def __init__(self, adresse, i2c):
+    def __init__(self, adresse, i2c, irq):
         super().__init__(adresse, i2c)
 
         self.BACKLIGHT = 0
@@ -31,8 +31,10 @@ class ADA772(LCD2004):
         self.gpio.setDEFVAL(0, 0x1f)
         self.gpio.setIODIR(1, 0)
 
-        self.pia = PIA_MCP23017(1, gpio)
-        self.switchs = PIA_MCP23017(0, gpio)
+        self.irq = PiaPico(irq, self.scrute)
+
+        self.pia = PIA_MCP23017(1, self.gpio)
+        self.switchs = PIA_MCP23017(0, self.gpio)
 
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
@@ -45,7 +47,6 @@ class ADA772(LCD2004):
             self.switchs.setOutput(0xE0)
 
     def scrute(self, pin):
-        state = machine.disable_irq()
         sw = self.gpio.getGPIO(0)
         if sw & 1:
             print("bouton select")
@@ -57,4 +58,3 @@ class ADA772(LCD2004):
             print("bouton haut")
         if sw & 16:
             print("bouton gauche")
-        machine.enable_irq(state)

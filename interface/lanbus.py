@@ -1,6 +1,6 @@
 class LanBus:
-    def connection(self):
+    def connect(self):
         raise NotImplementedError
     
-    def disconnection(self):
+    def disconnect(self):
         raise NotImplementedError
