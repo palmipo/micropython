@@ -2,7 +2,6 @@ import rp2
 import time
 import machine
 import micropython
-micropython.alloc_emergency_exception_buf(100)
 
 class AntiRebond:
     def __init__(self, pinA, cback, tempo=100):

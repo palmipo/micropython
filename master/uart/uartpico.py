@@ -15,6 +15,6 @@ class UartPico(UartBus):
         rxData = self.__uart.read(n_byte)
         return rxData
 
-    def transfer(self, cmd, n_byte):
+    def transfert(self, cmd, n_byte):
         self.send(cmd)
         return self.recv(n_byte)

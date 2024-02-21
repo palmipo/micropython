@@ -1,15 +1,7 @@
 import network, time, ntptime, ubinascii
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
-print(mac)
-wlan.connect('domoticus', '9foF2sxArWU5')
-while not wlan.isconnected() and wlan.status() >= 0:
-  print("Waiting to connect:")
-  time.sleep(1)
-time.sleep(5)
-print(wlan.ifconfig())
+wlan = WLanPico()
+wlan.connect()
 
 ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
 data_tuple = time.localtime()

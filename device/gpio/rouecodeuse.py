@@ -8,30 +8,15 @@ micropython.alloc_emergency_exception_buf(100)
 
 class RoueCodeuse:
     def __init__(self, pinA, pinB, pinSelect):
-        self.pinA = Pin(pinA, Pin.IN, Pin.PULL_UP)
-        self.pinA.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING, hard=True)
-        self.pinAValue = self.pinA.value()
-
-        self.pinB = Pin(pinB, Pin.IN, Pin.PULL_UP)
-        self.pinB.irq(self.cb, Pin.IRQ_FALLING | Pin.IRQ_RISING, hard=True)
-        self.pinBValue = self.pinB.value()
+        self.pinA = AntiRebond(pinA, self.cb)
+        self.pinB = AntiRebond(pinB, self.cb)
 
         self.pinS = AntiRebond(pinSelect, self.cbS, 200)
-
-        self.newValue = 0
-        self.oldValue = (self.pinAValue << 1) | self.pinBValue
-
-        self.clic = time.ticks_cpu()
 
     def cbS(self):
         print("valdation")
 
     def cb(self, pin):
-        state = machine.disable_irq()
-        now = time.ticks_cpu()
-        if time.ticks_diff(now, self.clic) > 100:
-            self.clic = now
-
             self.pinAValue = self.pinA.value()
             self.pinBValue = self.pinB.value()
             self.newValue = (self.pinAValue << 1) | self.pinBValue
@@ -51,6 +36,3 @@ class RoueCodeuse:
                 else:
                     self.sens = 0
                     print("sens 0")
-            
-            self.oldValue = self.newValue
-        machine.enable_irq(state)

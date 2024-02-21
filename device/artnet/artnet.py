@@ -2,8 +2,8 @@ import socket
 
 class ArtNet:
 
-	def __init__(self, protocol, portPhysique, univers):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	def __init__(self, sock, protocol, portPhysique, univers):
+		_sock = sock
 		trameDmx = bytearray(530)
 		trameDmx[0] = 'A'
 		trameDmx[1] = 'r'
@@ -24,15 +24,29 @@ class ArtNet:
 		trameDmx[16] = 0x02
 		trameDmx[17] = 0x00
 
-	def connect(self, adresseIp):
-		sock.connect(adresseIp, 0x1936)
-
 	def setValue(self, canal, valeur):
 		trameDmx[18+canal] = valeur;
 
 	def write(self, numeroTrame):
 		trameDmx[12] = numeroTrame & 0xFF
-		sock.write(trameDmx)
+		_sock.write(trameDmx)
 
-	def close(self):
-		sock.close()
+
+wlan = WLanPico()
+wlan.connect()
+
+sock = SocketUdp()
+sock.connect("192.168.10.12", 0x1936)
+
+dmx = ArtNet(sock, 0, 0, 0)
+time.sleep(1)
+
+dmx.setValue(0, 255)
+dmx.setValue(1, 255)
+dmx.write(0)
+
+time.sleep(0.1)
+
+sock.close()
+
+wlan.disconnect()

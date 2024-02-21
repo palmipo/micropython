@@ -1,20 +1,13 @@
-#import network
 import time
-#import ubinascii
 import socket
 
-#wlan = network.WLAN(network.STA_IF)
-#wlan.active(True)
-#wlan.connect('xxxx', 'xxxx')
-#while not wlan.isconnected() and wlan.status() >= 0:
-#  print("Waiting to connect:")
-#  time.sleep(1)
-#time.sleep(5)
-#print(wlan.ifconfig())
+wlan = LanBus()
+wlan.connect()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.connect(socket.getaddrinfo("192.168.10.12", 0x1936)[0][-1])
+sock = SocketUdp()
+sock.connect("192.168.10.12", 0x1936)
 time.sleep(1)
+
 dmx = bytearray(530)
 dmx[0] = 0x41
 dmx[1] = 0x72
@@ -45,8 +38,11 @@ dmx[18] = i
 dmx[23] = 0xFF - i
 # dmx[24] = 0x00
 # dmx[25] = 0x00
+
 sock.send(dmx)
+
 time.sleep(0.1)
+
 sock.close()
 
-#wlan.disconnect()
+wlan.disconnect()

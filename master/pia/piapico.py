@@ -3,15 +3,6 @@ from machine import Pin
 from piabus import PiaBus
 
 class PiaPico(PiaBus):
-    
-    def __init__(self, nPin, cb):
-        if cb == None:
-            self.pin = Pin(nPin, Pin.OUT)
-        else:
-            self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
-            self.pin.irq(self.callback, Pin.IRQ_FALLING)
-            self.cb = cb
-
     def callback(pin):
         state = machine.disable_irq()
         try:
@@ -24,3 +15,19 @@ class PiaPico(PiaBus):
 
     def get(self):
         return self.pin.value()
+
+class PiaPicoOutput(PiaPico):
+    def __init__(self, nPin):
+        self.pin = Pin(nPin, Pin.OUT)
+        super.__init__(nPin)
+
+class PiaPicoInput(PiaPico):
+    def __init__(self, nPin):
+        self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
+        super.__init__()
+
+    def __init__(self, nPin, cb):
+        self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
+        self.pin.irq(self.callback, Pin.IRQ_FALLING)
+        self.cb = cb
+        super.__init__()

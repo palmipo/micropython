@@ -9,5 +9,5 @@ class I2CBus:
     def recv(self, addr, n_byte):
         raise NotImplementedError
     
-    def transfer(self, addr, cmd, n_byte):
+    def transfert(self, addr, cmd, n_byte):
         raise NotImplementedError

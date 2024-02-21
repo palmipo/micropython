@@ -1,6 +1,6 @@
-import network, time
+import network, time, socket, select, ntptime
 
-class WLanPico(WLanBus):
+class WLanPico(LanBus):
     def connect(self):
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(True)
@@ -11,3 +11,10 @@ class WLanPico(WLanBus):
 
     def disconnect(self):
         wlan.disconnect()
+
+    def ntp(self):
+        ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
+        # data_tuple = time.localtime()
+        # laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+        # lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+        return time.localtime()

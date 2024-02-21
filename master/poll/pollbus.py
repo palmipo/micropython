@@ -26,11 +26,11 @@ class Poll:
     def remove(self, obj):
         self.poll.unregister(obj)
 
-	def run(self):
+	def run(self, timeout):
 		try:
-			events = self.poll.poll(20)
+			events = self.poll.poll(timeout)
 			if not events:
-				self.cb_timeout()
+				return 0
 
 			else:
 				for (fd, event) in events:
@@ -45,7 +45,9 @@ class Poll:
 
                     elif (event == select.POLLERR):
                         obj.cb_pollerr()
+                return 1
 
 		except OSError:
 			print('erreur poll')
+            return -1
 

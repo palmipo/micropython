@@ -4,6 +4,7 @@ from wavesharegreenclockapps import WaveshareGreenClockApps
 from wavesharegreenclockascii import WaveshareGreenClockAscii5x7
 from wavesharegreenclockcodec import WaveshareGreenClockCodec
 from wavesharegreenclocktag import WaveshareGreenClockTag
+from wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self):
@@ -96,12 +97,8 @@ class AppTemperature(WaveshareGreenClockApps):
 
 
 
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('domoticus', '9foF2sxArWU5')
-while not wlan.isconnected() and wlan.status() >= 0:
-    time.sleep(1)
-time.sleep(10)
+wlan = WLanPico()
+wlan.connect()
 
 buffer = bytearray(4*8)
 app = AppTime()
@@ -123,3 +120,4 @@ while True:
     app.run(buffer)
     clock.show(buffer)
 
+wlan.disconnect()

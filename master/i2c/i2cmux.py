@@ -23,7 +23,7 @@ class I2CMux(I2CBus):
         data = self.__busi2c.recv(addr, n_byte)
         return data
     
-    def transferer(self, addr, cmd, n_byte):
+    def transfert(self, addr, cmd, n_byte):
         self.__multiplexeur.setCanal(1 << self.__canal)
         data = self.__busi2c.transferer(addr, cmd, n_byte)
         return data

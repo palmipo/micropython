@@ -24,34 +24,22 @@ class WaveshareGreenClock:
         else:
             self.rtc = DS3231(0, self.i2c)
 
-        self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_down != None:
-            self.K0.irq(handler=self.callback_down, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K0 = PiaPicoInp(15, self.callback_down)
 
-        self.K1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_center != None:
-            self.K1.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K1 = PiaPicoInp(17, self.callback)
         
-        self.K2 = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_up != None:
-            self.K2.irq(handler=self.callback_up, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K2 = PiaPicoInp(2, self.callback_up)
         
-        self.buzzer = machine.Pin(14, machine.Pin.OUT)
+        self.buzzer = PiaPicoOut(14)
 
     def callback(self, pin):
-        state = machine.disable_irq()
         self.cb_center()
-        machine.enable_irq(state)
 
     def callback_up(self, pin):
-        state = machine.disable_irq()
         self.cb_up()
-        machine.enable_irq(state)
 
     def callback_down(self, pin):
-        state = machine.disable_irq()
         self.cb_down()
-        machine.enable_irq(state)
 
     def callback_rtc(self, pin):
         self.cb_rtc()

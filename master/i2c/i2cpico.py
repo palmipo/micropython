@@ -11,16 +11,11 @@ class I2CPico(I2CBus):
         return self.busi2c.scan()
         
     def send(self, addr, cmd):
-#         print (cmd)
-        try:
-            self.busi2c.writeto(addr, cmd)
-        except OSError:
-            print("erreur send i2c")
-            pass
+        self.busi2c.writeto(addr, cmd)
     
     def recv(self, addr, n_byte):
         return self.busi2c.readfrom(addr, n_byte)
-    
-    def transfer(self, addr, cmd, n_byte):
+
+    def transfert(self, addr, cmd, n_byte):
         self.busi2c.writeto(addr, cmd, False)
         return self.busi2c.readfrom(addr, n_byte)

@@ -17,8 +17,6 @@ class DS3231_SQW(DS3231):
         state = machine.disable_irq()
         try:
             self.cb(pin)
-        except:
-            pass
         finally:
             machine.enable_irq(state)
 
