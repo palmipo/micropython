@@ -22,4 +22,4 @@ class UartRaspi(UartBus):
         return self.recv(n_byte)
 
 
-raspi = UartRaspi("/dev/ttyAMA0", 115500)
+raspi = UartRaspi("/dev/ttyAMA0", 115200)
