@@ -95,12 +95,9 @@ class AppTemperature(WaveshareGreenClockApps):
                 self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
-
-
 wlan = WLanPico()
 wlan.connect()
 
-buffer = bytearray(4*8)
 app = AppTime()
 # app = AppCompteur()
 # app = AppTemperature()
@@ -114,10 +111,18 @@ clock.rtc.setDate(laDate)
 clock.rtc.setDayWeek(str(data_tuple[6]))
 clock.rtc.setTime(lHeure)
 
-while True:
+fin = False
+buffer = bytearray(4*8)
+
+def thread_run():
+    while (!fin):
+        clock.show(buffer)
+
+_thread.start_new_thread(thread_run);
+
+while (!fin):
     for i in range(len(buffer)):
         buffer[i] = 0
     app.run(buffer)
-    clock.show(buffer)
 
 wlan.disconnect()
