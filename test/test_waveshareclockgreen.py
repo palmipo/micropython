@@ -1,4 +1,4 @@
-import ntptime, network, framebuf, sys, time
+import ntptime, network, framebuf, sys, time, _thread
 from wavesharegreenclock import WaveshareGreenClock
 from wavesharegreenclockapps import WaveshareGreenClockApps
 from wavesharegreenclockascii import WaveshareGreenClockAscii5x7
@@ -115,14 +115,15 @@ fin = False
 buffer = bytearray(4*8)
 
 def thread_run():
-    while (!fin):
+    while (True):
         clock.show(buffer)
 
-_thread.start_new_thread(thread_run);
+_thread.start_new_thread(thread_run, ());
 
-while (!fin):
+while (True):
     for i in range(len(buffer)):
         buffer[i] = 0
     app.run(buffer)
+    time.sleep_us(1000000)
 
 wlan.disconnect()

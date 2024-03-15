@@ -1,4 +1,8 @@
-class WaveshareGreenClockAscii5x7:
+class WaveshareGreenClockAscii:
+    def encode(self, caractere):
+        return self.tab[caractere]
+
+class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
     def __init__(self):
         self.tab = {
             "0": (b'\x0E\x11\x19\x15\x13\x11\x0E', 5, 7),
@@ -41,6 +45,47 @@ class WaveshareGreenClockAscii5x7:
             "Y": (b'\x11\x11\x0A\x04\x04\x04\x04', 5, 7),
             "Z": (b'\x1F\x10\x08\x04\x02\x01\x1F', 5, 7)
             }
-        
-    def encode(self, caractere):
-        return self.tab[caractere]
+
+class WaveshareGreenClockAscii4x7(WaveshareGreenClockAscii):
+    def __init__(self):
+        self.tab = {
+            "0": (b'\x06\x09\x19\x15\x13\x11\x0E', 5, 7),
+            "1": (b'\x02\x03\x02\x02\x02\x02\x07', 3, 7),
+            "2": (b'\x0E\x11\x10\x08\x04\x02\x1F', 5, 7),
+            "3": (b'\x1F\x08\x04\x08\x10\x11\x0E', 5, 7),
+            "4": (b'\x08\x0C\x0A\x09\x1F\x08\x08', 5, 7),
+            "5": (b'\x1F\x01\x0F\x10\x10\x11\x0E', 5, 7),
+            "6": (b'\x0C\x02\x01\x0F\x11\x11\x0E', 5, 7),
+            "7": (b'\x1F\x10\x08\x04\x02\x02\x02', 5, 7),
+            "8": (b'\x0E\x11\x11\x0E\x11\x11\x0E', 5, 7),
+            "9": (b'\x0E\x11\x11\x1E\x10\x08\x06', 5, 7),
+            ".": (b'\x00\x00\x00\x00\x00\x01\x00', 1, 7),
+            ":": (b'\x00\x01\x01\x00\x01\x01\x00', 1, 7),
+            "/": (b'\x00\x10\x08\x04\x02\x01\x00', 1, 7),
+            "A": (b'\x0E\x11\x11\x1F\x11\x11\x11', 5, 7),
+            "B": (b'\x0F\x11\x11\x0F\x11\x11\x0F', 5, 7),
+            "C": (b'\x0E\x11\x01\x01\x01\x11\x0E', 5, 7),
+            "D": (b'\x0F\x11\x11\x11\x11\x11\x0F', 5, 7),
+            "E": (b'\x1F\x01\x01\x0F\x01\x01\x1F', 5, 7),
+            "F": (b'\x1F\x01\x01\x0F\x01\x01\x01', 5, 7),
+            "G": (b'\x0E\x11\x01\x01\x19\x11\x0E', 5, 7),
+            "H": (b'\x11\x11\x11\x1F\x11\x11\x11', 5, 7),
+            "I": (b'\x07\x02\x02\x02\x02\x02\x07', 3, 7),
+            "J": (b'\x1C\x08\x08\x08\x08\x09\x06', 5, 7),
+            "K": (b'\x11\x09\x05\x03\x05\x09\x11', 5, 7),
+            "L": (b'\x01\x01\x01\x01\x01\x01\x1F', 5, 7),
+            "M": (b'\x11\x1B\x15\x15\x11\x11\x11', 5, 7),
+            "N": (b'\x11\x11\x13\x15\x19\x11\x11', 5, 7),
+            "O": (b'\x0E\x11\x11\x11\x11\x11\x0E', 5, 7),
+            "P": (b'\x0F\x11\x11\x0F\x01\x01\x01', 5, 7),
+            "Q": (b'\x0E\x11\x11\x11\x15\09x\16x', 5, 7),
+            "R": (b'\x0F\x11\x11\x0F\x05\x09\x11', 5, 7),
+            "S": (b'\x1E\x01\x01\x0E\x10\x10\x0F', 5, 7),
+            "T": (b'\x07\x02\x02\x02\x02\x02\x02', 3, 7),
+            "U": (b'\x05\x05\x05\x05\x05\x05\x07', 3, 7),
+            "V": (b'\x11\x11\x11\x11\x0A\x0A\x04', 5, 7),
+            "W": (b'\x11\x11\x11\x15\x15\x15\x0A', 5, 7),
+            "X": (b'\x11\x11\x0A\x04\x0A\x11\x11', 5, 7),
+            "Y": (b'\x11\x11\x0A\x04\x04\x04\x04', 5, 7),
+            "Z": (b'\x1F\x10\x08\x04\x02\x01\x1F', 5, 7)
+            }

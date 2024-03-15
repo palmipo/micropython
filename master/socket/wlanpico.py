@@ -1,4 +1,5 @@
 import network, time, socket, select, ntptime
+from lanbus import LanBus
 
 class WLanPico(LanBus):
     def connect(self):
