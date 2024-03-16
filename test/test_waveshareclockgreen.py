@@ -1,6 +1,7 @@
 import ntptime, network, framebuf, sys, time, _thread
 from wavesharegreenclock import WaveshareGreenClock
 from wavesharegreenclockapps import WaveshareGreenClockApps
+from wavesharegreenclockascii import WaveshareGreenClockAscii4x7
 from wavesharegreenclockascii import WaveshareGreenClockAscii5x7
 from wavesharegreenclockcodec import WaveshareGreenClockCodec
 from wavesharegreenclocktag import WaveshareGreenClockTag
@@ -9,7 +10,7 @@ from wlanpico import WLanPico
 class AppTime(WaveshareGreenClockApps):
     def __init__(self):
         self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii5x7()
+        self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
         self.rtc = False
 
@@ -113,17 +114,24 @@ clock.rtc.setTime(lHeure)
 
 fin = False
 buffer = bytearray(4*8)
+mutex = _thread.allocate_lock()
 
 def thread_run():
     while (True):
+        mutex.acquire(-1, -1)
+        mutex.locked()
         clock.show(buffer)
+        mutex.release()
 
 _thread.start_new_thread(thread_run, ());
 
 while (True):
-    for i in range(len(buffer)):
-        buffer[i] = 0
+    mutex.acquire(-1, -1)
+    mutex.locked()
+#     for i in range(len(buffer)):
+#         buffer[i] = 0
     app.run(buffer)
-    time.sleep_us(1000000)
+    mutex.release()
+    time.sleep_us(500000)
 
 wlan.disconnect()
