@@ -9,10 +9,10 @@ from wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self):
+        super.__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
-        self.rtc = False
 
     def cb_up(self):
         pass
@@ -24,24 +24,24 @@ class AppTime(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        self.rtc = True
-
+        pass
+    
     def run(self, buffer):
-        if self.rtc == True:
-            data_tuple = time.localtime()
-            lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
-            
-            offset = 0
-            for i in range(len(lHeure)):
-                (a, w, h) = self.ascii.encode(lHeure[i])
-                for j in range(h):
-                    self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
-                offset += w + 1
+        data_tuple = time.localtime()
+        lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
+        
+        offset = 0
+        for i in range(len(lHeure)):
+            (a, w, h) = self.ascii.encode(lHeure[i])
+            for j in range(h):
+                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+            offset += w + 1
 
 class AppCompteur(WaveshareGreenClockApps):
     def __init__(self):
+        super.__init__()
         self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii5x7()
+        self.ascii = WaveshareGreenClockAscii4x7()
         self.cpt_gauche = 0
         self.cpt_droit = 0
 
@@ -52,8 +52,7 @@ class AppCompteur(WaveshareGreenClockApps):
         self.cpt_droit += 1
 
     def cb_center(self):
-        self.cpt_gauche = 0
-        self.cpt_droit = 0
+        pass
 
     def cb_rtc(self):
         pass
@@ -69,8 +68,9 @@ class AppCompteur(WaveshareGreenClockApps):
 
 class AppTemperature(WaveshareGreenClockApps):
     def __init__(self):
+        super.__init__()
         self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii5x7()
+        self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
 
     def cb_up(self):
@@ -96,13 +96,43 @@ class AppTemperature(WaveshareGreenClockApps):
                 self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
+
+class AppMain(WaveshareGreenClockApps):
+    def __init__(self):
+        super.__init__()
+        self.cpt = 1
+        self.app = AppTime()
+
+    def cb_up(self):
+        self.app.cb_up()
+
+    def cb_center(self):
+        if self.cpt == 0:
+            self.app = AppTime()
+            self.cpt = 1
+            
+        elif self.cpt == 1:
+            self.app = AppCompteur()
+            self.cpt = 2
+            
+        elif self.cpt == 2:
+            self.app = AppTemperature()
+            self.cpt = 0
+
+    def cb_down(self):
+        self.app.cb_down()
+
+    def cb_rtc(self):
+        self.app.cb_rtc()
+
+    def run(self, buffer):
+        self.app.run(buffer)
+
 wlan = WLanPico()
 wlan.connect()
 
-app = AppTime()
-# app = AppCompteur()
-# app = AppTemperature()
-clock = WaveshareGreenClock(app.cb_up, app.cb_center, app.cb_down, app.cb_rtc)
+app = AppMain()
+clock = WaveshareGreenClock(app.cb_up, app.cb_center, app.cb_down, None)#app.cb_rtc)
 
 ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
 data_tuple = time.localtime()
@@ -132,6 +162,6 @@ while (True):
 #         buffer[i] = 0
     app.run(buffer)
     mutex.release()
-    time.sleep_us(500000)
+    time.sleep(10)
 
 wlan.disconnect()

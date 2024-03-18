@@ -2,6 +2,7 @@ from sm5166 import SM5166P
 from sm16106 import SM16106SC
 from i2cpico import I2CPico
 from ds3231_sqw import DS3231_SQW
+from ds3231 import DS3231
 import micropython
 import machine
 

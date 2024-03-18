@@ -4,6 +4,7 @@ class WaveshareGreenClockAscii:
 
 class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
     def __init__(self):
+        super.__init__()
         self.tab = {
             "0": (b'\x0E\x11\x19\x15\x13\x11\x0E', 5, 7),
             "1": (b'\x02\x03\x02\x02\x02\x02\x07', 3, 7),
@@ -15,7 +16,7 @@ class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
             "7": (b'\x1F\x10\x08\x04\x02\x02\x02', 5, 7),
             "8": (b'\x0E\x11\x11\x0E\x11\x11\x0E', 5, 7),
             "9": (b'\x0E\x11\x11\x1E\x10\x08\x06', 5, 7),
-            ".": (b'\x00\x00\x00\x00\x00\x01\x00', 1, 7),
+            ".": (b'\x00\x00\x00\x00\x00\x00\x01', 1, 7),
             ":": (b'\x00\x01\x01\x00\x01\x01\x00', 1, 7),
             "/": (b'\x00\x00\x08\x04\x02\x01\x00', 1, 7),
             "A": (b'\x0E\x11\x11\x1F\x11\x11\x11', 5, 7),
@@ -48,7 +49,8 @@ class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
 
 class WaveshareGreenClockAscii4x7(WaveshareGreenClockAscii):
     def __init__(self):
-        self.tab = {
+       super.__init__()
+       self.tab = {
             "0": (b'\x06\x09\x09\x0d\x0b\x09\x06', 4, 7),
             "1": (b'\x04\x06\x04\x04\x04\x04\x0e', 4, 7),
             "2": (b'\x06\x09\x08\x04\x02\x01\x0F', 4, 7),
@@ -56,10 +58,10 @@ class WaveshareGreenClockAscii4x7(WaveshareGreenClockAscii):
             "4": (b'\x08\x04\x02\x01\x05\x0f\x04', 4, 7),
             "5": (b'\x0F\x01\x07\x08\x08\x09\x06', 4, 7),
             "6": (b'\x0C\x02\x01\x07\x09\x09\x06', 4, 7),
-            "7": (b'\x0f\x08\x04\x02\x01\x01\x01', 4, 7),
+            "7": (b'\x0f\x08\x04\x02\x02\x02\x02', 4, 7),
             "8": (b'\x06\x09\x09\x06\x09\x09\x06', 4, 7),
             "9": (b'\x06\x09\x09\x0E\x08\x09\x06', 4, 7),
-            ".": (b'\x00\x00\x00\x00\x00\x01\x00', 1, 7),
+            ".": (b'\x00\x00\x00\x00\x00\x00\x01', 1, 7),
             ":": (b'\x00\x01\x01\x00\x01\x01\x00', 1, 7),
             "/": (b'\x00\x10\x08\x04\x02\x01\x00', 3, 7),
             "A": (b'\x0E\x11\x11\x1F\x11\x11\x11', 4, 7),
