@@ -9,7 +9,7 @@ from wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
@@ -39,7 +39,7 @@ class AppTime(WaveshareGreenClockApps):
 
 class AppCompteur(WaveshareGreenClockApps):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.cpt_gauche = 0
@@ -68,7 +68,7 @@ class AppCompteur(WaveshareGreenClockApps):
 
 class AppTemperature(WaveshareGreenClockApps):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
@@ -99,7 +99,7 @@ class AppTemperature(WaveshareGreenClockApps):
 
 class AppMain(WaveshareGreenClockApps):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.cpt = 1
         self.app = AppTime()
 
@@ -132,12 +132,13 @@ wlan = WLanPico()
 wlan.connect()
 
 app = AppMain()
-clock = WaveshareGreenClock(app.cb_up, app.cb_center, app.cb_down, None)#app.cb_rtc)
 
 ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
 data_tuple = time.localtime()
 laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
 lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+
+clock = WaveshareGreenClock(app)
 clock.rtc.setDate(laDate)
 clock.rtc.setDayWeek(str(data_tuple[6]))
 clock.rtc.setTime(lHeure)
@@ -158,8 +159,6 @@ _thread.start_new_thread(thread_run, ());
 while (True):
     mutex.acquire(-1, -1)
     mutex.locked()
-#     for i in range(len(buffer)):
-#         buffer[i] = 0
     app.run(buffer)
     mutex.release()
     time.sleep(10)

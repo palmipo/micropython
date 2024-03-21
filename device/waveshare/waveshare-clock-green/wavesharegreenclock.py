@@ -9,60 +9,65 @@ import machine
 micropython.alloc_emergency_exception_buf(100)
 
 class WaveshareGreenClock:
-    def __init__(self, cb_up = None, cb_center = None, cb_down = None, cb_rtc = None):
-        self.cb_up = cb_up
-        self.cb_center = cb_center
-        self.cb_down = cb_down
-        self.cb_rtc = cb_rtc
+    def __init__(self, app):
+        self.app = app
         
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
+        self.column.OutputEnable()
         
         self.i2c = I2CPico(1, 6, 7)
-        if cb_rtc != None:
+        if self.app.cb_rtc != None:
             self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
             self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
         else:
             self.rtc = DS3231(0, self.i2c)
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_down != None:
+        if self.app.cb_down != None:
             self.K0.irq(handler=self.callback_down, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
         self.K1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_center != None:
+        if self.app.cb_center != None:
             self.K1.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
         
         self.K2 = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
-        if cb_up != None:
+        if self.app.cb_up != None:
             self.K2.irq(handler=self.callback_up, trigger=machine.Pin.IRQ_FALLING, hard=True)
         
         self.buzzer = machine.Pin(14, machine.Pin.OUT)
-        self.column.OutputEnable()
 
     def callback(self, pin):
         state = machine.disable_irq()
-        self.cb_center()
-        machine.enable_irq(state)
+        try:
+            if self.app.cb_center != None:
+                self.app.cb_center()
+        finally:
+            machine.enable_irq(state)
 
     def callback_up(self, pin):
         state = machine.disable_irq()
-        self.cb_up()
-        machine.enable_irq(state)
+        try:
+            if self.app.cb_up != None:
+                self.app.cb_up()
+        finally:
+            machine.enable_irq(state)
 
     def callback_down(self, pin):
         state = machine.disable_irq()
-        self.cb_down()
-        machine.enable_irq(state)
+        try:
+            if self.app.cb_down != None:
+                self.app.cb_down()
+        finally:
+            machine.enable_irq(state)
 
     def callback_rtc(self, pin):
-        self.cb_rtc()
+        if self.app.cb_rtc != None:
+            self.app.cb_rtc()
 
     # matrice de 4 * 8 bits
     def show(self, buffer):
-        #self.column.OutputEnable()
         for i in range(8):
             self.column.send(buffer[i*4 : i*4+4])
             self.row.setChannel(i)
             self.column.latch()
-        #self.column.OutputDisable()

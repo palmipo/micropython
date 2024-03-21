@@ -11,9 +11,9 @@ class DS3231_SQW(DS3231):
         if cb != None:
             self.pinSQW = machine.Pin(pinSQW, machine.Pin.IN, machine.Pin.PULL_UP)
             self.cb = cb
-            self.pinSQW.irq(handler=self.__callback__, trigger=machine.Pin.IRQ_FALLING, hard=True)
+            self.pinSQW.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
-    def __callback__(self, pin):
+    def callback(self, pin):
         state = machine.disable_irq()
         try:
             self.cb(pin)
