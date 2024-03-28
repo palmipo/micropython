@@ -8,11 +8,12 @@ from wavesharegreenclocktag import WaveshareGreenClockTag
 from wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
-    def __init__(self):
+    def __init__(self, buffer):
         super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
+        self.buffer = buffer
 
     def cb_up(self):
         pass
@@ -24,54 +25,62 @@ class AppTime(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        pass
+        print('rtc')
+        self.cb_run()
     
-    def run(self, buffer):
-        data_tuple = time.localtime()
-        lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
-        
+    def cb_run(self):
+#         data_tuple = time.localtime()
+        print('clock3.14')
+        lHeure = "13:20"#"{:02}:{:02}".format(data_tuple[3], data_tuple[4])
+        print("l heure {}".format(lHeure))        
         offset = 0
         for i in range(len(lHeure)):
             (a, w, h) = self.ascii.encode(lHeure[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
+        print("buffer {}".format(self.buffer))
 
 class AppCompteur(WaveshareGreenClockApps):
-    def __init__(self):
+    def __init__(self, buffer):
         super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.cpt_gauche = 0
         self.cpt_droit = 0
+        self.buffer = buffer
 
     def cb_up(self):
-        self.cpt_gauche += 1
-
+        self.cpt_gauche = (self.cpt_gauche + 1) % 100
+        self.run()
+        
     def cb_down(self):
-        self.cpt_droit += 1
+        self.cpt_droit = (self.cpt_droit + 1) % 100
+        self.cb_run()
 
     def cb_center(self):
         pass
 
     def cb_rtc(self):
-        pass
+        print ('cpt')
+#         pass
 
-    def run(self, buffer):
+    def cb_run(self):
         texte = '{:02}:{:02}'.format(self.cpt_gauche, self.cpt_droit)
         offset = 0
         for i in range(len(texte)):
             (a, w, h) = self.ascii.encode(texte[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
 class AppTemperature(WaveshareGreenClockApps):
-    def __init__(self):
+    def __init__(self, buffer):
         super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
+        self.buffer = buffer
 
     def cb_up(self):
         pass
@@ -83,9 +92,11 @@ class AppTemperature(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        pass
+        print ('tempe')
+        self.cb_run()
+#         pass
 
-    def run(self, buffer):
+    def cb_run(self):
         temp = clock.rtc.getTemperature()
         texte = '{:02.1f}'.format(temp)
         offset = 0
@@ -93,50 +104,42 @@ class AppTemperature(WaveshareGreenClockApps):
         for i in range(len(texte)):
             (a, w, h) = self.ascii.encode(texte[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
 
 class AppMain(WaveshareGreenClockApps):
-    def __init__(self):
+    def __init__(self, buffer):
         super().__init__()
-        self.cpt = 1
-        self.app = AppTime()
+        self.cpt = 0
+        self.app = [AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer)]
 
     def cb_up(self):
-        self.app.cb_up()
+        self.app[self.cpt].cb_up()
 
     def cb_center(self):
-        if self.cpt == 0:
-            self.app = AppTime()
-            self.cpt = 1
-            
-        elif self.cpt == 1:
-            self.app = AppCompteur()
-            self.cpt = 2
-            
-        elif self.cpt == 2:
-            self.app = AppTemperature()
-            self.cpt = 0
+        self.cpt = (self.cpt + 1) % 3
 
     def cb_down(self):
-        self.app.cb_down()
+        self.app[self.cpt].cb_down()
 
     def cb_rtc(self):
-        self.app.cb_rtc()
+        self.app[self.cpt].cb_rtc()
 
-    def run(self, buffer):
-        self.app.run(buffer)
+    def cb_run(self):
+        self.app[self.cpt].cb_run()
 
 wlan = WLanPico()
 wlan.connect()
 
-app = AppMain()
 
-ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-data_tuple = time.localtime()
+data_tuple = wlan.ntp()
 laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
 lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+
+buffer = bytearray(4*8)
+
+app = AppMain(buffer)
 
 clock = WaveshareGreenClock(app)
 clock.rtc.setDate(laDate)
@@ -144,23 +147,24 @@ clock.rtc.setDayWeek(str(data_tuple[6]))
 clock.rtc.setTime(lHeure)
 
 fin = False
-buffer = bytearray(4*8)
-mutex = _thread.allocate_lock()
+# mutex = _thread.allocate_lock()
 
 def thread_run():
     while (True):
-        mutex.acquire(-1, -1)
-        mutex.locked()
+#         mutex.acquire(-1, -1)
+#         mutex.locked()
         clock.show(buffer)
-        mutex.release()
+#         mutex.release()
 
 _thread.start_new_thread(thread_run, ());
 
 while (True):
-    mutex.acquire(-1, -1)
-    mutex.locked()
-    app.run(buffer)
-    mutex.release()
+#     mutex.acquire(-1, -1)
+#     mutex.locked()
+#     app.run(buffer)
+#     mutex.release()
     time.sleep(10)
+# clock.show(buffer)
 
 wlan.disconnect()
+
