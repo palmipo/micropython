@@ -25,21 +25,17 @@ class AppTime(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        print('rtc')
-        self.cb_run()
+        pass
     
     def cb_run(self):
-#         data_tuple = time.localtime()
-        print('clock3.14')
-        lHeure = "13:20"#"{:02}:{:02}".format(data_tuple[3], data_tuple[4])
-        print("l heure {}".format(lHeure))        
+        data_tuple = time.localtime()
+        lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
         offset = 0
         for i in range(len(lHeure)):
             (a, w, h) = self.ascii.encode(lHeure[i])
             for j in range(h):
                 self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
-        print("buffer {}".format(self.buffer))
 
 class AppCompteur(WaveshareGreenClockApps):
     def __init__(self, buffer):
@@ -52,18 +48,15 @@ class AppCompteur(WaveshareGreenClockApps):
 
     def cb_up(self):
         self.cpt_gauche = (self.cpt_gauche + 1) % 100
-        self.run()
         
     def cb_down(self):
         self.cpt_droit = (self.cpt_droit + 1) % 100
-        self.cb_run()
 
     def cb_center(self):
         pass
 
     def cb_rtc(self):
-        print ('cpt')
-#         pass
+        pass
 
     def cb_run(self):
         texte = '{:02}:{:02}'.format(self.cpt_gauche, self.cpt_droit)
@@ -92,9 +85,7 @@ class AppTemperature(WaveshareGreenClockApps):
         pass
 
     def cb_rtc(self):
-        print ('tempe')
-        self.cb_run()
-#         pass
+        pass
 
     def cb_run(self):
         temp = clock.rtc.getTemperature()
@@ -132,39 +123,40 @@ class AppMain(WaveshareGreenClockApps):
 wlan = WLanPico()
 wlan.connect()
 
-
-data_tuple = wlan.ntp()
-laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-
 buffer = bytearray(4*8)
 
 app = AppMain(buffer)
 
 clock = WaveshareGreenClock(app)
-clock.rtc.setDate(laDate)
-clock.rtc.setDayWeek(str(data_tuple[6]))
-clock.rtc.setTime(lHeure)
+
+try:
+    data_tuple = wlan.ntp()
+    laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+    lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+    clock.rtc.setDate(laDate)
+    clock.rtc.setDayWeek(str(data_tuple[6]))
+    clock.rtc.setTime(lHeure)
+except OSError:
+    pass
 
 fin = False
-# mutex = _thread.allocate_lock()
+mutex = _thread.allocate_lock()
 
 def thread_run():
     while (True):
-#         mutex.acquire(-1, -1)
-#         mutex.locked()
+        mutex.acquire(-1, -1)
+        mutex.locked()
         clock.show(buffer)
-#         mutex.release()
+        mutex.release()
 
 _thread.start_new_thread(thread_run, ());
 
 while (True):
-#     mutex.acquire(-1, -1)
-#     mutex.locked()
-#     app.run(buffer)
-#     mutex.release()
-    time.sleep(10)
-# clock.show(buffer)
+    mutex.acquire(-1, -1)
+    mutex.locked()
+    app.cb_run()
+    mutex.release()
+    time.sleep(1)
 
 wlan.disconnect()
 

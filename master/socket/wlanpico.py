@@ -14,12 +14,9 @@ class WLanPico(LanBus):
         self.wlan.disconnect()
 
     def ntp(self):
-        try:
-            ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-            # data_tuple = time.localtime()
-            # laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-            # lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-            return time.localtime()
-        except OSError:
-            pass
+        ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
+        # data_tuple = time.localtime()
+        # laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+        # lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+        return time.localtime()
 
