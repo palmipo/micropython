@@ -13,5 +13,5 @@ class WaveshareGreenClockApps:
     def cb_rtc(self):
         raise NotImplementedError
     
-    def run(self, buffer):
+    def cb_run(self, buffer):
         raise NotImplementedError
