@@ -47,6 +47,11 @@ class DS3231(DeviceI2C):
         res = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F) + ":" + str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F) + ":" + str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
         return res
 
+    # CONV : convert temperature
+    # SqwareWaveFrequency : 0 : 1Hz / 1 : 1024Hz / 2 : 4096Hz / 3 : 8192Hz
+    # INTCN : interrupt control
+    # A2IE : alarm 2 interrupt enable
+    # A1IE : alarm 1 interrupt enable
     def setControlRegister(self, CONV, SqwareWaveFrequency, INTCN, A2IE, A1IE):
         (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
         while BSY != 0:

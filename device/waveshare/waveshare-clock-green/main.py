@@ -14,22 +14,23 @@ class AppTime(WaveshareGreenClockApps):
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
         self.buffer = buffer
+        self.offset = 0
 
     def cb_up(self):
-        pass
+        self.offset = (self.offset + 1) % 24
 
     def cb_center(self):
         pass
 
     def cb_down(self):
-        pass
+        self.offset = (self.offset - 1) % 24
 
     def cb_rtc(self):
         pass
     
     def cb_run(self):
         data_tuple = time.localtime()
-        lHeure = "{:02}:{:02}".format(data_tuple[3], data_tuple[4])
+        lHeure = "{:02}:{:02}".format(data_tuple[3] + self.offset, data_tuple[4])
         offset = 0
         for i in range(len(lHeure)):
             (a, w, h) = self.ascii.encode(lHeure[i])
@@ -98,18 +99,42 @@ class AppTemperature(WaveshareGreenClockApps):
                 self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
+class AppString(WaveshareGreenClockApps):
+    def __init__(self, buffer):
+        super().__init__()
+        self.codec = WaveshareGreenClockCodec()
+        self.ascii = WaveshareGreenClockAscii4x7()
+        self.tag = WaveshareGreenClockTag()
+        self.buffer = buffer
+
+    def cb_up(self):
+        pass
+
+    def cb_center(self):
+        pass
+
+    def cb_down(self):
+        pass
+
+    def cb_rtc(self):
+        pass
+
+    def cb_run(self):
+        pass
 
 class AppMain(WaveshareGreenClockApps):
     def __init__(self, buffer):
         super().__init__()
         self.cpt = 0
-        self.app = [AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer)]
+        self.app = [AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
+        self.tag = WaveshareGreenClockTag()
 
     def cb_up(self):
         self.app[self.cpt].cb_up()
 
     def cb_center(self):
-        self.cpt = (self.cpt + 1) % 3
+        self.tag.clear(buffer)
+        self.cpt = (self.cpt + 1) % 4
 
     def cb_down(self):
         self.app[self.cpt].cb_down()
@@ -140,23 +165,24 @@ except OSError:
     pass
 
 fin = False
-mutex = _thread.allocate_lock()
+# mutex = _thread.allocate_lock()
 
 def thread_run():
     while (True):
-        mutex.acquire(-1, -1)
-        mutex.locked()
+#         mutex.acquire(-1, -1)
+#         mutex.locked()
         clock.show(buffer)
-        mutex.release()
+#         mutex.release()
 
 _thread.start_new_thread(thread_run, ());
 
 while (True):
-    mutex.acquire(-1, -1)
-    mutex.locked()
+#     mutex.acquire(-1, -1)
+#     mutex.locked()
     app.cb_run()
-    mutex.release()
+#     mutex.release()
     time.sleep(1)
 
 wlan.disconnect()
+
 
