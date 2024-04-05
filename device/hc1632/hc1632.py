@@ -11,29 +11,29 @@ class HC1632:
         self._write_pin = write_pin
         self._cs_pin = cs_pin
 
-        self._write_pin.setOutput(1)
-        self._data_pin.setOutput(1)
-        self._cs_pin.setOutput(1)
+        self._write_pin.set(1)
+        self._data_pin.set(1)
+        self._cs_pin.set(1)
 
         self.__init_matrix__(master_mode)
 
     def __write_chipselect__(self, valeur):
         if valeur == 0:
-            self._cs_pin.setOutput(1)
+            self._cs_pin.set(1)
         else:
-            self._cs_pin.setOutput(0)
+            self._cs_pin.set(0)
         time.sleep_us(HC1632.TEMPO)
 
     def __write_bit__(self, valeur):
-        self._write_pin.setOutput(0)
+        self._write_pin.set(0)
         
         if valeur != 0:
-            self._data_pin.setOutput(1)
+            self._data_pin.set(1)
         else:
-            self._data_pin.setOutput(0)
+            self._data_pin.set(0)
         time.sleep_us(HC1632.TEMPO)
 
-        self._write_pin.setOutput(1)
+        self._write_pin.set(1)
         time.sleep_us(HC1632.TEMPO)
 
     def __write_sys__(self, on):

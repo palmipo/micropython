@@ -2,6 +2,9 @@ import network, time, socket, select, ntptime
 from lanbus import LanBus
 
 class WLanPico(LanBus):
+    def __init__(self):
+        super().__init__()
+
     def connect(self):
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(True)
@@ -12,6 +15,9 @@ class WLanPico(LanBus):
 
     def disconnect(self):
         self.wlan.disconnect()
+
+    def ifconfig(self):
+        return self.wlan.ifconfig()[0]
 
     def ntp(self):
         ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
