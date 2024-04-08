@@ -1,4 +1,9 @@
 class SocketBus:
+    def serveur(self, port):
+        raise NotImplementedError
+    
+    def client(self, adresse, port):
+        raise NotImplementedError
 
     def connect(self, adresse, port):
         raise NotImplementedError

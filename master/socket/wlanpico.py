@@ -21,8 +21,13 @@ class WLanPico(LanBus):
 
     def ntp(self):
         ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-        # data_tuple = time.localtime()
-        # laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-        # lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+        #data_tuple = time.localtime()
+        #j = "{:02}"format(data_tuple[2])
+        #m = "{:02}".format(data_tuple[1])
+        #a = "{:02}".format(data_tuple[0])
+        #hh = "{:02}".format(data_tuple[3])
+        #mm = "{:02}".format(data_tuple[4])
+        #ss = "{:02}".format(data_tuple[5])
+        #return j, m, a, hh, mm, ss
         return time.localtime()
 
