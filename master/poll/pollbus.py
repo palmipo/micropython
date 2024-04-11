@@ -1,9 +1,6 @@
 import select
 
 class PollClnt:
-    def cb_timeout(self):
-        raise NotImplementedError
-    
     def cb_pollin(self):
         raise NotImplementedError
     
@@ -35,16 +32,20 @@ class Poll:
 			else:
 				for (fd, event) in events:
                     if (event == select.POLLIN):
-                        obj.cb_pollin()
+                        if obj.cb_pollin != None:
+                            obj.cb_pollin()
 
                     elif (event == select.POLLOUT):
-                        obj.cb_pollout()
+                        if obj.cb_pollout != None:
+                            obj.cb_pollout()
 
                     elif (event == select.POLLHUP):
-                        obj.cb_pollhup()
+                        if obj.cb_pollhup != None:
+                            obj.cb_pollhup()
 
                     elif (event == select.POLLERR):
-                        obj.cb_pollerr()
+                        if obj.cb_pollerr != None:
+                            obj.cb_pollerr()
                 return 1
 
 		except OSError:
