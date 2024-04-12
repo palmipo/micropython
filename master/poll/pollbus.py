@@ -14,23 +14,23 @@ class PollClnt:
         raise NotImplementedError
     
 class Poll:
-	def __init__(self):
-		self.poll = select.poll()
+    def __init__(self):
+        self.poll = select.poll()
 
-	def add(self, obj):
-		self.poll.register(obj, select.POLLIN)
+    def add(self, obj):
+        self.poll.register(obj, select.POLLIN)
 
     def remove(self, obj):
         self.poll.unregister(obj)
 
-	def run(self, timeout):
-		try:
-			events = self.poll.poll(timeout)
-			if not events:
-				return 0
+    def run(self, timeout):
+        try:
+            events = self.poll.poll(timeout)
+            if not events:
+                return 0
 
-			else:
-				for (fd, event) in events:
+            else:
+                for (fd, event) in events:
                     if (event == select.POLLIN):
                         if obj.cb_pollin != None:
                             obj.cb_pollin()
@@ -48,7 +48,8 @@ class Poll:
                             obj.cb_pollerr()
                 return 1
 
-		except OSError:
-			print('erreur poll')
+        except OSError:
+            print('erreur poll')
             return -1
+
 

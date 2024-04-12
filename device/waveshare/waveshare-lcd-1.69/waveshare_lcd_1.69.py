@@ -21,9 +21,9 @@ class WaveShare_Lcd_1inch69(framebuf.FrameBuffer):
         self.rst = Pin(RST,Pin.OUT)
         
         self.cs(1)
-        self.spi = SPI(0)
-        self.spi = SPI(0,1000_000)
-        self.spi = SPI(0,100000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
+#         self.spi = SPI(0)
+#         self.spi = SPI(0,1000_000)
+        self.spi = SPI(0,baudrate=100_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
         self.dc = Pin(DC,Pin.OUT)
         self.dc(1)
         self.buffer = bytearray(self.height * self.width * 2)
@@ -127,6 +127,7 @@ class WaveShare_Lcd_1inch69(framebuf.FrameBuffer):
         self.write_data(0x19)
         self.write_data(0x18)
         self.write_data(0x2A)
+
         self.write_data(0x2E)
         
         self.write_cmd(0xE4)
