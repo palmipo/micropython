@@ -89,7 +89,7 @@ try:    # wlan = WLanPico(network.STA_IF)
     #         lcd.writeText(rtc.getDate())
     #     except OSError:
     #         print("erreur LCD2004")
-        time.sleep(1)
+        time.sleep_ms(200)
 
     time.sleep(5)
     display.setDisplayOFF()
