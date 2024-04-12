@@ -145,44 +145,48 @@ class AppMain(WaveshareGreenClockApps):
     def cb_run(self):
         self.app[self.cpt].cb_run()
 
-wlan = WLanPico()
-wlan.connect()
-
-buffer = bytearray(4*8)
-
-app = AppMain(buffer)
-
-clock = WaveshareGreenClock(app)
-
 try:
-    data_tuple = wlan.ntp()
-    laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-    lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-    clock.rtc.setDate(laDate)
-    clock.rtc.setDayWeek(str(data_tuple[6]))
-    clock.rtc.setTime(lHeure)
-except OSError:
-    pass
+    wlan = WLanPico()
+    wlan.connect()
 
-fin = False
-# mutex = _thread.allocate_lock()
+    buffer = bytearray(4*8)
 
-def thread_run():
+    app = AppMain(buffer)
+
+    clock = WaveshareGreenClock(app)
+
+    try:
+        data_tuple = wlan.ntp()
+        laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+        lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+        clock.rtc.setDate(laDate)
+        clock.rtc.setDayWeek(str(data_tuple[6]))
+        clock.rtc.setTime(lHeure)
+    except OSError:
+        pass
+
+    fin = False
+    # mutex = _thread.allocate_lock()
+
+    def thread_run():
+        while (True):
+    #         mutex.acquire(-1, -1)
+    #         mutex.locked()
+            clock.show(buffer)
+    #         mutex.release()
+
+    _thread.start_new_thread(thread_run, ());
+
     while (True):
-#         mutex.acquire(-1, -1)
-#         mutex.locked()
-        clock.show(buffer)
-#         mutex.release()
+    #     mutex.acquire(-1, -1)
+    #     mutex.locked()
+        app.cb_run()
+    #     mutex.release()
+        time.sleep(1)
 
-_thread.start_new_thread(thread_run, ());
-
-while (True):
-#     mutex.acquire(-1, -1)
-#     mutex.locked()
-    app.cb_run()
-#     mutex.release()
-    time.sleep(1)
-
-wlan.disconnect()
+    wlan.disconnect()
+except KeyboardInterrupt:
+    print("quit")
+    quit()
 
 

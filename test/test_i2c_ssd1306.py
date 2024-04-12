@@ -36,7 +36,7 @@ try:    # wlan = WLanPico(network.STA_IF)
     print(mux7.scan())
 
     try:
-        lcd_io = LCD2004(0, mux6)
+        lcd_io = LCD2004(0, i2c)
         lcd_io.setBackLight(1)
         lcd = HD44780(lcd_io)
         lcd.clear()
