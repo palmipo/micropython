@@ -26,7 +26,7 @@ class LCD2004(HD44780IO):
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
         self.backlight = (value & 0x01) << self.BACKLIGHT
-        self.pia.setOutput(self.backlight)
+        self.pia.set(self.backlight)
 
     def writeCmd(self, cmd):
 #         print("writeCmd("+hex(cmd)+")")
@@ -40,23 +40,23 @@ class LCD2004(HD44780IO):
 
     def enableBit(self, data):
 #         print("enableBit("+hex(data)+")")
-        self.pia.setOutput(self.backlight | data)
+        self.pia.set(self.backlight | data)
         time.sleep_ms(1)
-        self.pia.setOutput(self.backlight | data | (1 << self.EN))
+        self.pia.set(self.backlight | data | (1 << self.EN))
         time.sleep_ms(2)
-        self.pia.setOutput(self.backlight | data)
+        self.pia.set(self.backlight | data)
         time.sleep_ms(1)
 
     def write(self, data, rs, rw_, en):
         cmd = self.backlight | (((data & 0x80) >> 7) << self.DB7) | (((data & 0x40) >> 6) << self.DB6) | (((data & 0x20) >> 5) << self.DB5) | (((data & 0x10) >> 4) << self.DB4) | ((rw_ & 0x01) << self.RW_) | ((rs & 0x01) << self.RS)
  
-        self.pia.setOutput(cmd)
+        self.pia.set(cmd)
         time.sleep_ms(1)
 
-        self.pia.setOutput(cmd | (1 << self.EN))
+        self.pia.set(cmd | (1 << self.EN))
         time.sleep_ms(2)
 
-        self.pia.setOutput(cmd)
+        self.pia.set(cmd)
         time.sleep_ms(1)
 
     def bitMode(self):
