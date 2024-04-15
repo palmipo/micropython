@@ -30,7 +30,7 @@ class AppTime(WaveshareGreenClockApps):
     
     def cb_run(self):
         data_tuple = time.localtime()
-        lHeure = "{:02}:{:02}".format(data_tuple[3] + self.offset, data_tuple[4])
+        lHeure = "{:02}:{:02}".format((data_tuple[3] + self.offset) % 24, data_tuple[4])
         offset = 0
         for i in range(len(lHeure)):
             (a, w, h) = self.ascii.encode(lHeure[i])
