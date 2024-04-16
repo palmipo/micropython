@@ -146,7 +146,7 @@ class AppMain(WaveshareGreenClockApps):
         self.app[self.cpt].cb_down()
 
     def cb_rtc(self):
-        self.app[self.cpt].cb_rtc()
+        self.app[0].cb_rtc()
 
     def cb_run(self):
         self.app[self.cpt].cb_run()
