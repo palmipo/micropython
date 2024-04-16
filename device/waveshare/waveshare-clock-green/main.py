@@ -15,9 +15,9 @@ class AppTime(WaveshareGreenClockApps):
         self.tag = WaveshareGreenClockTag()
         self.buffer = buffer
         self.timezone = 0
-        self.heure = args[3]
-        self.minute = args[4]
-        self.seconde = args[5]
+        self.heure = args[0][3]
+        self.minute = args[0][4]
+        self.seconde = args[0][5]
 
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
@@ -29,16 +29,13 @@ class AppTime(WaveshareGreenClockApps):
         self.timezone = (self.timezone - 1) % 24
 
     def cb_rtc(self):
-        self.seconte = (self.seconde + 1) % 60
+        self.seconde = (self.seconde + 1) % 60
         if self.seconde == 0:
             self.minute = (self.minute + 1) % 60
-            
             if self.minute == 0:
                 self.heure = (self.heure + 1) % 24
 
     def cb_run(self):
-        # data_tuple = time.localtime()
-        # lHeure = "{:02}:{:02}".format((data_tuple[3] + self.offset) % 24, data_tuple[4])
         lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
         offset = 0
         for i in range(len(lHeure)):
@@ -135,7 +132,7 @@ class AppMain(WaveshareGreenClockApps):
     def __init__(self, buffer, *args):
         super().__init__()
         self.cpt = 0
-        self.app = [AppTime(buffer, args), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
+        self.app = [AppTime(buffer, *args), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
         self.tag = WaveshareGreenClockTag()
 
     def cb_up(self):
@@ -159,9 +156,15 @@ if __name__ == '__main__':
     try:
         wlan = WLanPico()
         wlan.connect()
+        data_tuple = wlan.ntp()
+    
+        buffer = bytearray(4*8)
+
+        app = AppMain(buffer, data_tuple)
+
+        clock = WaveshareGreenClock(app)
 
         try:
-            data_tuple = wlan.ntp()
             laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
             lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
             clock.rtc.setDate(laDate)
@@ -169,12 +172,6 @@ if __name__ == '__main__':
             clock.rtc.setTime(lHeure)
         except OSError:
             pass
-
-        buffer = bytearray(4*8)
-
-        app = AppMain(buffer, data_tuple)
-
-        clock = WaveshareGreenClock(app)
 
         fin = False
         def thread_run():
@@ -188,6 +185,10 @@ if __name__ == '__main__':
             time.sleep(1)
 
         wlan.disconnect()
+
+    except ETIMEDOUT:
+        print("quit")
+        sys.exit()
     except KeyboardInterrupt:
         print("quit")
-        quit()
+        sys.exit()
