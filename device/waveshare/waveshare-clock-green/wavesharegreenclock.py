@@ -18,8 +18,8 @@ class WaveshareGreenClock:
         self.column.OutputEnable()
         
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231(0, self.i2c)
-#         self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
+        # self.rtc = DS3231(0, self.i2c)
+        self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)

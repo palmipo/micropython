@@ -8,29 +8,38 @@ from wavesharegreenclocktag import WaveshareGreenClockTag
 from wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, buffer, *args):
         super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag()
         self.buffer = buffer
-        self.offset = 0
+        self.timezone = 0
+        self.heure = args[3]
+        self.minute = args[4]
+        self.seconde = args[5]
 
     def cb_up(self):
-        self.offset = (self.offset + 1) % 24
+        self.timezone = (self.timezone + 1) % 24
 
     def cb_center(self):
         pass
 
     def cb_down(self):
-        self.offset = (self.offset - 1) % 24
+        self.timezone = (self.timezone - 1) % 24
 
     def cb_rtc(self):
-        pass
-    
+        self.seconte = (self.seconde + 1) % 60
+        if self.seconde == 0:
+            self.minute = (self.minute + 1) % 60
+            
+            if self.minute == 0:
+                self.heure = (self.heure + 1) % 24
+
     def cb_run(self):
-        data_tuple = time.localtime()
-        lHeure = "{:02}:{:02}".format((data_tuple[3] + self.offset) % 24, data_tuple[4])
+        # data_tuple = time.localtime()
+        # lHeure = "{:02}:{:02}".format((data_tuple[3] + self.offset) % 24, data_tuple[4])
+        lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
         offset = 0
         for i in range(len(lHeure)):
             (a, w, h) = self.ascii.encode(lHeure[i])
@@ -123,10 +132,10 @@ class AppString(WaveshareGreenClockApps):
         pass
 
 class AppMain(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, buffer, *args):
         super().__init__()
         self.cpt = 0
-        self.app = [AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
+        self.app = [AppTime(buffer, args), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
         self.tag = WaveshareGreenClockTag()
 
     def cb_up(self):
@@ -145,48 +154,40 @@ class AppMain(WaveshareGreenClockApps):
     def cb_run(self):
         self.app[self.cpt].cb_run()
 
-try:
-    wlan = WLanPico()
-    wlan.connect()
 
-    buffer = bytearray(4*8)
-
-    app = AppMain(buffer)
-
-    clock = WaveshareGreenClock(app)
-
+if __name__ == '__main__':
     try:
-        data_tuple = wlan.ntp()
-        laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-        lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-        clock.rtc.setDate(laDate)
-        clock.rtc.setDayWeek(str(data_tuple[6]))
-        clock.rtc.setTime(lHeure)
-    except OSError:
-        pass
+        wlan = WLanPico()
+        wlan.connect()
 
-    fin = False
-    # mutex = _thread.allocate_lock()
+        try:
+            data_tuple = wlan.ntp()
+            laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+            lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
+            clock.rtc.setDate(laDate)
+            clock.rtc.setDayWeek(str(data_tuple[6]))
+            clock.rtc.setTime(lHeure)
+        except OSError:
+            pass
 
-    def thread_run():
+        buffer = bytearray(4*8)
+
+        app = AppMain(buffer, data_tuple)
+
+        clock = WaveshareGreenClock(app)
+
+        fin = False
+        def thread_run():
+            while (True):
+                clock.show(buffer)
+
+        _thread.start_new_thread(thread_run, ());
+
         while (True):
-    #         mutex.acquire(-1, -1)
-    #         mutex.locked()
-            clock.show(buffer)
-    #         mutex.release()
+            app.cb_run()
+            time.sleep(1)
 
-    _thread.start_new_thread(thread_run, ());
-
-    while (True):
-    #     mutex.acquire(-1, -1)
-    #     mutex.locked()
-        app.cb_run()
-    #     mutex.release()
-        time.sleep(1)
-
-    wlan.disconnect()
-except KeyboardInterrupt:
-    print("quit")
-    quit()
-
-
+        wlan.disconnect()
+    except KeyboardInterrupt:
+        print("quit")
+        quit()
