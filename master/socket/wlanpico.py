@@ -20,7 +20,7 @@ class WLanPico(LanBus):
         return self.wlan.ifconfig()[0]
 
     def ntp(self):
-        ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
+        ntptime.settime(timezone=1) # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
         #data_tuple = time.localtime()
         #j = "{:02}"format(data_tuple[2])
         #m = "{:02}".format(data_tuple[1])
