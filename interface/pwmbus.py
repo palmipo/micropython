@@ -1,5 +1,4 @@
-class BusPwm:
-    self.periode = 1
+class PwmBus:
 
     def setFrequency(self, freq):
         raise NotImplementedError

@@ -4,11 +4,17 @@ from pwmbus import PwmBus
 
 class PwmPico(PwmBus):
     def __init__(self, pin):
-        self.pwm = PWM(Pin(pin))
+        super().__init__()
+        self.pwm = PWM(Pin(pin, Pin.OUT))
 
     def setFrequency(self, freq):
-        self.periode = 1/freq
-        self.pwm.periode(self.periode)
+        self.pwm.freq(freq)
         
     def setDuty(self, pourcentage):
-        self.pwm.duty_ns(pourcentage * self.periode / 100)
+        self.pwm.duty_u16(pourcentage * 65535 // 100)
+
+            
+if __name__=='__main__':
+    buz = PwmPico(13)
+    buz.setFrequency(1000)
+    buz.setDuty(100)

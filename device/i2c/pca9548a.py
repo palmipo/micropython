@@ -7,13 +7,14 @@ class PCA9548A(DeviceI2C):
     def __init__(self, address, bus, reset_pin=0):
         super().__init__(0x70 | (address & 0x03), bus)
         if reset_pin != 0:
-            self.__reset = machine.Pin(reset_pin, machine.Pin.OUT)
-            self.__reset.on()
+            self.__reset__ = machine.Pin(reset_pin, machine.Pin.OUT)
+            self.__reset__.on()
 
     def reset(self):
-        self.__reset.off()
+        self.__reset__.off()
         time.sleep_ms(1)
-        self.__reset.on()
+        self.__reset__.on()
+        time.sleep_ms(100)
 
     def clear(self):
         cmd = bytearray(1)
@@ -28,14 +29,15 @@ class PCA9548A(DeviceI2C):
     def getCanal(self):
         return self.busi2c.recv(self.adresse, 1)[0]
 
-# i2c = PicoI2C(0, 4, 5)
-# circuits = i2c.scan()
-# print("liste des circuits i2c presents sur le bus :")
-# print(circuits)
-# 
-# pca9548a = PCA9548A(0, i2c, 3)
-# pca9548a.reset()
-# time.sleep_ms(100)
-# for i in range(0, 8):
-#     pca9548a.setCanal(i)
-#     print(i2c.scan())
+            
+if __name__=='__main__':
+    i2c = PicoI2C(0, 4, 5)
+    print("liste des circuits i2c presents sur le bus :")
+    print(i2c.scan())
+
+    pca9548a = PCA9548A(0, i2c, 3)
+    pca9548a.reset()
+    for i in range(0, 8):
+        pca9548a.setCanal(i)
+        print("liste des circuits i2c presents sur le bus :")
+        print(i2c.scan())
