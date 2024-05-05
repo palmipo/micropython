@@ -14,8 +14,8 @@ CS = 17
 
 class WaveShare_Lcd_1inch69(framebuf.FrameBuffer):
     def __init__(self, w, h):
-        self.width = 240
-        self.height = 280
+        self.width = w
+        self.height = h
         
         self.lcd = Lcd_1inch69(dc=Pin(DC,Pin.OUT), cs = Pin(CS,Pin.OUT), rst = Pin(RST,Pin.OUT), br=PWM(Pin(BL)), spi = SPI(0, baudrate=100_000_000, polarity=0, phase=0, sck=Pin(SCK),mosi=Pin(MOSI), miso=None))
 
