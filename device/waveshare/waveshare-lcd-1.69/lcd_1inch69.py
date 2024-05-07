@@ -8,7 +8,7 @@ class Lcd_1inch69(ST7789V2):
         self.spi = spi
         self.pwm = br
 
-        self.pwm.duty_u16(32768)#max 65535
+        self.pwm.duty_u16(32768)
         self.pwm.freq(1000)
         self.rst(1)
         self.cs(1)
@@ -16,7 +16,6 @@ class Lcd_1inch69(ST7789V2):
         super().__init__()
 
     def write_cmd(self, cmd):
-        self.cs(1)
         self.dc(0)
         self.cs(0)
         data = bytearray(1)
@@ -25,7 +24,6 @@ class Lcd_1inch69(ST7789V2):
         self.cs(1)
 
     def write_data(self, buf):
-        self.cs(1)
         self.dc(1)
         self.cs(0)
         data = bytearray(1)
@@ -34,14 +32,12 @@ class Lcd_1inch69(ST7789V2):
         self.cs(1)
 
     def write_buffer(self, buffer):
-        self.cs(1)
         self.dc(1)
         self.cs(0)
         self.spi.write(buffer)
         self.cs(1)
 
     def reset(self):
-        self.rst(1)
         self.rst(0)
         self.rst(1)
 
