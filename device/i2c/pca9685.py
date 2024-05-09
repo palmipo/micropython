@@ -1,12 +1,6 @@
 from devicei2c import DeviceI2C
 import time
 
-import rp2
-import machine
-from picoi2c import PicoI2C
-from muxi2c import MuxI2C
-from pca9548a import PCA9548A
-
 class PCA9685(DeviceI2C):
     
     def __init__(self, adresse, i2c):
@@ -60,7 +54,8 @@ class PCA9685(DeviceI2C):
         time.sleep_ms(1)
 
         prescaler = 25000000
-        prescaler /= 4096 * freq
+        prescaler //= 4096
+        prescaler *= freq
         prescaler -= 1
         print(int(prescaler))
         if (prescaler >= 0x03):
@@ -83,14 +78,14 @@ class PCA9685(DeviceI2C):
         self.busi2c.send(self.adresse, cmd)
 
     # ON = 4096
-    # OFF = 4096
+    # OFF = 0
     def led(self, num, on, off):
         cmd = bytearray(5)
         cmd[0] = 0x06 + num * 4
-        cmd[1] = on & 0x00ff
-        cmd[2] = (on & 0x0f00) >> 8
-        cmd[3] = off & 0x00ff
-        cmd[4] = (off & 0x0f00) >> 8
+        cmd[1] = off & 0x00ff
+        cmd[2] = (off & 0x0f00) >> 8
+        cmd[3] = on & 0x00ff
+        cmd[4] = (on & 0x0f00) >> 8
         self.busi2c.send(self.adresse, cmd)
 
     def ledOn(self, num):
@@ -114,10 +109,10 @@ class PCA9685(DeviceI2C):
     def allLed(self, on, off):
         cmd = bytearray(5)
         cmd[0] = 0xfa
-        cmd[1] = on & 0x00ff
-        cmd[2] = (on & 0x0f00) >> 8
-        cmd[3] = off & 0x00ff
-        cmd[4] = (off & 0x0f00) >> 8
+        cmd[1] = off & 0x00ff
+        cmd[2] = (off & 0x0f00) >> 8
+        cmd[3] = on & 0x00ff
+        cmd[4] = (on & 0x0f00) >> 8
         self.busi2c.send(self.adresse, cmd)
 
     def allLedOn(self):
@@ -138,22 +133,76 @@ class PCA9685(DeviceI2C):
         cmd[4] = 1 << 4
         self.busi2c.send(self.adresse, cmd)
 
+if __name__ == '__main__':
+    try:
+        import rp2
+        import machine
+        from i2cpico import I2CPico
+        i2c = I2CPico(0, 20, 21)
+        try:
+            pca9685 = PCA9685(0, i2c)
+            pca9685.mode1(50000000)
 
-i2c = PicoI2C(0, 4, 5)
-try:
-    pca9548a = PCA9548A(0, i2c, 3)
-    pca9548a.reset()
-    time.sleep_ms(100)
 
-    mux6 = MuxI2C(6, pca9548a, i2c)
-    print(mux6.scan())
+            class Motor:
+                def __init__(self, num, pca9685):
+                    self.num = num
+                    self.pca9685 = pca9685
 
-    pca9685 = PCA9685(0, mux6)
-    pca9685.mode1(50)
-    for i in range(0, 512):
-        pca9685.allLed(0, i)
-        time.sleep_ms(10)
-finally:
-    pca9685.allLedOff()
-    pca9548a.clear()
-    print("FIN.")
+                def stop(self, speed):
+                        self.pca9685.led(self.num, speed, 0)
+                        self.pca9685.ledOff(self.num+1)
+                        self.pca9685.ledOff(self.num+2)
+
+                def forward(self, speed):
+                        self.pca9685.led(self.num, speed, 0)
+                        self.pca9685.ledOn(self.num+1)
+                        self.pca9685.ledOff(self.num+2)
+                    
+                def revert(self, speed):
+                        self.pca9685.led(self.num, speed, 0)
+                        self.pca9685.ledOff(self.num+1)
+                        self.pca9685.ledOn(self.num+2)
+                    
+                def block(self, speed):
+                        self.pca9685.led(self.num, speed, 0)
+                        self.pca9685.ledOn(self.num+1)
+                        self.pca9685.ledOn(self.num+2)
+
+            class Chenille:
+                def __init__(self, moteur1, moteur2):
+                    self.m1 = moteur1
+                    self.m2 = moteur2
+
+                def stop(self):
+                    self.m1.stop()
+                    self.m2.stop()
+
+                def forward(self, speed):
+                    self.m1.forward(speed)
+                    self.m2.revert(speed)
+
+                def revert(self, speed):
+                    self.m1.revert(speed)
+                    self.m2.forward(speed)
+
+            # chenille droite
+            moteur1 = Motor(0, pca9685)
+            moteur2 = Motor(3, pca9685)
+            chenilleD = Chenille(moteur1, moteur2)
+            chenilleD.forward(0xfff)
+
+            # chenille gauche
+            moteur3 = Motor(6, pca9685)
+            moteur4 = Motor(9, pca9685)
+            chenilleG = Chenille(moteur3, moteur4)
+            chenilleG.forward(0xfff)
+    
+            time.sleep(2)
+        finally:
+            pca9685.allLedOff()
+            print("FIN.")
+
+    except KeyboardInterrupt:
+        print("quit")
+        sys.exit()

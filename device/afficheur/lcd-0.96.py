@@ -54,12 +54,12 @@ class LCD_0inch96(framebuf.FrameBuffer):
         pwm.freq(1000)
         if value>=1000:
             value=1000
-        data=int (value*65536/1000)       
+        data=int (value * 65535 // 100)       
         pwm.duty_u16(data)  
         
     def Init(self):
         self.reset() 
-        self.backlight(10000)  
+        self.backlight(100)  
         
         self.write_cmd(0x11)
         time.sleep(0.12)
