@@ -6,7 +6,7 @@ from i2cpico import I2CPico
 from ds3231 import DS3231
 # from ds3231_sqw import DS3231_SQW
 import sys
-from lcdnixie import Lcd_1inch14
+from lcd_1inch14 import Lcd_1inch14
 from piapico import PiaPicoOutput, PiaPicoInput
 from pwmpico import PwmPico
 from spipiconixie import SPIPicoNixie
@@ -27,12 +27,17 @@ class WaveshareNixieClock:
 #         self.ds1321 = DS3231_SQW(0, self.i2c, 18, self.cb_rtc)
 #         self.ds1321.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
-        dc=PiaPicoOutput(8)
         rst=PiaPicoOutput(12)
+        rst.set(1)
         spi=SPIPicoNixie()
+        dc=PiaPicoOutput(8)
+        dc.set(1)
         bl=PwmPico(13)
         led=NeoPixel(Pin(22, Pin.OUT), 6)
-        self.afficheurs = [Lcd_1inch14(0, dc, rst, spi, bl, led)]
+
+        for num in range (0,6):
+            self.LCD = Lcd_1inch14(num, dc, rst, spi, bl, led)
+
  
         try:
             data_tuple = self.wlan.ntp()
@@ -61,24 +66,18 @@ class WaveshareNixieClock:
 if __name__ == '__main__':
     try:
         horloge = WaveshareNixieClock()
-        horloge.afficheurs[0].setLedColor(128, 0, 255)
-        w = 135
-        h = 10
-        buffer = bytearray(w * h * 2)
 
-        import framebuf
-        class Test(framebuf.FrameBuffer):
-            def __init__(self, buffer, width, height):
-                super().__init__(buffer, width, height, framebuf.RGB565)
-            
-        test = Test(buffer, w, h)
-    #     test.fill(0xffff)
-        test.text("coucou", 0, 0, 0x0f0f)
-        state = machine.disable_irq()
-        try:
-            horloge.afficheurs[0].show(0, 0, w, h, buffer)
-        finally:
-            machine.enable_irq(state)
-        time.sleep(60)
+        buffer = bytearray(horloge.LCD.width * horloge.LCD.height * 2)
+
+        import framebuf            
+        test = framebuf.FrameBuffer(buffer, horloge.LCD.width, horloge.LCD.height, framebuf.RGB565)
+
+        for num in range (0,6):
+            horloge.LCD.setLedColor(num, 0x80, 0, 0xff)
+            test.fill(0x00ffffff)
+            test.text("Hello World {}".format(num), 0, 0)
+            horloge.LCD.show(num, 0, 0, horloge.LCD.width, horloge.LCD.height, buffer)
+
+        time.sleep(10)
     except KeyboardInterrupt:
         sys.exit()
