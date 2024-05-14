@@ -2,7 +2,7 @@ from ssd1306 import SSD1306
 import time
  
 
-class OLED_1_3(SSD1306):
+class OLED_1inch3(SSD1306):
     def __init__(self, addr, bus):
         super().__init__(128, 64, addr, bus)
 

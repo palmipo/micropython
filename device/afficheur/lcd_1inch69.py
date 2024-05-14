@@ -12,7 +12,7 @@ SCK = 18
 CS = 17
 
 
-class WaveShare_Lcd_1inch69(framebuf.FrameBuffer):
+class LCD_1inch69(framebuf.FrameBuffer):
     def __init__(self, w, h):
         self.width = w
         self.height = h
@@ -49,7 +49,7 @@ if __name__=='__main__':
     try:
         width = 240
         height = 280
-        LCD = WaveShare_Lcd_1inch69(width, height)
+        LCD = LCD_1inch69(width, height)
         #color BRG
         LCD.fill(LCD.WHITE)
         LCD.lcd.show(0, 0, 240, 280, LCD.buffer)
