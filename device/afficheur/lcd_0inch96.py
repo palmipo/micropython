@@ -8,27 +8,31 @@ GREEN = 0xE007
 BLUE = 0x1F00
 WHITE = 0xFFFF
 BLACK = 0x0000
-class LCD_0inch96(framebuf.FrameBuffer):
+
+class LCD_0inch96(ST7735):
     def __init__(self):
-    
+
         self.width = 160
         self.height = 80
         
         self.cs = Pin(9,Pin.OUT)
         self.rst = Pin(12,Pin.OUT)
 #        self.bl = Pin(13,Pin.OUT)
-        self.cs(1)
         # pwm = PWM(Pin(13))#BL
         # pwm.freq(1000)        
+        pwm = PWM(Pin(13))#BL
+        pwm.freq(1000)
+        if value>=1000:
+            value=1000
+
+        self.cs(1)
         self.spi = SPI(1)
         self.spi = SPI(1,1000_000)
         self.spi = SPI(1,10000_000,polarity=0, phase=0,sck=Pin(10),mosi=Pin(11),miso=None)
         self.dc = Pin(8,Pin.OUT)
         self.dc(1)
-        self.buffer = bytearray(self.height * self.width * 2)
-        super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
-        self.Init()
-        self.SetWindows(0, 0, self.width-1, self.height-1)
+
+        super().__init__()
         
     def reset(self):
         self.rst(1)
@@ -42,6 +46,7 @@ class LCD_0inch96(framebuf.FrameBuffer):
         self.dc(0)
         self.cs(0)
         self.spi.write(bytearray([cmd]))
+        self.cs(1)
 
     def write_data(self, buf):
         self.dc(1)
@@ -49,12 +54,14 @@ class LCD_0inch96(framebuf.FrameBuffer):
         self.spi.write(bytearray([buf]))
         self.cs(1)
 
+    def write_buffer(self, buf):
+        self.dc(1)
+        self.cs(0)
+        self.spi.write(buf)
+        self.cs(1)
+
     def backlight(self,value):#value:  min:0  max:1000
-        pwm = PWM(Pin(13))#BL
-        pwm.freq(1000)
-        if value>=1000:
-            value=1000
-        data=int (value * 65535 // 100)       
+        data=int ((value%100) * 65535 // 100)       
         pwm.duty_u16(data)  
         
     def Init(self):
@@ -154,11 +161,13 @@ class LCD_0inch96(framebuf.FrameBuffer):
 
         self.write_cmd(0x29) 
         
-    def SetWindows(self, Xstart, Ystart, Xend, Yend):#example max:0,0,159,79
+    def show(self, Xstart, Ystart, Xend, Yend, buffer):#example max:0,0,159,79
+
         Xstart=Xstart+1
         Xend=Xend+1
         Ystart=Ystart+26
         Yend=Yend+26
+
         self.write_cmd(0x2A)
         self.write_data(0x00)              
         self.write_data(Xstart)      
@@ -173,13 +182,8 @@ class LCD_0inch96(framebuf.FrameBuffer):
 
         self.write_cmd(0x2C) 
         
-    def display(self):
-    
-        self.SetWindows(0,0,self.width-1,self.height-1)       
-        self.dc(1)
-        self.cs(0)
-        self.spi.write(self.buffer)
-        self.cs(1)        
+        self.write_buffer(buffer)
+        self.cs(1)
             
     
 if __name__=='__main__':

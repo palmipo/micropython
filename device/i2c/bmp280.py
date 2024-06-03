@@ -107,3 +107,21 @@ class BMP280(DeviceI2C):
         buf[0] = 0xe0
         buf[1] = 0xb6
         self.busi2c.send(self.adresse, buf)
+
+if __name__ == '__main__':
+    from i2cpico import I2CPico
+    i2c = I2CPico(1, 6, 7)
+    sensor = BMP280(i2c)
+    sensor.reset()
+    time.sleep(1)
+    print("chipIdRegister {}".format(sensor.chipIdRegister()))
+    try:
+        # sensor.setup()
+        data = []
+        data = sensor.readData()
+        print("pressure : %7.2f hPa" %data[0])
+        print("temp : %-6.2f ℃" %data[1])
+        print("hum : %6.2f ％" %data[2])
+    except KeyboardInterrupt:
+        pass
+

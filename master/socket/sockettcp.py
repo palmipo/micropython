@@ -1,10 +1,12 @@
 import socket
+from socketbus import SocketBus
 
 class SocketTcp(SocketBus):
     def __init__(self):
         super.__init__()
 
     def serveur(self, port):
+        self.__socket__ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__socket__.bind(port)
         self.__socket__.listen()
         self.__socket__.accept()
