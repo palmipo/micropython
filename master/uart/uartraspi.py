@@ -1,5 +1,5 @@
 import serial
-from uartbus import UartBus
+from interface.uartbus import UartBus
 
 class UartRaspi(UartBus):
     def __init__(self, device, bdrate):

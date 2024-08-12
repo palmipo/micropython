@@ -1,6 +1,6 @@
 import time
-from relaybus import RelayBus
-from elexol import Elexol
+from interface.relaybus import RelayBus
+from master.elexol.elexol import Elexol
 
 class ElexolRelay(RelayBus):
     def __init__(self, elexol, port):

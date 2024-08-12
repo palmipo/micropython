@@ -1,5 +1,5 @@
-from piabus import PiaBus
-from pcf8574 import PCF8574
+from interface.piabus import PiaBus
+from device.i2c.pcf8574 import PCF8574
 
 class PiaPcf8574(PiaBus):
   def __init__(self, pcf8574):

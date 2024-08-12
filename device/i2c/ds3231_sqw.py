@@ -1,4 +1,4 @@
-from ds3231 import DS3231
+from device.i2c.ds3231 import DS3231
 import micropython
 import machine
 

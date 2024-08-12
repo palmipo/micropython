@@ -1,4 +1,4 @@
-from devicei2c import DeviceI2C
+from device.i2c.devicei2c import DeviceI2C
 
 class Eeprom24C32(DeviceI2C):
 

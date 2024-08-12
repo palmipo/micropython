@@ -1,5 +1,5 @@
 from machine import SPI
-from spibus import SPIBus
+from interface.spibus import SPIBus
 
 class SPIPico(SPIBus):
     def __init__(self, bus, sck_pin, mosi_pin, miso_pin):

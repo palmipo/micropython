@@ -1,5 +1,5 @@
 import socket
-from socketbus import SocketBus
+from interface.socketbus import SocketBus
 
 class SocketTcp(SocketBus):
     def __init__(self):

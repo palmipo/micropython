@@ -2,6 +2,7 @@ import rp2
 import time
 import machine
 import micropython
+from master.pia.piapico import PiaPico
 
 class AntiRebond:
     def __init__(self, pinA, cback, tempo=100):

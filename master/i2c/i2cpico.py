@@ -1,6 +1,6 @@
 import rp2
 from machine import Pin, I2C
-from i2cbus import I2CBus
+from interface.i2cbus import I2CBus
 
 class I2CPico(I2CBus):
     def __init__(self, n_bus, sda_pin, scl_pin):

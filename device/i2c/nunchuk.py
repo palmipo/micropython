@@ -1,4 +1,4 @@
-from devicei2c import DeviceI2C
+from device.i2c.devicei2c import DeviceI2C
 
 #  http://domoticx.com/pinout-wii-nunchuk/
 #  connections to Arduino

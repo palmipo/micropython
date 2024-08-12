@@ -1,5 +1,5 @@
 from machine import UART
-from uartbus import UartBus
+from interface.uartbus import UartBus
 from machine import Pin
 
 class UartPico(UartBus):

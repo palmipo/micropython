@@ -1,4 +1,5 @@
 import network
+from interface.lanbus import LanBus
 
 class WiznetPico(LanBus):
     def connect(self, adresse, port):

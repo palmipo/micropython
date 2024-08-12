@@ -1,5 +1,5 @@
-from piabus import PiaBus
-from mcp23017 import MCP23017
+from interface.piabus import PiaBus
+from device.i2c.mcp23017 import MCP23017
 
 class PiaMCP23017(PiaBus):
   def __init__(self, port, pia):

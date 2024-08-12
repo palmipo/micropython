@@ -1,4 +1,4 @@
-from uartbus import UartBus
+from interface.uartbus import UartBus
 
 class Lunartec:
     def __init__(self, ident, uart):

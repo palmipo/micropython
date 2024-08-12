@@ -1,6 +1,6 @@
 import rp2
 from machine import Pin, PWM
-from pwmbus import PwmBus
+from interface.pwmbus import PwmBus
 
 class PwmPico(PwmBus):
     def __init__(self, pin):

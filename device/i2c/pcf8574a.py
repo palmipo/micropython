@@ -1,4 +1,4 @@
-from pcf8574 import PCF8574
+from device.i2c.pcf8574 import PCF8574
 
 class PCF8574A(PCF8574):
 

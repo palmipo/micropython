@@ -1,4 +1,4 @@
-import rp2
-from machine import Pin
-led = Pin(13, Pin.OUT)
-led.off()
+from master.pia.piapico import PiaPicoOutput
+
+led = PiaPicoOutput(25)
+led.set(0)

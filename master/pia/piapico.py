@@ -1,6 +1,6 @@
 import rp2
 from machine import Pin
-from piabus import PiaBus
+from interface.piabus import PiaBus
 
 class PiaPico(PiaBus):
     def __init__(self):

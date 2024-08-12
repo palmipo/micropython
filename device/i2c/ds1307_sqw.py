@@ -1,4 +1,4 @@
-from ds1307 import DS1307
+from device.i2c.ds1307 import DS1307
 import micropython
 import machine
 

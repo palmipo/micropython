@@ -1,4 +1,4 @@
-from devicei2c import DeviceI2C
+from device.i2c.devicei2c import DeviceI2C
 import time
 
 class DS1621(DeviceI2C):

@@ -1,4 +1,4 @@
-from devicei2c import DeviceI2C
+from device.i2c.devicei2c import DeviceI2C
 
 class DS3231(DeviceI2C):
     def __init__(self, address, bus):

@@ -1,4 +1,4 @@
-from i2cbus import I2CBus
+from interface.i2cbus import I2CBus
 
 class I2CMux(I2CBus):
 
