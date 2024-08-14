@@ -1,4 +1,4 @@
-from piabus import PiaBus
+from interface.piabus import PiaBus
 import time
 
 class HC1632:

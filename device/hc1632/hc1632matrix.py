@@ -1,5 +1,5 @@
 import framebuf, time
-from hc1632 import HC1632
+from device.hc1632.hc1632 import HC1632
 
 class Hc1632Matrix(framebuf.FrameBuffer):
     def __init__(self, largeur, hauteur, data_pin, write_pin, cs_pin):
