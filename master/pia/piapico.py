@@ -9,7 +9,8 @@ class PiaPico(PiaBus):
     def callback(pin):
         state = machine.disable_irq()
         try:
-            self.cb()
+            if self.cb != None:
+                self.cb()
         finally:
             machine.enable_irq(state)
 
@@ -25,11 +26,7 @@ class PiaPicoOutput(PiaPico):
         super().__init__()
 
 class PiaPicoInput(PiaPico):
-    def __init__(self, nPin):
-        self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
-        super().__init__()
-
-    def __init__(self, nPin, cb):
+    def __init__(self, nPin, cb=None):
         self.pin = Pin(nPin, Pin.IN, Pin.PULL_UP)
         self.pin.irq(self.callback, Pin.IRQ_FALLING)
         self.cb = cb

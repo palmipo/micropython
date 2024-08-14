@@ -36,20 +36,26 @@ class EPD:
     def send_command(self, command):
         self.dc_pin.set(0)
         self.cs_pin.set(0)
-        self.spi.send(command)
+        buf = bytearray(1)
+        buf[0] = command
+        self.spi.send(buf)
         self.cs_pin.set(1)
 
     def send_data(self, data):
         self.dc_pin.set(1)
         self.cs_pin.set(0)
-        self.spi.send(data)
+        buf = bytearray(1)
+        buf[0] = data
+        self.spi.send(buf)
         self.cs_pin.set(1)
 
     def send_buffer(self, data):
         self.dc_pin.set(1)
         self.cs_pin.set(0)
-        for d in data:
-            self.spi.send(d)
+        buf = bytearray(1)
+        for i in range(0,len(data)):
+            buf[0] = data[i]
+            self.spi.send(buf)
         self.cs_pin.set(1)
 
     def ReadBusyH(self):
@@ -61,147 +67,112 @@ class EPD:
             time.sleep_ms(5)
 
     def TurnOnDisplay(self):
-        self.send_command(b'0x12') # DISPLAY_REFRESH
-        self.send_data(b'0x01')
+        self.send_command(0x12) # DISPLAY_REFRESH
+        self.send_data(0x01)
         self.ReadBusyH()
 
-        self.send_command(b'0x02') # POWER_OFF
-        self.send_data(b'0X00')
+        self.send_command(0x02) # POWER_OFF
+        self.send_data(0X00)
         self.ReadBusyH()
         
     def init(self):
         self.reset()
 
-        self.send_command(b'0x66')
-        self.send_data(b'0x49')
-        self.send_data(b'0x55')
-        self.send_data(b'0x13')
-        self.send_data(b'0x5D')
+        self.send_command(0x66)
+        self.send_data(0x49)
+        self.send_data(0x55)
+        self.send_data(0x13)
+        self.send_data(0x5D)
 
-        self.send_command(b'0x66')
-        self.send_data(b'0x49')
-        self.send_data(b'0x55')
+        self.send_command(0x66)
+        self.send_data(0x49)
+        self.send_data(0x55)
 
-        self.send_command(b'0xB0')
-        self.send_data(b'0x03')
+        self.send_command(0xB0)
+        self.send_data(0x03)
 
-        self.send_command(b'0x00')
-        self.send_data(b'0x4F')
-        self.send_data(b'0x69')
+        self.send_command(0x00)
+        self.send_data(0x4F)
+        self.send_data(0x69)
 
-        self.send_command(b'0x03')
-        self.send_data(b'0x00')
+        self.send_command(0x03)
+        self.send_data(0x00)
 
-        self.send_command(b'0xF0')
-        self.send_data(b'0xF6')
-        self.send_data(b'0x0D')
-        self.send_data(b'0x00')
-        self.send_data(b'0x00')
-        self.send_data(b'0x00')
+        self.send_command(0xF0)
+        self.send_data(0xF6)
+        self.send_data(0x0D)
+        self.send_data(0x00)
+        self.send_data(0x00)
+        self.send_data(0x00)
 
-        self.send_command(b'0x06')
-        self.send_data(b'0xCF')
-        self.send_data(b'0xDE')
-        self.send_data(b'0x0F')
+        self.send_command(0x06)
+        self.send_data(0xCF)
+        self.send_data(0xDE)
+        self.send_data(0x0F)
 
-        self.send_command(b'0x41')
-        self.send_data(b'0x00')
+        self.send_command(0x41)
+        self.send_data(0x00)
 
-        self.send_command(b'0x50')
-        self.send_data(b'0x30')
+        self.send_command(0x50)
+        self.send_data(0x30)
 
-        self.send_command(b'0x60')
-        self.send_data(b'0x0C') 
-        self.send_data(b'0x05')
+        self.send_command(0x60)
+        self.send_data(0x0C) 
+        self.send_data(0x05)
 
-        self.send_command(b'0x61')
-        self.send_data(b'0xA8')
-        self.send_data(b'0x01') 
-        self.send_data(b'0x28') 
+        self.send_command(0x61)
+        self.send_data(0xA8)
+        self.send_data(0x01) 
+        self.send_data(0x28) 
 
-        self.send_command(b'0x84')
-        self.send_data(b'0x01')
+        self.send_command(0x84)
+        self.send_data(0x01)
         return 0
 
-#     def getbuffer(self, image):
-#         # Create a pallette with the 4 colors supported by the panel
-#         pal_image = Image.new("P", (1,1))
-#         pal_image.putpalette( (0,0,0,  255,255,255,  255,255,0,   255,0,0) + (0,0,0)*252)
-# 
-#         # Check if we need to rotate the image
-#         imwidth, imheight = image.size
-#         if(imwidth == self.width and imheight == self.height):
-#             image_temp = image
-#         elif(imwidth == self.height and imheight == self.width):
-#             image_temp = image.rotate(90, expand=True)
-#         else:
-#             logger.warning("Invalid image dimensions: %d x %d, expected %d x %d" % (imwidth, imheight, self.width, self.height))
-# 
-#         # Convert the soruce image to the 4 colors, dithering if needed
-#         image_4color = image_temp.convert("RGB").quantize(palette=pal_image)
-#         buf_4color = bytearray(image_4color.tobytes('raw'))
-# 
-#         # into a single byte to transfer to the panel
-#         buf = [0x00] * int(self.width * self.height / 4)
-#         idx = 0
-#         for i in range(0, len(buf_4color), 4):
-#             buf[idx] = (buf_4color[i] << 6) + (buf_4color[i+1] << 4) + (buf_4color[i+2] << 2) + buf_4color[i+3]
-#             idx += 1
-# 
-#         return buf
+    def show(self, image):
+        self.send_command(0x68)
+        self.send_data(0x01)
 
-    def display(self, image):
-        if self.width % 4 == 0 :
-            Width = self.width // 4
-        else :
-            Width = self.width // 4 + 1
-        Height = self.height
-
-        self.send_command(b'0x68')
-        self.send_data(b'0x01')
-
-        self.send_command(b'0x04')
+        self.send_command(0x04)
         self.ReadBusyH()
 
-        self.send_command(b'0x10')
-        for j in range(0, Height):
-            for i in range(0, Width):
-                    self.send_data(image[i + j * Width])
-
-        self.send_command(b'0x68')
-        self.send_data(b'0x00')
+        self.send_command(0x10)
+        self.send_buffer(image)
+    
+        self.send_command(0x68)
+        self.send_data(0x00)
 
         self.TurnOnDisplay()
         
-    def Clear(self, color=0x55):
+    def clear(self, color=0x55):
         if self.width % 4 == 0 :
             Width = self.width // 4
         else :
             Width = self.width // 4 + 1
         Height = self.height
 
-        self.send_command(b'0x68')
-        self.send_data(b'0x01')
+        self.send_command(0x68)
+        self.send_data(0x01)
 
-        self.send_command(b'0x04')
+        self.send_command(0x04)
         self.ReadBusyH()
 
-        self.send_command(b'0x10')
+        self.send_command(0x10)
         for j in range(0, Height):
             for i in range(0, Width):
                 self.send_data(color)
 
-        self.send_command(b'0x68')
-        self.send_data(b'0x00')
+        self.send_command(0x68)
+        self.send_data(0x00)
 
         self.TurnOnDisplay()
 
     def sleep(self):
-        self.send_command(b'0x02') # POWER_OFF
-        self.send_data(b'0x00')
+        self.send_command(0x02) # POWER_OFF
+        self.send_data(0x00)
 
-        self.send_command(b'0x07') # DEEP_SLEEP
-        self.send_data(b'0XA5')
+        self.send_command(0x07) # DEEP_SLEEP
+        self.send_data(0XA5)
     
 
 if __name__ == '__main__':
@@ -209,11 +180,12 @@ if __name__ == '__main__':
         display = EPD()
         display.init()
         
-        buffer = bytearray((display.width//4) * display.height)
+        buffer = bytearray(display.width // 4 * display.height)
         frame = framebuf.FrameBuffer(buffer, display.width, display.height, framebuf.GS2_HMSB)
-        frame.fill(display.BLACK)
-        
-        display.display(buffer)
+        frame.text('hello world', 0, 0, display.WHITE)
+
+        display.clear()
+#         display.show(buffer)
         display.sleep()
 
     except KeyboardInterrupt:
