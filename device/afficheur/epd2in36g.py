@@ -19,11 +19,11 @@ class EPD:
 
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
-        self.BLACK  = 0x000000   #   00  BGR
-        self.WHITE  = 0xffffff   #   01
-        self.YELLOW = 0x00ffff   #   10
-        self.RED    = 0x0000ff   #   11
-        
+        self.BLACK  = 0x00   #   00  BGR
+        self.WHITE  = 0x01   #   01
+        self.YELLOW = 0x10   #   10
+        self.RED    = 0x11   #   11
+
     # Hardware reset
     def reset(self):
         self.reset_pin.set(1)
@@ -182,10 +182,11 @@ if __name__ == '__main__':
         
         buffer = bytearray(display.width // 4 * display.height)
         frame = framebuf.FrameBuffer(buffer, display.width, display.height, framebuf.GS2_HMSB)
-        frame.text('hello world', 0, 0, display.WHITE)
+        frame.fill(display.WHITE)
+#         frame.text('hello world', 0, 10, display.WHITE)
 
         display.clear()
-#         display.show(buffer)
+        display.show(buffer)
         display.sleep()
 
     except KeyboardInterrupt:
