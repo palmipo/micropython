@@ -1,39 +1,38 @@
 import time
 from machine import Pin
 from neopixel import NeoPixel
-from wlanpico import WLanPico
-from i2cpico import I2CPico
-from ds3231 import DS3231
-# from ds3231_sqw import DS3231_SQW
+from master.socket.wlanpico import WLanPico
+from master.i2c.i2cpico import I2CPico
+# from device.i2c.ds3231 import DS3231
+from device.i2c.ds3231_sqw import DS3231_SQW
 import sys
-from lcd_1inch14 import Lcd_1inch14
-from piapico import PiaPicoOutput, PiaPicoInput
-from pwmpico import PwmPico
-from spipiconixie import SPIPicoNixie
+from device.afficheur.lcd_1inch14 import Lcd_1inch14
+from master.pia.piapico import PiaPicoOutput, PiaPicoInput
+from master.pwm.pwmpico import PwmPico
+from device.waveshare.waveshare_nixie_clock.spipiconixie import SPIPicoNixie
 
 class WaveshareNixieClock:
     def __init__(self):
         self.wlan = WLanPico()
         self.wlan.connect()
 
-#         self.kr = PiaPicoInput(15, self.cb_kr)
-#         self.kl = PiaPicoInput(16, self.cb_kl)
-#         self.km = PiaPicoInput(17, self.cb_km)
+        self.kr = PiaPicoInput(15, self.cb_kr)
+        self.kl = PiaPicoInput(16, self.cb_kl)
+        self.km = PiaPicoInput(17, self.cb_km)
 #         self.buzzer = PwmPico(14)
 
         self.i2c = I2CPico(1, 6, 7)
 #         self.bme280 = BME280(self.i2c)
-        self.ds1321 = DS3231(0, self.i2c)
-#         self.ds1321 = DS3231_SQW(0, self.i2c, 18, self.cb_rtc)
-#         self.ds1321.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
+        self.ds1321 = DS3231_SQW(0, self.i2c, 18, self.cb_rtc)
+        self.ds1321.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
-        rst=PiaPicoOutput(12)
+        rst = PiaPicoOutput(12)
         rst.set(1)
-        spi=SPIPicoNixie()
-        dc=PiaPicoOutput(8)
+        spi = SPIPicoNixie()
+        dc = PiaPicoOutput(8)
         dc.set(1)
-        bl=PwmPico(13)
-        led=NeoPixel(Pin(22, Pin.OUT), 6)
+        bl = PwmPico(13)
+        led = NeoPixel(Pin(22, Pin.OUT), 6)
 
         for num in range (0,6):
             self.LCD = Lcd_1inch14(num, dc, rst, spi, bl, led)
@@ -60,8 +59,6 @@ class WaveshareNixieClock:
 
     def cb_rtc(self, pin):
         print("rtc")
-#         self.buzzer.set(1)
-        pass
 
 if __name__ == '__main__':
     try:

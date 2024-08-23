@@ -1,4 +1,4 @@
-from gc9a01a import GC9A01A
+from device.spi.gc9a01a import GC9A01A
 import time
 
 class LCD_1inch28(GC9A01A):

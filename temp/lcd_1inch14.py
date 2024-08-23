@@ -1,9 +1,9 @@
-from device.spi.st7789 import ST7789
+from st7789 import ST7789
 from neopixel import NeoPixel
 from machine import Pin
-from master.pia.piapico import PiaPicoOutput
-from master.pwm.pwmpico import PwmPico
-from device.waveshare.waveshare_nixie_clock.spipiconixie import SPIPicoNixie
+from piapico import PiaPicoOutput
+from pwmpico import PwmPico
+from spipiconixie import SPIPicoNixie
 import time
 
 class Lcd_1inch14(ST7789):
@@ -15,8 +15,8 @@ class Lcd_1inch14(ST7789):
         self.RST_PIN = rst
         self.spi = spi
         self.BL_PIN = bl
-        self.BL_PIN.setFrequency(1000)
-        self.BL_PIN.setDuty(50)
+        self.BL_PIN.setFrequency(10000)
+        self.BL_PIN.setDuty(20)
         self.led = led
         self.led[num] = (0, 0, 0)
         self.led.write()
