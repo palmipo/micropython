@@ -12,26 +12,25 @@ EPD_HEIGHT = 296
 class EPD:
     def __init__(self):
         self.reset_pin = PiaPicoOutput(21)
+        self.reset_pin.set(1)
         self.dc_pin = PiaPicoOutput(20)
         self.busy_pin = PiaPicoInput(22)
         self.cs_pin = PiaPicoOutput(17)
+        self.cs_pin.set(1)
+
         self.spi = SPIPico(0, 18, 19, None)
+
+        self.dc_pin.set(1)
 
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
-        self.BLACK  = 0x00   #   00  BGR
-        self.WHITE  = 0x01   #   01
-        self.YELLOW = 0x10   #   10
-        self.RED    = 0x11   #   11
 
     # Hardware reset
     def reset(self):
-        self.reset_pin.set(1)
-        time.sleep_ms(200) 
         self.reset_pin.set(0)         # module reset
         time.sleep_ms(2)
         self.reset_pin.set(1)
-        time.sleep_ms(200)   
+        time.sleep_ms(20)   
 
     def send_command(self, command):
         self.dc_pin.set(0)
@@ -68,7 +67,7 @@ class EPD:
 
     def TurnOnDisplay(self):
         self.send_command(0x12) # DISPLAY_REFRESH
-        self.send_data(0x01)
+        self.send_data(0x00)#(0x01)
         self.ReadBusyH()
 
         self.send_command(0x02) # POWER_OFF
@@ -127,7 +126,6 @@ class EPD:
 
         self.send_command(0x84)
         self.send_data(0x01)
-        return 0
 
     def show(self, image):
         self.send_command(0x68)
@@ -144,11 +142,8 @@ class EPD:
 
         self.TurnOnDisplay()
         
-    def clear(self, color=0x55):
-        if self.width % 4 == 0 :
-            Width = self.width // 4
-        else :
-            Width = self.width // 4 + 1
+    def clear(self, color=0x1):
+        Width = self.width >> 2
         Height = self.height
 
         self.send_command(0x68)
@@ -157,6 +152,7 @@ class EPD:
         self.send_command(0x04)
         self.ReadBusyH()
 
+        c = color | (color << 2) | (color << 4) | (color << 6)
         self.send_command(0x10)
         for j in range(0, Height):
             for i in range(0, Width):
@@ -180,14 +176,17 @@ if __name__ == '__main__':
         display = EPD()
         display.init()
         
-        buffer = bytearray(display.width // 4 * display.height)
+        buffer = bytearray((display.width >> 2) * display.height)
         frame = framebuf.FrameBuffer(buffer, display.width, display.height, framebuf.GS2_HMSB)
-        frame.fill(display.WHITE)
-#         frame.text('hello world', 0, 10, display.WHITE)
-
-        display.clear()
+        frame.fill(0x2)
+        frame.line(0, 0, display.width, display.height, 0x3)
         display.show(buffer)
-        display.sleep()
 
+        time.sleep(1)
+        frame.line(0, display.height, display.width, 0, 0x3)
+        display.show(buffer)
+
+        time.sleep(1)
+        display.sleep()
     except KeyboardInterrupt:
         sys.exit()
