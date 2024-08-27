@@ -28,9 +28,12 @@ class WaveshareNixieClock:
 
         rst = PiaPicoOutput(12)
         rst.set(1)
+        
         spi = SPIPicoNixie()
+        
         dc = PiaPicoOutput(8)
         dc.set(1)
+        
         bl = PwmPico(13)
         led = NeoPixel(Pin(22, Pin.OUT), 6)
 
