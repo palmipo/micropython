@@ -127,6 +127,13 @@ class EPD:
         self.send_command(0x84)
         self.send_data(0x01)
 
+    def sleep(self):
+        self.send_command(0x02) # POWER_OFF
+        self.send_data(0x00)
+
+        self.send_command(0x07) # DEEP_SLEEP
+        self.send_data(0XA5)
+
     def show(self, image):
         self.send_command(0x68)
         self.send_data(0x01)
@@ -142,51 +149,45 @@ class EPD:
 
         self.TurnOnDisplay()
         
-    def clear(self, color=0x1):
-        Width = self.width >> 2
-        Height = self.height
-
-        self.send_command(0x68)
-        self.send_data(0x01)
-
-        self.send_command(0x04)
-        self.ReadBusyH()
-
+    def clear(self, buffer, color=0x1):
         c = color | (color << 2) | (color << 4) | (color << 6)
-        self.send_command(0x10)
-        for j in range(0, Height):
-            for i in range(0, Width):
-                self.send_data(color)
+        for j in range(len(buffer)):
+            buffer[j] = color
 
-        self.send_command(0x68)
-        self.send_data(0x00)
-
-        self.TurnOnDisplay()
-
-    def sleep(self):
-        self.send_command(0x02) # POWER_OFF
-        self.send_data(0x00)
-
-        self.send_command(0x07) # DEEP_SLEEP
-        self.send_data(0XA5)
+        self.show(buffer)
     
+    def drawPoint(self, buffer, x, y, c):
+        index = x + y * self.width
+	octet = index >> 3
+	masque = octet - (index << 3)
+        buffer[octet] = buffer[octet] & ~(0x03 << masque) | (c << masque)
+
+    # y = ax + b
+    def drawLine(self, buffer, x1, y1, x2, y2, c):
+        dy = y2 - y1
+        dx = x2 - x1
+        a = dy // dx
+        b = y1 - a * x1
+        for i in range(x1, x2):
+            j = a * i + b
+            self.drawPoint(buffer, i, j, c)
 
 if __name__ == '__main__':
     try:
         display = EPD()
         display.init()
-        
-        buffer = bytearray((display.width >> 2) * display.height)
-        frame = framebuf.FrameBuffer(buffer, display.width, display.height, framebuf.GS2_HMSB)
-        frame.fill(0x2)
-        frame.line(0, 0, display.width, display.height, 0x3)
-        display.show(buffer)
 
-        time.sleep(1)
-        frame.line(0, display.height, display.width, 0, 0x3)
+        # 4 pixels par octet        
+        buffer = bytearray((display.width >> 2) * display.height)
+        display.clear(buffer, 0x2)
+        display.drawLine(buffer, 0, 0, display.width, display.height, 0x3)
+        display.drawLine(buffer, 0, display.height, display.width, 0, 0x3)
         display.show(buffer)
 
         time.sleep(1)
         display.sleep()
+
     except KeyboardInterrupt:
+        display.sleep()
         sys.exit()
+
