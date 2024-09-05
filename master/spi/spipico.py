@@ -7,7 +7,6 @@ class SPIPico(SPIBus):
         self.spi = SPI(bus, baudrate=8000000, polarity=0, phase=0, bits=8, sck=sck_pin, mosi=mosi_pin, miso=miso_pin)
 
     def send(self, cmd):
-#         print(cmd)
         self.spi.write(cmd)
     
     def recv(self, n_byte):

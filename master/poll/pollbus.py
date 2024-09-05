@@ -1,6 +1,6 @@
 import select
 
-class PollClnt:
+class PollCallback:
     def cb_pollin(self):
         raise NotImplementedError
     

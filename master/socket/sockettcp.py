@@ -6,7 +6,7 @@ class SocketTcp(SocketBus):
         super.__init__()
 
     def serveur(self, port):
-        self.__socket__ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connect("0.0.0.0", port)
         self.__socket__.bind(port)
         self.__socket__.listen()
         self.__socket__.accept()
@@ -28,7 +28,7 @@ class SocketTcp(SocketBus):
         rsp = self.__socket__.recv(n_byte)
         return rsp
 
-    def transfer(self, cmd, n_byte):
+    def transferer(self, cmd, n_byte):
         self.__socket__.send(cmd)
         rsp = self.__socket__.recv(n_byte)
         return rsp

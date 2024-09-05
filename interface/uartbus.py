@@ -6,5 +6,5 @@ class UartBus:
     def recv(self, n_byte):
         raise NotImplementedError
     
-    def transfert(self, cmd, n_byte):
+    def transferer(self, cmd, n_byte):
         raise NotImplementedError
