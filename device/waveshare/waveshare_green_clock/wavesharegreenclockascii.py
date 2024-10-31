@@ -1,10 +1,13 @@
 class WaveshareGreenClockAscii:
+    def __init__(self):
+        pass
+
     def encode(self, caractere):
         return self.tab[caractere]
 
 class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.tab = {
             "0": (b'\x0E\x11\x19\x15\x13\x11\x0E', 5, 7),
             "1": (b'\x02\x03\x02\x02\x02\x02\x07', 3, 7),
@@ -49,7 +52,7 @@ class WaveshareGreenClockAscii5x7(WaveshareGreenClockAscii):
 
 class WaveshareGreenClockAscii4x7(WaveshareGreenClockAscii):
     def __init__(self):
-       super.__init__()
+       super().__init__()
        self.tab = {
             "0": (b'\x06\x09\x09\x0d\x0b\x09\x06', 4, 7),
             "1": (b'\x04\x06\x04\x04\x04\x04\x0e', 4, 7),
@@ -63,7 +66,7 @@ class WaveshareGreenClockAscii4x7(WaveshareGreenClockAscii):
             "9": (b'\x06\x09\x09\x0E\x08\x09\x06', 4, 7),
             ".": (b'\x00\x00\x00\x00\x00\x00\x01', 1, 7),
             ":": (b'\x00\x01\x01\x00\x01\x01\x00', 1, 7),
-            "/": (b'\x00\x10\x08\x04\x02\x01\x00', 3, 7),
+            "/": (b'\x01\x01\x01\x01\x01\x01\x01', 1, 7),
             "A": (b'\x0E\x11\x11\x1F\x11\x11\x11', 4, 7),
             "B": (b'\x0F\x11\x11\x0F\x11\x11\x0F', 4, 7),
             "C": (b'\x0E\x11\x01\x01\x01\x11\x0E', 4, 7),

@@ -1,12 +1,13 @@
 from wavesharegreenclockcodec import WaveshareGreenClockCodec
 
 class WaveshareGreenClockTag:
-    def __init__(self):
+    def __init__(self, buffer):
         self.codec = WaveshareGreenClockCodec()
+        self.buffer = buffer
         
-    def clear(self, buffer):
-        for i in range(len(buffer)):
-            buffer[i] = 0
+    def clear(self):
+        for i in range(len(self.buffer)):
+            self.buffer[i] = 0
 
     def setDayWeek(self, day):
         if day == 0:
@@ -24,14 +25,14 @@ class WaveshareGreenClockTag:
         elif day == 6:
             self.codec.encode(self.codec.Champ(self.buffer, 3, 1), self.codec.Champ(day, 0, 1))
             
-    def led(self, buffer, led1, led2):
-        self.codec.encode(self.codec.Champ(buffer, 3, 1), self.codec.Champ(led1, 0, 1))
-        self.codec.encode(self.codec.Champ(buffer, 4, 1), self.codec.Champ(led2, 0, 1))
+    def led(self, led1, led2):
+        self.codec.encode(self.codec.Champ(self.buffer, 3, 1), self.codec.Champ(led1, 0, 1))
+        self.codec.encode(self.codec.Champ(self.buffer, 4, 1), self.codec.Champ(led2, 0, 1))
 
             
-    def uniteTemperature(self, buffer, degree, farehein):
-        self.codec.encode(self.codec.Champ(buffer, 97, 1), self.codec.Champ(degree, 0, 1))
-        self.codec.encode(self.codec.Champ(buffer, 96, 1), self.codec.Champ(farehein, 0, 1))
+    def uniteTemperature(self, degree, farehein):
+        self.codec.encode(self.codec.Champ(self.buffer, 97, 1), self.codec.Champ(degree, 0, 1))
+        self.codec.encode(self.codec.Champ(self.buffer, 96, 1), self.codec.Champ(farehein, 0, 1))
 # MoveOn = b'\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 # AlarmOn = b'\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 # CountDown = b'\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
