@@ -10,8 +10,7 @@ import machine
 micropython.alloc_emergency_exception_buf(100)
 
 class WaveshareGreenClock:
-    def __init__(self, app):
-        self.app = app
+    def __init__(self):
 
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
@@ -21,41 +20,73 @@ class WaveshareGreenClock:
         # self.rtc = DS3231(0, self.i2c)
         self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
+        self.rtc_beat = False
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K0.irq(handler=self.callback_down, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K0.irq(handler=self.K0_callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K0_click = False
 
         self.K1 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K1.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
-        
+        self.K1.irq(handler=self.K1_callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K1_click = False
+
         self.K2 = machine.Pin(2, machine.Pin.IN, machine.Pin.PULL_UP)
-        self.K2.irq(handler=self.callback_up, trigger=machine.Pin.IRQ_FALLING, hard=True)
-        
+        self.K2.irq(handler=self.K2_callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
+        self.K2_click = False
+
         self.buzzer = machine.Pin(14, machine.Pin.OUT)
 
-    def callback(self, pin):
+    def K0_callback(self, pin):
         state = machine.disable_irq()
         try:
-            self.app.cb_center()
+            self.K0_click = True
         finally:
             machine.enable_irq(state)
 
-    def callback_up(self, pin):
+    def K1_callback(self, pin):
         state = machine.disable_irq()
         try:
-            self.app.cb_up()
+            self.K1_click = True
         finally:
             machine.enable_irq(state)
 
-    def callback_down(self, pin):
+    def K2_callback(self, pin):
         state = machine.disable_irq()
         try:
-            self.app.cb_down()
+            self.K2_click = True
         finally:
             machine.enable_irq(state)
 
     def callback_rtc(self, pin):
-        self.app.cb_rtc()
+        self.rtc_beat = True
+
+    def is_k0_beat(self):
+        if self.K0_click:
+            self.K0_click = False
+            return True
+        else:
+            return False
+
+    def is_k1_beat(self):
+        if self.K1_click:
+            self.K1_click = False
+            return True
+        else:
+            return False
+
+    def is_k2_beat(self):
+        if self.K2_click:
+            self.K2_click = False
+            return True
+        else:
+            return False
+
+    def is_rtc_beat(self):
+        if self.rtc_beat:
+            self.rtc_beat = False
+            return True
+        else:
+            return False
 
     # matrice de 4 * 8 bits
     def show(self, buffer):

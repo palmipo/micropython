@@ -21,12 +21,14 @@ class AppTime(WaveshareGreenClockApps):
 
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
+        return 0
 
     def cb_center(self):
         pass
 
     def cb_down(self):
         self.timezone = (self.timezone - 1) % 24
+        return 0
 
     def cb_rtc(self):
         self.seconde = (self.seconde + 1) % 60
@@ -55,12 +57,17 @@ class AppCompteur(WaveshareGreenClockApps):
 
     def cb_up(self):
         self.cpt_gauche = (self.cpt_gauche + 1) % 100
-        
+        return 0
+
     def cb_down(self):
         self.cpt_droit = (self.cpt_droit + 1) % 100
+        return 0
 
     def cb_center(self):
-        pass
+        if self.cpt_gauche != 0 or self.cpt_droit != 0:
+            self.cpt_gauche = 0
+            self.cpt_droit = 0
+            return 0
 
     def cb_rtc(self):
         pass
@@ -150,24 +157,27 @@ class AppMain(WaveshareGreenClockApps):
     def __init__(self, buffer):
         super().__init__()
         self.cpt = 0
-        self.app = [AppTest(buffer), AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
+        self.apps = [AppTest(buffer), AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
         self.tag = WaveshareGreenClockTag(buffer)
 
     def cb_up(self):
-        self.app[self.cpt].cb_up()
+        self.apps[self.cpt].cb_up()
 
     def cb_center(self):
-        self.tag.clear()
-        self.cpt = (self.cpt + 1) % len(self.app)
+        if self.apps[self.cpt].cb_center == None:
+            self.tag.clear()
+            self.cpt = (self.cpt + 1) % len(self.app)
 
     def cb_down(self):
-        self.app[self.cpt].cb_down()
+        self.apps[self.cpt].cb_down()
 
     def cb_rtc(self):
-        self.app[self.cpt].cb_rtc()
+        for app in self.apps:
+            app.cb_rtc()
+        # self.apps[self.cpt].cb_rtc()
 
     def cb_run(self):
-        self.app[self.cpt].cb_run()
+        self.apps[self.cpt].cb_run()
 
 
 if __name__ == '__main__':
@@ -177,7 +187,7 @@ if __name__ == '__main__':
 
         app = AppMain(buffer)
 
-        clock = WaveshareGreenClock(app)
+        clock = WaveshareGreenClock()
 
         try:
             wlan = WLanPico()
@@ -203,8 +213,17 @@ if __name__ == '__main__':
         _thread.start_new_thread(thread_run, ());
 
         while (True):
+            if clock.is_k0_beat():
+                app.cb_up()
+            elif clock.is_k1_beat():
+                app.cb_center()
+            elif clock.is_k2_beat():
+                app.cb_down()
+            elif clock.is_rtc_beat():
+                app.cb_rtc()
+
             app.cb_run()
-            time.sleep(1)
+            time.sleep_ms(500)
 
     except OSError:
         print("quit")
