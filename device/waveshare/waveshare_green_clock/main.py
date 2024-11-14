@@ -207,12 +207,12 @@ if __name__ == '__main__':
 
         fin = False
         def thread_run():
-            while (True):
+            while (fin != True):
                 clock.show(buffer)
 
         _thread.start_new_thread(thread_run, ());
 
-        while (True):
+        while (fin != True):
             if clock.is_k0_beat():
                 app.cb_up()
             elif clock.is_k1_beat():
@@ -226,8 +226,10 @@ if __name__ == '__main__':
             time.sleep_ms(500)
 
     except OSError:
+        fin = True
         print("quit")
         sys.exit()
     except KeyboardInterrupt:
+        fin = True
         print("quit")
         sys.exit()
