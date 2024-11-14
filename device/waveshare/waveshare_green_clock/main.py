@@ -15,9 +15,10 @@ class AppTime(WaveshareGreenClockApps):
         self.tag = WaveshareGreenClockTag(buffer)
         self.buffer = buffer
         self.timezone = 0
-        self.heure = 0 #args[0][3]
-        self.minute = 0 #args[0][4]
-        self.seconde = 0 #args[0][5]
+        self.heure = 0 #args[3]
+        self.minute = 0 #args[4]
+        self.seconde = 0 #args[5]
+        self.dayOfWeek = 0 #args[6]
 
     def cb_init(self):
         self.tag.clear()
@@ -26,6 +27,7 @@ class AppTime(WaveshareGreenClockApps):
         self.heure = data_tuple[3]
         self.minute = data_tuple[4]
         self.seconde = data_tuple[5]
+        self.dayOfWeek = data_tuple[6]
 
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
@@ -44,8 +46,11 @@ class AppTime(WaveshareGreenClockApps):
             self.minute = (self.minute + 1) % 60
             if self.minute == 0:
                 self.heure = (self.heure + 1) % 24
+                if self.heure == 0:
+                    self.dayOfWeek = (self.dayOfWeek + 1) % 7
 
     def cb_run(self):
+        self.tag.setDayWeek(self.dayOfWeek)
         lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
         offset = 0
         for i in range(len(lHeure)):
@@ -59,12 +64,13 @@ class AppCompteur(WaveshareGreenClockApps):
         super().__init__()
         self.codec = WaveshareGreenClockCodec()
         self.ascii = WaveshareGreenClockAscii4x7()
+        self.tag = WaveshareGreenClockTag(buffer)
         self.cpt_gauche = 0
         self.cpt_droit = 0
         self.buffer = buffer
 
     def cb_init(self):
-        pass
+        self.tag.clear()
 
     def cb_up(self):
         self.cpt_gauche = (self.cpt_gauche + 1) % 100
