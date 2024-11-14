@@ -209,7 +209,6 @@ if __name__ == '__main__':
         fin = False
         def thread_run():
             while (fin != True):
-                buffer2 = buffer
                 clock.show(buffer2)
 
         _thread.start_new_thread(thread_run, ());
@@ -225,7 +224,8 @@ if __name__ == '__main__':
                 app.cb_rtc()
 
             app.cb_run()
-            time.sleep(1)
+            buffer2 = buffer
+            time.sleep_ms(500)
 
     except OSError:
         fin = True
