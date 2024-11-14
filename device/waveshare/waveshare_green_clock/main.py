@@ -19,6 +19,14 @@ class AppTime(WaveshareGreenClockApps):
         self.minute = 0 #args[0][4]
         self.seconde = 0 #args[0][5]
 
+    def cb_init(self):
+        self.tag.clear()
+        
+        data_tuple = time.localtime()
+        self.heure = data_tuple[3]
+        self.minute = data_tuple[4]
+        self.seconde = data_tuple[5]
+
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
         return 0
@@ -55,6 +63,9 @@ class AppCompteur(WaveshareGreenClockApps):
         self.cpt_droit = 0
         self.buffer = buffer
 
+    def cb_init(self):
+        pass
+
     def cb_up(self):
         self.cpt_gauche = (self.cpt_gauche + 1) % 100
         return 0
@@ -89,6 +100,9 @@ class AppTemperature(WaveshareGreenClockApps):
         self.tag = WaveshareGreenClockTag(buffer)
         self.buffer = buffer
 
+    def cb_init(self):
+        self.tag.clear()
+
     def cb_up(self):
         pass
 
@@ -112,29 +126,12 @@ class AppTemperature(WaveshareGreenClockApps):
                 self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
             offset += w + 1
 
-class AppString(WaveshareGreenClockApps):
-    def __init__(self, buffer):
-        super().__init__()
-
-    def cb_up(self):
-        pass
-
-    def cb_center(self):
-        pass
-
-    def cb_down(self):
-        pass
-
-    def cb_rtc(self):
-        pass
-
-    def cb_run(self):
-        pass
-
 class AppTest(WaveshareGreenClockApps):
     def __init__(self, buffer):
         super().__init__()
         self.buffer = buffer
+
+    def cb_init(self):
         for i in range(len(self.buffer)):
             self.buffer[i] = 0xFF
 
@@ -157,16 +154,20 @@ class AppMain(WaveshareGreenClockApps):
     def __init__(self, buffer):
         super().__init__()
         self.cpt = 0
-        self.apps = [AppTest(buffer), AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer), AppString(buffer)]
+        self.apps = [AppTest(buffer), AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer)]
         self.tag = WaveshareGreenClockTag(buffer)
+        self.apps[self.cpt].cb_init()
+
+    def cb_init(self):
+        pass
 
     def cb_up(self):
         self.apps[self.cpt].cb_up()
 
     def cb_center(self):
-        if self.apps[self.cpt].cb_center == None:
-            self.tag.clear()
-            self.cpt = (self.cpt + 1) % len(self.app)
+        if self.apps[self.cpt].cb_center() == None:
+            self.cpt = (self.cpt + 1) % len(self.apps)
+            self.apps[self.cpt].cb_init()
 
     def cb_down(self):
         self.apps[self.cpt].cb_down()
@@ -174,7 +175,6 @@ class AppMain(WaveshareGreenClockApps):
     def cb_rtc(self):
         for app in self.apps:
             app.cb_rtc()
-        # self.apps[self.cpt].cb_rtc()
 
     def cb_run(self):
         self.apps[self.cpt].cb_run()
@@ -184,6 +184,7 @@ if __name__ == '__main__':
     try:
     
         buffer = bytearray(4*8)
+        buffer2 = bytearray(4*8)
 
         app = AppMain(buffer)
 
@@ -208,7 +209,8 @@ if __name__ == '__main__':
         fin = False
         def thread_run():
             while (fin != True):
-                clock.show(buffer)
+                buffer2 = buffer
+                clock.show(buffer2)
 
         _thread.start_new_thread(thread_run, ());
 
@@ -223,7 +225,7 @@ if __name__ == '__main__':
                 app.cb_rtc()
 
             app.cb_run()
-            time.sleep_ms(500)
+            time.sleep(1)
 
     except OSError:
         fin = True

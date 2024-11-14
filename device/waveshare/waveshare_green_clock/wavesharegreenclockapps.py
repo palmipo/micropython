@@ -1,6 +1,9 @@
 
 
 class WaveshareGreenClockApps:
+    def cb_init(self):
+        raise NotImplementedError
+        
     def cb_up(self):
         raise NotImplementedError
 

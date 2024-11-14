@@ -61,28 +61,28 @@ class WaveshareGreenClock:
         self.rtc_beat = True
 
     def is_k0_beat(self):
-        if self.K0_click:
+        if self.K0_click == True:
             self.K0_click = False
             return True
         else:
             return False
 
     def is_k1_beat(self):
-        if self.K1_click:
+        if self.K1_click == True:
             self.K1_click = False
             return True
         else:
             return False
 
     def is_k2_beat(self):
-        if self.K2_click:
+        if self.K2_click == True:
             self.K2_click = False
             return True
         else:
             return False
 
     def is_rtc_beat(self):
-        if self.rtc_beat:
+        if self.rtc_beat == True:
             self.rtc_beat = False
             return True
         else:
