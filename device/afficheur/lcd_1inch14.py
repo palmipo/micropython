@@ -83,5 +83,5 @@ if __name__=='__main__':
             LCD.show(num, 0, 0, w, h, buffer)
 
     except KeyboardInterrupt:
-        sys.exit()
+        pass
 

@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
         time.sleep(0.1)
     except KeyboardInterrupt:
-        sys.exit()
+        pass
 
     finally:
         sock.close()

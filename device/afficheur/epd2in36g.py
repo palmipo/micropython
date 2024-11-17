@@ -189,5 +189,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         display.sleep()
-        sys.exit()
 

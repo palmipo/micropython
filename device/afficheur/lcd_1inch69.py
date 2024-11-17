@@ -74,4 +74,4 @@ if __name__=='__main__':
         
         LCD.lcd.show(0, 0, 240, 280, LCD.buffer)
     except KeyboardInterrupt:
-        sys.exit()
+        pass

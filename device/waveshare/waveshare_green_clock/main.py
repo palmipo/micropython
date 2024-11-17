@@ -1,4 +1,5 @@
-import ntptime, network, framebuf, sys, time, _thread
+# import ntptime, network, framebuf, sys, time, _thread
+import _thread, time
 from device.waveshare.waveshare_green_clock.wavesharegreenclock import WaveshareGreenClock
 from device.waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
 from device.waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii4x7
@@ -186,58 +187,68 @@ class AppMain(WaveshareGreenClockApps):
         self.apps[self.cpt].cb_run()
 
 
-if __name__ == '__main__':
+try:
+
+    buffer = bytearray(4*8)
+    buffer2 = bytearray(4*8)
+
+    app = AppMain(buffer)
+
+    clock = WaveshareGreenClock()
+
     try:
-    
-        buffer = bytearray(4*8)
-        buffer2 = bytearray(4*8)
+        wlan = WLanPico()
+        wlan.connect()
+        data_tuple = wlan.ntp()
 
-        app = AppMain(buffer)
+        laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+        lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 
-        clock = WaveshareGreenClock()
+        clock.rtc.setDate(laDate)
+        clock.rtc.setDayWeek(str(data_tuple[6]))
+        clock.rtc.setTime(lHeure)
+    except OSError:
+        pass
+    finally:
+        wlan.disconnect()
 
-        try:
-            wlan = WLanPico()
-            wlan.connect()
-            data_tuple = wlan.ntp()
-
-            laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-            lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-
-            clock.rtc.setDate(laDate)
-            clock.rtc.setDayWeek(str(data_tuple[6]))
-            clock.rtc.setTime(lHeure)
-        except OSError:
-            pass
-        finally:
-            wlan.disconnect()
-
-        fin = False
-        def thread_run():
-            while (fin != True):
-                clock.show(buffer2)
-
-        _thread.start_new_thread(thread_run, ());
-
+    fin = False
+    def thread_run():
         while (fin != True):
-            if clock.is_k0_beat():
-                app.cb_up()
-            elif clock.is_k1_beat():
-                app.cb_center()
-            elif clock.is_k2_beat():
-                app.cb_down()
-            elif clock.is_rtc_beat():
-                app.cb_rtc()
+            clock.show(buffer2)
 
+    _thread.start_new_thread(thread_run, ());
+
+    while (fin != True):
+        if clock.is_k0_beat():
+            app.cb_up()
             app.cb_run()
             buffer2 = buffer
             time.sleep_ms(500)
 
-    except OSError:
+        elif clock.is_k1_beat():
+            app.cb_center()
+            app.cb_run()
+            buffer2 = buffer
+            time.sleep_ms(500)
+
+        elif clock.is_k2_beat():
+            app.cb_down()
+            app.cb_run()
+            buffer2 = buffer
+            time.sleep_ms(500)
+
+        elif clock.is_rtc_beat():
+            app.cb_rtc()
+            app.cb_run()
+            buffer2 = buffer
+            time.sleep_ms(500)
+
+except OSError:
+    fin = True
+    print("quit")
+
+except KeyboardInterrupt:
         fin = True
         print("quit")
-        sys.exit()
-    except KeyboardInterrupt:
-        fin = True
-        print("quit")
-        sys.exit()
+

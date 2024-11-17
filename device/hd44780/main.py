@@ -34,8 +34,6 @@ try:
 
 except OSError:
     print("erreur LCD2004")
-    sys.exit()
 
 except KeyboardInterrupt:
     print("exit")
-    sys.exit()
