@@ -1,11 +1,11 @@
 import ntptime, network, framebuf, sys, time, _thread
-from wavesharegreenclock import WaveshareGreenClock
-from wavesharegreenclockapps import WaveshareGreenClockApps
-from wavesharegreenclockascii import WaveshareGreenClockAscii4x7
-from wavesharegreenclockascii import WaveshareGreenClockAscii5x7
-from wavesharegreenclockcodec import WaveshareGreenClockCodec
-from wavesharegreenclocktag import WaveshareGreenClockTag
-from wlanpico import WLanPico
+from device.waveshare.waveshare_green_clock.wavesharegreenclock import WaveshareGreenClock
+from device.waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
+from device.waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii4x7
+from device.waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii5x7
+from device.waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
+from device.waveshare.waveshare_green_clock.wavesharegreenclocktag import WaveshareGreenClockTag
+from master.socket.wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self, buffer):

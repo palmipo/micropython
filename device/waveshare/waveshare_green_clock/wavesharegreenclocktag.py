@@ -1,4 +1,4 @@
-from wavesharegreenclockcodec import WaveshareGreenClockCodec
+from device.waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
 
 class WaveshareGreenClockTag:
     def __init__(self, buffer):

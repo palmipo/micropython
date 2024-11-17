@@ -1,9 +1,8 @@
-from wavesharegreenclockapps import WaveshareGreenClockApps
-from sm5166 import SM5166P
-from sm16106 import SM16106SC
-from i2cpico import I2CPico
-from ds3231_sqw import DS3231_SQW
-from ds3231 import DS3231
+from device.waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
+from device.waveshare.waveshare_green_clock.sm5166p import SM5166P
+from device.waveshare.waveshare_green_clock.sm16106sc import SM16106SC
+from master.i2c.i2cpico import I2CPico
+from device.i2c.ds3231_sqw import DS3231_SQW
 import micropython
 import machine
 
@@ -17,7 +16,6 @@ class WaveshareGreenClock:
         self.column.OutputEnable()
         
         self.i2c = I2CPico(1, 6, 7)
-        # self.rtc = DS3231(0, self.i2c)
         self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
         self.rtc_beat = False
