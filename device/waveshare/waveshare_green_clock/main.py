@@ -224,25 +224,23 @@ try:
             app.cb_up()
             app.cb_run()
             buffer2 = buffer
-            time.sleep_ms(500)
 
         elif clock.is_k1_beat():
             app.cb_center()
             app.cb_run()
             buffer2 = buffer
-            time.sleep_ms(500)
 
         elif clock.is_k2_beat():
             app.cb_down()
             app.cb_run()
             buffer2 = buffer
-            time.sleep_ms(500)
 
         elif clock.is_rtc_beat():
             app.cb_rtc()
             app.cb_run()
             buffer2 = buffer
-            time.sleep_ms(500)
+
+        time.sleep(1)
 
 except OSError:
     fin = True
