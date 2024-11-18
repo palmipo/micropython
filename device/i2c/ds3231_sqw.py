@@ -16,7 +16,7 @@ class DS3231_SQW(DS3231):
             machine.enable_irq(state)
 
     def isActivated(self):
-       if self.activated == True:
+        if self.activated == True:
             self.activated = False
             return True
         else:
