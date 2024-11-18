@@ -18,7 +18,6 @@ class AppTime(WaveshareGreenClockApps):
         self.timezone = 0
         self.heure = 0 #args[3]
         self.minute = 0 #args[4]
-        self.seconde = 0 #args[5]
         self.dayOfWeek = 0 #args[6]
 
     def cb_init(self):
@@ -27,7 +26,6 @@ class AppTime(WaveshareGreenClockApps):
         data_tuple = time.localtime()
         self.heure = data_tuple[3]
         self.minute = data_tuple[4]
-        self.seconde = data_tuple[5]
         self.dayOfWeek = data_tuple[6]
 
     def cb_up(self):
@@ -42,13 +40,10 @@ class AppTime(WaveshareGreenClockApps):
         return 0
 
     def cb_rtc(self):
-        self.seconde = (self.seconde + 1) % 60
-        if self.seconde == 0:
-            self.minute = (self.minute + 1) % 60
-            if self.minute == 0:
-                self.heure = (self.heure + 1) % 24
-                if self.heure == 0:
-                    self.dayOfWeek = (self.dayOfWeek + 1) % 7
+        data_tuple = time.localtime()
+        self.heure = data_tuple[3]
+        self.minute = data_tuple[4]
+        self.dayOfWeek = data_tuple[6]
 
     def cb_run(self):
         self.tag.setDayWeek(self.dayOfWeek)

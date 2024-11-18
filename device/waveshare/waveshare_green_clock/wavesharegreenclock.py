@@ -16,9 +16,8 @@ class WaveshareGreenClock:
         self.column.OutputEnable()
         
         self.i2c = I2CPico(1, 6, 7)
-        self.rtc = DS3231_SQW(0, self.i2c, 3, self.callback_rtc)
+        self.rtc = DS3231_SQW(0, self.i2c, 3)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
-        self.rtc_beat = False
 
         self.K0 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
         self.K0.irq(handler=self.K0_callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
@@ -55,9 +54,6 @@ class WaveshareGreenClock:
         finally:
             machine.enable_irq(state)
 
-    def callback_rtc(self, pin):
-        self.rtc_beat = True
-
     def is_k0_beat(self):
         if self.K0_click == True:
             self.K0_click = False
@@ -80,11 +76,7 @@ class WaveshareGreenClock:
             return False
 
     def is_rtc_beat(self):
-        if self.rtc_beat == True:
-            self.rtc_beat = False
-            return True
-        else:
-            return False
+        return self.rtc.isActivated()
 
     # matrice de 4 * 8 bits
     def show(self, buffer):
