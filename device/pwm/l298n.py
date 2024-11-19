@@ -1,12 +1,11 @@
-import rp2
-from machine import Pin, PWM
+import machine
 
 class L298N:
-    def __init__(self, enA, in1, in2):
-        self.enA = PWM(Pin(enA))
-        self.in1 = Pin(in1, Pin.OUT)
-        self.in2 = Pin(in2, Pin.OUT)
-        self.enA.freq(100000)
+    def __init__(self, enA, in1, in2, freq=100000):
+        self.enA = machine.PWM(machine.Pin(enA))
+        self.in1 = machine.Pin(in1, machine.Pin.OUT)
+        self.in2 = machine.Pin(in2, machine.Pin.OUT)
+        self.enA.freq(freq)
 
     def forward(self, vitesse):
         self.in1.on()

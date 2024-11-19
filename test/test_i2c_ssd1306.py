@@ -97,4 +97,3 @@ try:    # wlan = WLanPico(network.STA_IF)
     switch.clear()
 except KeyboardInterrupt:
     print("quit")
-    quit()

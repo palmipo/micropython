@@ -13,9 +13,3 @@ class PwmPico(PwmBus):
         
     def setDuty(self, pourcentage):
         self.pwm.duty_u16((pourcentage % 100) * 65535 // 100)
-
-            
-if __name__=='__main__':
-    buz = PwmPico(13)
-    buz.setFrequency(1000)
-    buz.setDuty(99)
