@@ -13,12 +13,8 @@ class Aff:
     def __init__(self):
         try:
             self.i2c = I2CPico(0, 4, 5)
-    #         self.rtc = DS1307(0, self.i2c)
-            self.rtc = DS1307_SQW(0, self.i2c, 7, self.callback_rtc)
+            self.rtc = DS1307_SQW(0, self.i2c, 7)
             self.rtc.setSquareWave(0x01)
-            maj = 0
-    #         self.pinSQW = machine.Pin(7, machine.Pin.IN, machine.Pin.PULL_UP)
-    #         self.pinSQW.irq(handler=self.callback, trigger=machine.Pin.IRQ_FALLING, hard=True)
         except OSError:
             print('erreur i2c')
         
@@ -69,23 +65,7 @@ class Aff:
             print("erreur i2c")
 
 
-    def callback_rtc(self, pin):
-        state = machine.disable_irq()
-        try:
-            global maj
-            maj = 1
-        finally:
-            machine.enable_irq(state)
-
-
-    def irq(self, pin):
-        state = machine.disable_irq()
-        try:
-            self.print('appui sur bp {}'.format(pin))
-        finally:
-            machine.enable_irq(state)
-
-
+try:
 
 # import socket
 # sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,40 +76,45 @@ class Aff:
 # clientsocket.close()
 # sock.close()
 
-ow = onewire.OneWire(machine.Pin(6)) # create a OneWire bus on GPIO12
-print(ow.scan())               # return a list of devices on the bus
-ow.reset()              # reset the bus
-ds = ds18x20.DS18X20(ow)
-roms = ds.scan()
-print(roms)
-ds.convert_temp()
-time.sleep_ms(750)
-for rom in roms:
-    print(ds.read_temp(rom))
+    ow = onewire.OneWire(machine.Pin(6)) # create a OneWire bus on GPIO12
+    print(ow.scan())               # return a list of devices on the bus
+    ow.reset()              # reset the bus
+    ds = ds18x20.DS18X20(ow)
+    roms = ds.scan()
+    print(roms)
+    ds.convert_temp()
+    time.sleep_ms(750)
+    for rom in roms:
+        print(ds.read_temp(rom))
 
-aff = Aff()
-while True:
-    if maj == 1:
-        aff.paint.fill(0)
-        try:
-            aff.paint.text(aff.wlan.ifconfig(), 0, 0)
-        except OSError:
-            print("erreur wlan")
+    aff = Aff()
+    fin = False
+    while fin == False:
+        if aff.rtc.isActivated() == True:
+            aff.paint.fill(0)
+            try:
+                aff.paint.text(aff.wlan.ifconfig(), 0, 0)
+            except OSError:
+                print("erreur wlan")
+                
+            try:
+                aff.paint.text('{:02}'.format(ds.read_temp(roms[0])), 0, 20)
+            except OSError:
+                print("erreur OneWire")
+                
+            try:
+                aff.paint.text(aff.rtc.getDate(), 0, 30)
+                aff.paint.text(aff.rtc.getTime(), 0, 40)
+            except OSError:
+                print("erreur i2c")
             
-        try:
-            aff.paint.text('{:02}'.format(ds.read_temp(roms[0])), 0, 20)
-        except OSError:
-            print("erreur OneWire")
-            
-        try:
-            aff.paint.text(aff.rtc.getDate(), 0, 30)
-            aff.paint.text(aff.rtc.getTime(), 0, 40)
-        except OSError:
-            print("erreur i2c")
-        
-        aff.paint.show()
-        ds.convert_temp()
-        maj = 0
+            aff.paint.show()
+            ds.convert_temp()
 
-# wlan.disconnect()
+except KeyboardInterrupt:
+    fin = True
+    print("quit")
+
+finally:
+#   wlan.disconnect()
 
