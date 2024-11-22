@@ -1,14 +1,14 @@
 import rp2
 import time
-from machine import Pin
+import machine
 
 class SM16106SC:
     TEMPO = 1
     def __init__(self, pinCLK, pinSDI, pinLE, pinOE_):
-        self.pinSDI = Pin(pinSDI, Pin.OUT)
-        self.pinLE = Pin(pinLE, Pin.OUT)
-        self.pinCLK = Pin(pinCLK, Pin.OUT)
-        self.pinOE_ = Pin(pinOE_, Pin.OUT)
+        self.pinSDI = machine.Pin(pinSDI, machine.Pin.OUT)
+        self.pinLE = machine.Pin(pinLE, machine.Pin.OUT)
+        self.pinCLK = machine.Pin(pinCLK, machine.Pin.OUT)
+        self.pinOE_ = machine.Pin(pinOE_, machine.Pin.OUT)
 
         self.pinSDI.off()
         self.pinCLK.off()

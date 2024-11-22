@@ -1,6 +1,6 @@
-from device.waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
-from device.waveshare.waveshare_green_clock.sm5166p import SM5166P
-from device.waveshare.waveshare_green_clock.sm16106sc import SM16106SC
+from waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
+from waveshare.waveshare_green_clock.sm5166p import SM5166P
+from waveshare.waveshare_green_clock.sm16106sc import SM16106SC
 from master.i2c.i2cpico import I2CPico
 from device.i2c.ds3231_sqw import DS3231_SQW
 import micropython
