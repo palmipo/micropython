@@ -1,9 +1,7 @@
 import time
-import machine
-from bmp280 import BMP280
-from lsm303d import LSM303D
-import micropython
-micropython.alloc_emergency_exception_buf(100)
+from device.i2c.bmp280 import BMP280
+from device.i2c.lsm303d import LSM303D
+from master.pia.piapico import PiaOutputPico
 
 # 0x49: ADS1015
 # 0x29: TCS3472
@@ -13,8 +11,8 @@ micropython.alloc_emergency_exception_buf(100)
 class EnviroPHat:
     def __init__(self, i2c, led):
         self.busi2c = i2c
-        self.led = machine.Pin(led, machine.Pin.OUT)
-        self.led.off()
+        self.led = PiaOutputPico(led)
+        self.led.set(0)
         self.temperature = BMP280(self.busi2c)
         if self.temperature.chipIdRegister():
             self.temperature.reset()

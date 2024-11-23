@@ -34,3 +34,4 @@ class HC_SR04:
 sensor = HC_SR04(15, 14)
 for i in range (0, 100):
     print(sensor.start())
+    time.sleep(1)

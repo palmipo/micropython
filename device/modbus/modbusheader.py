@@ -2,13 +2,13 @@ from modbuscodec import ModbusCodec
 from modbusexception import ModbusException
 
 class ModbusHeader:
-    def __init__(self, slaveId):
-        self.__slaveId = ModbusCodec.Champ(slaveId, 0, 8)
+    def init(self, slaveId):
+        self.slaveId = ModbusCodec.Champ(slaveId, 0, 8)
 
     def encode(self):
         bitBuffer = bytearray(1)
         codec = ModbusCodec()
-        codec.encode(bitBuffer, self.__slaveId)
+        codec.encode(bitBuffer, self.slaveId)
         return bitBuffer
 
     def decode(self, bitBuffer):
@@ -16,5 +16,5 @@ class ModbusHeader:
 
         codec = ModbusCodec()
         codec.decode(bitBuffer, slaveId)
-        if slaveId.valeur() != self.__slaveId.valeur():
+        if slaveId.valeur() != self.slaveId.valeur():
             raise ModbusException

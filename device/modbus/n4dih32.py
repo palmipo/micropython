@@ -5,14 +5,14 @@ from modbusmsg06 import ModbusMsg06
 from eletechsup import Eletechsup
 
 class N4DIH32(Eletechsup):
-    def __init__(self, modbusId, rtu):
-        super().__init__(modbusId, rtu)
+    def init(self, modbusId, rtu):
+        super().init(modbusId, rtu)
 
     def read(self, voie):
-        fc03 = ModbusMsg03(self.__modbusId, self.__rtu)
+        fc03 = ModbusMsg03(self.modbusId, self.rtu)
         return fc03.readHoldingRegisters(0x80 | (voie & 0x2F), 2)
 
     def readAll(self):
-        fc03 = ModbusMsg03(self.__modbusId, self.__rtu)
+        fc03 = ModbusMsg03(self.modbusId, self.rtu)
         return fc03.readHoldingRegisters(0x00C0, 4)
 

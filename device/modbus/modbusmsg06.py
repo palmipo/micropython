@@ -2,15 +2,15 @@ from modbusmsg import ModbusMsg
 from modbuscodec import ModbusCodec
 
 class ModbusMsg06(ModbusMsg):
-    def __init__(self, slaveId, bus):
-        super().__init__(slaveId, 0x06)
-        self.__bus = bus
+    def init(self, slaveId, bus):
+        super().init(slaveId, 0x06)
+        self.bus = bus
         
     def presetSingleRegister(self, dataAdress, data):
-        self.__address = ModbusCodec.Champ(dataAdress, 16, 16)
-        self.__data = ModbusCodec.Champ(data, 32, 16)
+        self.address = ModbusCodec.Champ(dataAdress, 16, 16)
+        self.data = ModbusCodec.Champ(data, 32, 16)
         sendBuffer = self.encode()
-        recvBuffer = self.__bus.transfer(sendBuffer, 6)
+        recvBuffer = self.bus.transfer(sendBuffer, 6)
         self.decode(recvBuffer)
 
     def encode(self):
@@ -19,8 +19,8 @@ class ModbusMsg06(ModbusMsg):
         bitBuffer[0:len(buffer)] = buffer
 
         codec = ModbusCodec()
-        codec.encode(bitBuffer, self.__address)
-        codec.encode(bitBuffer, self.__data)
+        codec.encode(bitBuffer, self.address)
+        codec.encode(bitBuffer, self.data)
         return bitBuffer
 
     def decode(self, bitBuffer):
@@ -31,8 +31,8 @@ class ModbusMsg06(ModbusMsg):
         codec = ModbusCodec()
         address = codec.decode(bitBuffer, reg_address)
         data = codec.decode(bitBuffer, reg_data)
-        if address != self.__address.valeur():
+        if address != self.address.valeur():
             raise ModbusException()
-        if data != self.__data.valeur():
+        if data != self.data.valeur():
             raise ModbusException()
 

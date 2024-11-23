@@ -1,4 +1,4 @@
-from master.pia.piapico import PiaPicoOutput
+from master.pia.piapico import PiaOutputPico
 
-led = PiaPicoOutput(25)
+led = PiaOutputPico(25)
 led.set(1)

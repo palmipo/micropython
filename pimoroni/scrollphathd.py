@@ -1,4 +1,4 @@
-from is31fl3731 import IS31FL3731
+from device.i2c.is31fl3731 import IS31FL3731
 import framebuf
 import time
 

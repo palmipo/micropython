@@ -2,15 +2,15 @@ from modbusmsg import ModbusMsg
 from modbuscodec import ModbusCodec
 
 class ModbusMsg03(ModbusMsg):
-    def __init__(self, slaveId, bus):
-        super().__init__(slaveId, 0x03)
-        self.__bus = bus
+    def init(self, slaveId, bus):
+        super().init(slaveId, 0x03)
+        self.bus = bus
 
     def readHoldingRegisters(self, dataAdress, nbReg):
-        self.__adresse = ModbusCodec.Champ(dataAdress, 16, 16)
-        self.__nb = ModbusCodec.Champ(nbReg, 32, 16)
+        self.adresse = ModbusCodec.Champ(dataAdress, 16, 16)
+        self.nb = ModbusCodec.Champ(nbReg, 32, 16)
         sendBuffer = self.encode()
-        recvBuffer = self.__bus.transfer(sendBuffer, 3 + 2 * nbReg)
+        recvBuffer = self.bus.transfer(sendBuffer, 3 + 2 * nbReg)
         return self.decode(recvBuffer)
 
     def encode(self):
@@ -19,8 +19,8 @@ class ModbusMsg03(ModbusMsg):
         bitBuffer[0:len(buffer)] = buffer
 
         codec = ModbusCodec()
-        codec.encode(bitBuffer, self.__adresse)
-        codec.encode(bitBuffer, self.__nb)
+        codec.encode(bitBuffer, self.adresse)
+        codec.encode(bitBuffer, self.nb)
         return bitBuffer
 
     def decode(self, bitBuffer):

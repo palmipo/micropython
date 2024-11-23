@@ -8,7 +8,7 @@ class Elexol:
     def connect(self, address):
         self.__socket__.connect(socket.getaddrinfo(address, 2424)[0][-1])
 
-    def deconnect(self):
+    def disconnect(self):
         self.__socket__.close()
 
     def writePort(self, port, valeur):

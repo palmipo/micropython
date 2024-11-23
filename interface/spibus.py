@@ -1,4 +1,4 @@
-class SPIBus:
+class SpiBus:
     
     def send(self, cmd):
         raise NotImplementedError
