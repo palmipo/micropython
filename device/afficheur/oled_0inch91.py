@@ -1,4 +1,4 @@
-from ssd1306 import SSD1306
+from device.i2c.ssd1306 import SSD1306
 import time
  
 
