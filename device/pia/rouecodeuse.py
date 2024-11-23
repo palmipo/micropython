@@ -1,4 +1,4 @@
-from master.gpio.piaisrbouncepico import PiaIsrBouncePico
+from master.pia.piaisrbouncepico import PiaIsrBouncePico
 import time
 
 class RoueCodeuse:

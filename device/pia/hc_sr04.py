@@ -1,8 +1,5 @@
-import rp2
 import machine
 import time
-import micropython
-micropython.alloc_emergency_exception_buf(100)
 
 class HC_SR04:
     def __init__(self, trigger, echo):

@@ -1,6 +1,6 @@
-from hd44780io import HD44780IO
-from pcf8574t import PCF8574T
-from piapcf8574 import PiaPcf8574
+from device.hd44780.hd44780io import HD44780IO
+from device.i2c.pcf8574t import PCF8574T
+from device.pia.piapcf8574 import PiaPcf8574
 import time
 
 

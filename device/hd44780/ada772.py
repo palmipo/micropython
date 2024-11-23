@@ -1,9 +1,7 @@
-from lcd2004 import LCD2004
-from mcp23017 import MCP23017
-from pia_mcp23017 import PIA_MCP23017
-import rp2
-import machine
-from machine import Pin
+from device.hd44780.lcd2004 import LCD2004
+from device.i2c.mcp23017 import MCP23017
+from device.gpio.piamcp23017 import PiaMCP23017
+from master.pia.piaisrpico import PiaIsrPico
 import time
 
 
@@ -31,10 +29,10 @@ class ADA772(LCD2004):
         self.gpio.setDEFVAL(0, 0x1f)
         self.gpio.setIODIR(1, 0)
 
-        self.irq = PiaPico(irq, self.scrute)
+        self.irq = PiaIsrPico(irq)
 
-        self.pia = PIA_MCP23017(1, self.gpio)
-        self.switchs = PIA_MCP23017(0, self.gpio)
+        self.pia = PiaMCP23017(1, self.gpio)
+        self.switchs = PiaMCP23017(0, self.gpio)
 
     def setBackLight(self, value):
 #         print("setBackLight("+hex(value)+")")
@@ -46,15 +44,16 @@ class ADA772(LCD2004):
             self.pia.setOutput(1 << self.BACKLIGHT)
             self.switchs.setOutput(0xE0)
 
-    def scrute(self, pin):
-        sw = self.gpio.getGPIO(0)
-        if sw & 1:
-            print("bouton select")
-        if sw & 2:
-            print("bouton droit")
-        if sw & 4:
-            print("bouton bas")
-        if sw & 8:
-            print("bouton haut")
-        if sw & 16:
-            print("bouton gauche")
+    def scrute(self):
+        if self.irq.isActivated():
+            sw = self.gpio.getGPIO(0)
+            if sw & 1:
+                print("bouton select")
+            if sw & 2:
+                print("bouton droit")
+            if sw & 4:
+                print("bouton bas")
+            if sw & 8:
+                print("bouton haut")
+            if sw & 16:
+                print("bouton gauche")

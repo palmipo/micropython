@@ -1,4 +1,3 @@
-from hd44780io import HD44780IO
 import time
 
 class HD44780:
