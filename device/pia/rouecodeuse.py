@@ -7,8 +7,8 @@ class RoueCodeuse:
         self.pinB = PiaIsrBouncePico(pinB)
         self.pinS = PiaIsrBouncePico(pinSelect)
         
-        self.oldA = False
-        self.oldB = False
+        self.oldA = self.pinA.isActivated()
+        self.oldB = self.pinB.isActivated()
 
     def isSelected(self):
         return self.pinS.isActivated()
