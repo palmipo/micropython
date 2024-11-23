@@ -1,38 +1,65 @@
-import rp2
+from master.gpio.piaisrbouncepico import PiaIsrBouncePico
 import time
-import machine
-from machine import Pin
-from antirebond import AntiRebond
-import micropython
-micropython.alloc_emergency_exception_buf(100)
 
 class RoueCodeuse:
     def __init__(self, pinA, pinB, pinSelect):
-        self.pinA = AntiRebond(pinA, self.cb)
-        self.pinB = AntiRebond(pinB, self.cb)
+        self.pinA = PiaIsrBouncePico(pinA)
+        self.pinB = PiaIsrBouncePico(pinB)
+        self.pinS = PiaIsrBouncePico(pinSelect)
+        
+        self.oldA = False
+        self.oldB = False
 
-        self.pinS = AntiRebond(pinSelect, self.cbS, 200)
+    def isSelected(self):
+        return self.pinS.isActivated()
 
-    def cbS(self):
-        print("valdation")
+# A B
+# 0 0
+# 0 1
+# 1 1
+# 1 0
+    def isMoved(self):
+        newA = self.pinA.isActivated()
+        newB = self.pinB.isActivated()
+        if (self.oldA == False) and (self.oldB == False):
+            self.oldA = newA
+            self.oldB = newB
+            if (newA == False) and (newB == True):
+                return 1
+            elif (newA == True) and (newB == False):
+                return -1
+            else return 0
 
-    def cb(self, pin):
-            self.pinAValue = self.pinA.value()
-            self.pinBValue = self.pinB.value()
-            self.newValue = (self.pinAValue << 1) | self.pinBValue
-            if (((self.oldValue == 0) and (self.newValue == 1))
-                or ((self.oldValue == 1) and (self.newValue == 3))
-                or ((self.oldValue == 3) and (self.newValue == 2))
-                or ((self.oldValue == 2) and (self.newValue == 0))):
-                    self.sens = 1
-                    print("sens +")
-            else:
-                if (((self.oldValue == 0) and (self.newValue == 2))
-                or ((self.oldValue == 2) and (self.newValue == 3))
-                or ((self.oldValue == 3) and (self.newValue == 1))
-                or ((self.oldValue == 1) and (self.newValue == 0))):
-                    self.sens = -1
-                    print("sens -")
-                else:
-                    self.sens = 0
-                    print("sens 0")
+        elif (self.oldA == False) and (self.oldB == True):
+            self.oldA = newA
+            self.oldB = newB
+            if (newA == True) and (newB == True):
+                return 1
+            elif (newA == False) and (newB == False):
+                return -1
+            else return 0
+
+        elif (self.oldA == True) and (self.oldB == True):
+            self.oldA = newA
+            self.oldB = newB
+            if (newA == True) and (newB == False):
+                return 1
+            elif (newA == False) and (newB == True):
+                return -1
+            else return 0
+
+        elif (self.oldA == True) and (self.oldB == False):
+            self.oldA = newA
+            self.oldB = newB
+            if (newA == False) and (newB == False):
+                return 1
+            elif (newA == True) and (newB == True):
+                return -1
+            else return 0
+
+rc = RoueCodeuse(1, 2, 3)
+fin = False
+while fin == False:
+    print('validation {}'.format(rc.isSelected()))
+    print('rotation {}'.format(rc.isMoved()))
+    time.sleep_ms(100)
