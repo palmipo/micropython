@@ -1,28 +1,26 @@
-import machine
-
 class L298N:
-    def __init__(self, enA, in1, in2, freq=100000):
-        self.enA = machine.PWM(machine.Pin(enA))
-        self.in1 = machine.Pin(in1, machine.Pin.OUT)
-        self.in2 = machine.Pin(in2, machine.Pin.OUT)
-        self.enA.freq(freq)
+    def __init__(self, enA, in1, in2, freq):
+        self.in1 = in1
+        self.in2 = in2
+        self.enA = enA
+        self.enA.setFrequency(freq)
 
     def forward(self, vitesse):
-        self.in1.on()
-        self.in2.off()
-        self.enA.duty_u16(vitesse)
+        self.in1.set(1)
+        self.in2.set(0)
+        self.enA.setDuty(vitesse)
 
     def reverse(self, vitesse):
-        self.in1.off()
-        self.in2.on()
-        self.enA.duty_u16(vitesse)
+        self.in1.set(0)
+        self.in2.set(1)
+        self.enA.setDuty(vitesse)
 
     def off(self):
-        self.in1.off()
-        self.in2.off()
-        self.enA.duty_u16(0)
+        self.in1.set(0)
+        self.in2.set(0)
+        self.enA.setDuty(0)
 
     def stop(self):
-        self.in1.on()
-        self.in2.on()
-        self.enA.duty_u16(65535)
+        self.in1.set(1)
+        self.in2.set(1)
+        self.enA.setDuty(100)
