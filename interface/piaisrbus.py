@@ -16,5 +16,6 @@ class PiaIsrBus(PiaBus):
     def isActivated(self):
         if self.activated == True:
             self.activated = False
+            return True
 
         return self.activated

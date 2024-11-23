@@ -8,8 +8,8 @@ class PiaIsrBouncePico(PiaIsrBounceBus):
         self.pin = machine.Pin(nPin, machine.Pin.IN, machine.Pin.PULL_UP)
         self.pin.irq(handler=self.isr, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
-rc = PiaIsrBouncePico(1)
-fin = False
-while fin == False:
-    print('validation {}'.format(rc.isActivated()))
-    time.sleep_ms(100)
+# rc = PiaIsrBouncePico(1)
+# fin = False
+# while fin == False:
+#     print('validation {}'.format(rc.isActivated()))
+#     time.sleep_ms(100)
