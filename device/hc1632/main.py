@@ -2,7 +2,7 @@ from master.i2c.i2cpico import I2CPico
 from device.i2c.ds1307_sqw import DS1307_SQW
 from master.pia.piapico import PiaOutputPico
 from master.pia.piaisrpico import PiaIsrPico
-from master.socket.wlanpico import WLanPico
+from master.net.wlanpico import WLanPico
 from device.hc1632.hc1632matrix import Hc1632Matrix
 import micropython
 import machine, time

@@ -7,7 +7,7 @@ from device.i2c.ds1307 import DS1307
 from pimoroni.scrollphathd import ScrollPHatHd
 from device.hd44780.lcd2004 import LCD2004
 from device.hd44780.hd44780 import HD44780
-# from master.socket.wlanpico import WLanPico
+# from master.net.wlanpico import WLanPico
 # import network
 import framebuf
 import sys

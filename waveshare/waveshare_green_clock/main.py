@@ -6,7 +6,7 @@ from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGr
 from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii5x7
 from waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
 from waveshare.waveshare_green_clock.wavesharegreenclocktag import WaveshareGreenClockTag
-from master.socket.wlanpico import WLanPico
+from master.net.wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self, buffer):
@@ -46,6 +46,7 @@ class AppTime(WaveshareGreenClockApps):
         self.dayOfWeek = data_tuple[6]
 
     def cb_run(self):
+        self.tag.clear()
         self.tag.setDayWeek(self.dayOfWeek)
         lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
         offset = 0
@@ -161,7 +162,7 @@ class AppMain(WaveshareGreenClockApps):
         self.apps[self.cpt].cb_init()
 
     def cb_init(self):
-        pass
+        self.apps[self.cpt].cb_init()
 
     def cb_up(self):
         self.apps[self.cpt].cb_up()

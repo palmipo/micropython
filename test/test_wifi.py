@@ -1,5 +1,5 @@
 import network, time, ntptime, ubinascii
-from master.socket.wlanpico import WLanPico
+from master.net.wlanpico import WLanPico
 
 wlan = WLanPico()
 wlan.connect()

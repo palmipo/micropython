@@ -1,5 +1,5 @@
-import master.socket.WLanPico
-import master.socket.SocketUdp
+import master.net.WLanPico
+import master.net.SocketUdp
 
 class ArtNet:
 

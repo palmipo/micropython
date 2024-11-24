@@ -1,7 +1,7 @@
 import time
 from machine import Pin
 from neopixel import NeoPixel
-from master.socket.wlanpico import WLanPico
+from master.net.wlanpico import WLanPico
 from master.i2c.i2cpico import I2CPico
 # from device.i2c.ds3231 import DS3231
 from device.i2c.ds3231_sqw import DS3231_SQW
