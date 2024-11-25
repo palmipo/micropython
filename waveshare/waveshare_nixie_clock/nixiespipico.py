@@ -10,12 +10,10 @@ class NixieSpiPico():
         self.spi = spi
     
     def send(self, addr, cmd):
-        add = 5 - addr
-#         print(add)
         try:
-            self.csa1.set(add & 0x01)
-            self.csa2.set((add & 0x02) >> 1)
-            self.csa3.set((add & 0x04) >> 2)
+            self.csa1.set(5 - addr & 0x01)
+            self.csa2.set((5 - addr & 0x02) >> 1)
+            self.csa3.set((5 - addr & 0x04) >> 2)
 #             time.sleep_ms(1)
             self.spi.send(cmd)
 #             time.sleep_ms(1)

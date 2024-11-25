@@ -5,7 +5,10 @@ class NixieMainApp(NixieApp):
         super().__init__()
         self.apps = apps
         self.num = 0
-    
+
+    def initActivated(self):
+        pass
+
     def krActivated(self):
         self.apps[self.num].krActivated()
 
@@ -15,6 +18,7 @@ class NixieMainApp(NixieApp):
     def kmActivated(self):
         if self.apps[self.num].kmActivated() == None:
             self.num = (self.num + 1) % len(self.apps)
+            self.apps[self.num].initActivated()
 
     def rtcActivated(self):
         self.apps[self.num].rtcActivated()

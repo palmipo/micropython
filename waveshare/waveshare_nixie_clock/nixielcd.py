@@ -40,21 +40,3 @@ class NixieLcd:
         time.sleep(1)
         self.rst.set(1)
         time.sleep(1)
-
-#     try:
-# 
-#         nixie = NixieLcd(rst_pin = 12, dc_pin = 8, bl_pin = 13, led_pin = 22)
-# 
-#         import framebuf            
-#         buffer = bytearray(nixie.width * nixie.height * 2)
-# 
-#         test = framebuf.FrameBuffer(buffer, nixie.width, nixie.height, framebuf.RGB565)
-# 
-#         for num in range (0,6):
-#             test.fill(0x00ffffff)
-#             test.text("coucou {}".format(num), 0, 0)
-#             nixie.LCDs[num].show(0, 0, nixie.width, nixie.height, buffer)
-# 
-#     except KeyboardInterrupt:
-#         pass
-# 
