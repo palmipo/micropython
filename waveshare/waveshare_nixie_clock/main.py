@@ -1,11 +1,14 @@
 import time, framebuf
 from master.net.wlanpico import WLanPico
 from waveshare.waveshare_nixie_clock.nixieclock import NixieClock
+from waveshare.waveshare_nixie_clock.nixiebipapp import NixieBipApp
 
+wlan = WLanPico()
 try:
-    horloge = NixieClock()
+    bipApp = NixieBipApp()
+    horloge = NixieClock([bipApp])
+    bipApp.setNixieClock(horloge)
 
-    wlan = WLanPico()
     wlan.connect()
 
     try:
@@ -37,5 +40,6 @@ except KeyboardInterrupt:
     fin = True
 
 finally:
-    wlan.disconnect()
+#     wlan.disconnect()
+    pass
 
