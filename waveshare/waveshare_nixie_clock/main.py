@@ -1,9 +1,9 @@
 import time, framebuf
 from master.net.wlanpico import WLanPico
-from waveshare.waveshare_nixie_clock.wavesharenixieclock import WaveshareNixieClock
+from waveshare.waveshare_nixie_clock.nixieclock import NixieClock
 
 try:
-    horloge = WaveshareNixieClock()
+    horloge = NixieClock()
 
     wlan = WLanPico()
     wlan.connect()
@@ -18,17 +18,18 @@ try:
     except OSError:
         pass
 
-    buffer = bytearray(horloge.nixie.width * horloge.nixie.height * 2)
+    buffer = bytearray(horloge.nixie.LCDs[0].width * horloge.nixie.LCDs[0].height * 2)
 
-    dessin = framebuf.FrameBuffer(buffer, horloge.nixie.width, horloge.nixie.height, framebuf.RGB565)
+    dessin = framebuf.FrameBuffer(buffer, horloge.nixie.LCDs[0].width, horloge.nixie.LCDs[0].height, framebuf.RGB565)
+
+    for num in range(6):
+        horloge.nixie.setLedColor(num, 0x80, 0, 0xff)
+        dessin.fill(0x00ffffff)
+        dessin.text("Hello World {}".format(num), 0, 0)
+        horloge.nixie.LCDs[num].show(0, 0, horloge.nixie.LCDs[num].width, horloge.nixie.LCDs[num].height, buffer)
 
     fin = False
     while fin == False:
-        for num in range(6):
-            horloge.nixie.setLedColor(num, 0x80, 0, 0xff)
-            dessin.fill(0x00ffffff)
-            dessin.text("Hello World {}".format(num), 0, 0)
-            horloge.nixie.LCDs[num].show(0, 0, horloge.nixie.width, horloge.nixie.height, buffer)
         horloge.scrute()
         time.sleep_ms(500)
 

@@ -21,5 +21,4 @@ class PiaInputPico(PiaPico):
     def __init__(self, nPin):
         super().__init__()
 
-        self.pin = machine.Pin(nPin, machine.Pin.IN, machine.Pin.PULL_UP)
-
+        self.pin = machine.Pin(nPin, machine.Pin.IN)#, machine.Pin.PULL_UP)

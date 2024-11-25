@@ -8,8 +8,8 @@ import machine
 
 class NixieLcd:
     def __init__(self, rst_pin, dc_pin, bl_pin, led_pin):
-        self.width = 135
-        self.height = 240
+#         self.width = 135
+#         self.height = 240
 
         self.leds = NeoPixel(machine.Pin(led_pin, machine.Pin.OUT), 6) # 22
         for led in self.leds:
@@ -40,8 +40,7 @@ class NixieLcd:
         time.sleep(1)
         self.rst.set(1)
         time.sleep(1)
-#             
-# if __name__=='__main__':
+
 #     try:
 # 
 #         nixie = NixieLcd(rst_pin = 12, dc_pin = 8, bl_pin = 13, led_pin = 22)
