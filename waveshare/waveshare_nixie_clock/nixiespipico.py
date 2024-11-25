@@ -1,16 +1,13 @@
-from master.spi.spipico import SPIPico
-from master.pia.piapico import PiaPicoOutput
-import time
 
-class SPIPicoNixie(SPIPico):
-    def __init__(self):
-        self.csa1 = PiaPicoOutput(2)
-        self.csa2 = PiaPicoOutput(3)
-        self.csa3 = PiaPicoOutput(4)
+class NixieSpiPico():
+    def __init__(self, csa1, csa2, csa3, spi):
+        self.csa1 = csa1
+        self.csa2 = csa2
+        self.csa3 = csa3
         self.csa1.set(1)
         self.csa2.set(1)
         self.csa3.set(1)
-        super().__init__(1, 10, 11, None)
+        self.spi = spi
     
     def send(self, addr, cmd):
         add = 5 - addr
@@ -20,7 +17,7 @@ class SPIPicoNixie(SPIPico):
             self.csa2.set((add & 0x02) >> 1)
             self.csa3.set((add & 0x04) >> 2)
 #             time.sleep_ms(1)
-            super().send(cmd)
+            self.spi.send(cmd)
 #             time.sleep_ms(1)
         finally:
             self.csa1.set(1)
