@@ -28,8 +28,12 @@ class NixieMainApp(NixieApp):
         try:
             self.apps[self.num].kmActivated()
         except NotImplementedError:
+            print('changement d\'appli {}'.format(self.num))
             self.num = (self.num + 1) % len(self.apps)
-            self.apps[self.num].init()
+            try:
+                self.apps[self.num].init()
+            except NotImplementedError:
+                pass
 
     def rtcActivated(self):
         try:

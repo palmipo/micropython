@@ -3,7 +3,7 @@ from device.i2c.devicei2c import DeviceI2C
 class BMP280(DeviceI2C):
 
     def __init__(self, bus):
-        super().__init__(0x77, bus)
+        super().__init__(0x76, bus)
 
     def __statusRegister(self):
         buf = bytearray(1)
@@ -109,19 +109,35 @@ class BMP280(DeviceI2C):
         self.busi2c.send(self.adresse, buf)
 
 if __name__ == '__main__':
-    from i2cpico import I2CPico
-    i2c = I2CPico(1, 6, 7)
-    sensor = BMP280(i2c)
-    sensor.reset()
-    time.sleep(1)
-    print("chipIdRegister {}".format(sensor.chipIdRegister()))
     try:
-        # sensor.setup()
-        data = []
-        data = sensor.readData()
-        print("pressure : %7.2f hPa" %data[0])
-        print("temp : %-6.2f ℃" %data[1])
-        print("hum : %6.2f ％" %data[2])
+        from master.i2c.i2cpico import I2CPico
+        import time
+        i2c = I2CPico(1, 6, 7)
+        print (i2c.scan())
+        sensor = BMP280(i2c)
+        sensor.reset()
+        time.sleep(1)
+        print("chipIdRegister {}".format(sensor.chipIdRegister()))
+
+        # osrs_t x2  : 010b
+        # osrs_p x16 : 101b
+        # mode       : normal 11b
+        sensor.ctrlMeasureRegister(osrs_t=2, osrs_p=5, mode=3)
+
+        # t_sb   3
+        # filtre 16
+        sensor.configRegister(t_sb=3, filtre=16)
+
+        while True:            
+            print(sensor.compensateT())
+            print(sensor.compensateP())
+            time.sleep(1)
+
+    except OSError:
+        print ('OSError')
+
     except KeyboardInterrupt:
         pass
 
+    finally:
+        pass

@@ -20,13 +20,17 @@ class NixieClock:
         self.i2c = I2CPico(1, 6, 7)
 #         self.bme280 = BME280(self.i2c)
         self.ds1321 = DS3231_SQW(0, self.i2c, 18)
-        self.ds1321.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
+        self.ds1321.setAlarm1(A1M=0x0F, hour='08:00:00', day='03')
+        self.ds1321.setControlRegister(CONV=0x01, SqwareWaveFrequency=0x00, INTCN=0x01, A2IE=0x00, A1IE=0x01)
 
         self.nixie = NixieLcd(rst_pin = 12, dc_pin = 8, bl_pin = 13, led_pin = 22)
         self.buffer = bytearray(self.nixie.LCDs[0].width * self.nixie.LCDs[0].height * 2)
         self.dessin = framebuf.FrameBuffer(self.buffer, self.nixie.LCDs[0].width, self.nixie.LCDs[0].height, framebuf.RGB565)    
 
+        self.clear()
+
+    def clear(self):
         for num in range(len(self.nixie.LCDs)):
             self.nixie.setLedColor(num, 0x80, 0, 0xff)
-            self.dessin.fill(0x00ffffff)
+            self.dessin.fill(0)
             self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height, self.buffer)

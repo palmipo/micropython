@@ -29,7 +29,12 @@ class DS3231(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0x04
         data = self.busi2c.transferer(self.adresse, cmd, 3)
-        return str(((data[0]) & 0x30) >> 4) + str((data[0]) & 0x0F) + "/" + (((data[1]) & 0x10) >> 4) + str((data[1]) & 0x0F) + "/" + str(((data[2]) & 0xF0) >> 4) + str((data[2]) & 0x0F)
+        res = str(((data[0]) & 0x30) >> 4) + str((data[0]) & 0x0F)
+        res += "/"
+        res += (((data[1]) & 0x10) >> 4) + str((data[1]) & 0x0F)
+        res += "/"
+        res +=str(((data[2]) & 0xF0) >> 4) + str((data[2]) & 0x0F)
+        return res
 
     #18:25:59
     def setTime(self, hour):
@@ -44,12 +49,81 @@ class DS3231(DeviceI2C):
         cmd = bytearray(1)
         cmd[0] = 0x00
         data = self.busi2c.transferer(self.adresse, cmd, 3)
-        res = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F) + ":" + str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F) + ":" + str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
+        res = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F)
+        res += ":"
+        res += str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F)
+        res += ":"
+        res += str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
         return res
+
+    # DY/DT ALARM 1 REGISTER MASK BITS (BIT 7) ALARM RATE
+    # A1M4 A1M3 A1M2 A1M1
+    # X 1 1 1 1 Alarm once per second
+    # X 1 1 1 0 Alarm when seconds match
+    # X 1 1 0 0 Alarm when minutes and seconds match
+    # X 1 0 0 0 Alarm when hours, minutes, and seconds match
+    # 0 0 0 0 0 Alarm when date, hours, minutes, and seconds match
+    # 1 0 0 0 0 Alarm when day, hours, minutes, and seconds match
+    # 18:25:59 18
+    def setAlarm1(self, A1M, hour, day):
+        cmd = bytearray(5)
+        cmd[0] = 0x07
+        cmd[1] = ((A1M & 0x01) << 7) | ((ord(hour[6]) & 0x07) << 4) | (ord(hour[7]) & 0x0F)
+        cmd[2] = (((A1M >> 1) & 0x01) << 7) | ((ord(hour[3]) & 0x07) << 4) | (ord(hour[4]) & 0x0F)
+        cmd[3] = (((A1M >> 2) & 0x01) << 7) | ((ord(hour[0]) & 0x03) << 4) | (ord(hour[1]) & 0x0F)
+        cmd[4] = (((A1M >> 3) & 0x01) << 7) | (((A1M >> 4) & 0x01) << 6) | ((ord(day[0]) & 0x03) << 4) | (ord(day[1]) & 0x0F)
+        self.busi2c.send(self.adresse, cmd)
+
+    def getAlarm1(self):
+        cmd = bytearray(1)
+        cmd[0] = 0x07
+        data = self.busi2c.transferer(self.adresse, cmd, 4)
+        hour = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F)
+        hour += ":"
+        hour += str(((data[1]) & 0x70) >> 4) + str((data[1]) & 0x0F)
+        hour += ":"
+        hour += str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
+        day = str(((data[3]) & 0x30) >> 4) + str((data[3]) & 0x0F)
+        A1M = (data[0] & 0x01) >> 7
+        A1M |= ((data[1] & 0x80) >> 7) << 1
+        A1M |= ((data[2] & 0x80) >> 7) << 2
+        A1M |= ((data[3] & 0x80) >> 7) << 3
+        A1M |= ((data[3] & 0x40) >> 6) << 4
+        return A1M, hour, day
+
+    # DY/DT ALARM 2 REGISTER MASK BITS (BIT 7) ALARM RATE
+    # A2M4 A2M3 A2M2
+    # X 1 1 1 Alarm once per minute (00 seconds of every minute)
+    # X 1 1 0 Alarm when minutes match
+    # X 1 0 0 Alarm when hours and minutes match
+    # 0 0 0 0 Alarm when date, hours, and minutes match
+    # 1 0 0 0 Alarm when day, hours, and minutes match
+    def setAlarm2(self, A2M, hour, day):
+        cmd = bytearray(4)
+        cmd[0] = 0x0B
+        cmd[1] = (((A2M >> 1) & 0x01) << 7) | ((ord(hour[3]) & 0x07) << 4) | (ord(hour[4]) & 0x0F)
+        cmd[2] = (((A2M >> 2) & 0x01) << 7) | ((ord(hour[0]) & 0x03) << 4) | (ord(hour[1]) & 0x0F)
+        cmd[3] = (((A2M >> 3) & 0x01) << 7) | (((A2M >> 4) & 0x01) << 6) | ((ord(day[0]) & 0x03) << 4) | (ord(day[1]) & 0x0F)
+        self.busi2c.send(self.adresse, cmd)
+
+    def getAlarm1(self):
+        cmd = bytearray(1)
+        cmd[0] = 0x0B
+        data = self.busi2c.transferer(self.adresse, cmd, 3)
+        hour = str(((data[1]) & 0x30) >> 4) + str((data[1]) & 0x0F)
+        hour += ":"
+        hour += str(((data[0]) & 0x70) >> 4) + str((data[0]) & 0x0F)
+        hour += ":00"
+        day = str(((data[2]) & 0x30) >> 4) + str((data[2]) & 0x0F)
+        A2M = (data[0] & 0x01) >> 7
+        A2M |= ((data[1] & 0x80) >> 7) << 1
+        A2M |= ((data[2] & 0x80) >> 7) << 3
+        A2M |= ((data[2] & 0x40) >> 6) << 4
+        return A2M, hour, day
 
     # CONV : convert temperature
     # SqwareWaveFrequency : 0 : 1Hz / 1 : 1024Hz / 2 : 4096Hz / 3 : 8192Hz
-    # INTCN : interrupt control
+    # INTCN : interrupt control 0 : alarm / 1 square wave
     # A2IE : alarm 2 interrupt enable
     # A1IE : alarm 1 interrupt enable
     def setControlRegister(self, CONV, SqwareWaveFrequency, INTCN, A2IE, A1IE):

@@ -6,8 +6,11 @@ class NixieBipApp(NixieApp):
         super().__init__()
         self.nixie = nixie
 
-    def rtcActivated(self):
+    def init(self):
         self.nixie.buzzer.setFrequency(100)
+        self.nixie.clear()
+
+    def rtcActivated(self):
         self.nixie.buzzer.setDuty(99)
         time.sleep_ms(10)
         self.nixie.buzzer.setDuty(0)

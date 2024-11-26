@@ -4,10 +4,8 @@ from waveshare.waveshare_nixie_clock.nixiebipapp import NixieBipApp
 from waveshare.waveshare_nixie_clock.nixieconfigapp import NixieConfigApp
 from waveshare.waveshare_nixie_clock.nixiemainapp import NixieMainApp
 
+horloge = NixieClock()
 try:
-
-    horloge = NixieClock()
-
     bipApp = NixieBipApp(horloge)
     configApp = NixieConfigApp(horloge)
 
@@ -34,5 +32,5 @@ except KeyboardInterrupt:
     fin = True
 
 finally:
-    pass
+    horloge.ds1321.setControlRegister(0, 0, 0, 0, 0)
 
