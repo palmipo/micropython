@@ -21,9 +21,9 @@ class WaveshareGreenClock:
         self.rtc = DS3231_SQW(0, self.i2c, 3)
         self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
 
-        self.K0 = PiaIsrPico(15)
-        self.K1 = PiaIsrPico(17)
-        self.K2 = PiaIsrPico(2)
+        self.K0 = PiaIsrPico(15, pullUp=True)
+        self.K1 = PiaIsrPico(17, pullUp=True)
+        self.K2 = PiaIsrPico(2, pullUp=True)
 
         self.buzzer = PiaOutputPico(14)
 

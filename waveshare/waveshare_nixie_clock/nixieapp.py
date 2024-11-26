@@ -3,17 +3,17 @@ class NixieApp:
     def __init__(self):
         pass
 
-    def initActivated(self):
-        pass
+    def init(self):
+        raise NotImplementedError
 
     def krActivated(self):
-        pass
+        raise NotImplementedError
 
     def klActivated(self):
-        pass
+        raise NotImplementedError
 
     def kmActivated(self):
-        pass
+        raise NotImplementedError
 
     def rtcActivated(self):
-        pass
+        raise NotImplementedError

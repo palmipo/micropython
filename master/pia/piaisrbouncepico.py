@@ -2,10 +2,10 @@ import rp2, machine
 from interface.piaisrbouncebus import PiaIsrBounceBus
 
 class PiaIsrBouncePico(PiaIsrBounceBus):
-    def __init__(self, nPin, tempo_ms=20):
+    def __init__(self, nPin, tempo_ms=20, pullUp = False):
         super().__init__(tempo_ms)
 
-        self.pin = machine.Pin(nPin, machine.Pin.IN)#, machine.Pin.PULL_UP)
+        self.pin = machine.Pin(nPin, machine.Pin.IN, machine.Pin.PULL_UP if pullUp == True else 0)
         self.pin.irq(handler=self.isr, trigger=machine.Pin.IRQ_FALLING, hard=True)
 
 # import time
