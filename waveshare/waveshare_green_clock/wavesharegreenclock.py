@@ -6,7 +6,7 @@ from waveshare.waveshare_green_clock.sm5166p import SM5166P
 from waveshare.waveshare_green_clock.sm16106sc import SM16106SC
 from master.i2c.i2cpico import I2CPico
 from device.i2c.ds3231_sqw import DS3231_SQW
-from master.pia.piapico import PiaOutputPico
+from master.pia.pwmpico import PwmPico
 from master.pia.piaisrpico import PiaIsrPico
 from master.net.wlanpico import WLanPico
 import micropython
@@ -29,7 +29,7 @@ class WaveshareGreenClock:
         self.K1 = PiaIsrPico(17, pullUp=machine.Pin.PULL_UP)
         self.K2 = PiaIsrPico(2, pullUp=machine.Pin.PULL_UP)
 
-        self.buzzer = PiaOutputPico(14)
+        self.buzzer = PwmPico(14)
 
         self.buffer = bytearray(4*8)
         self.codec = WaveshareGreenClockCodec()
