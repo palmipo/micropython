@@ -1,4 +1,7 @@
-from waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
+from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii4x7
+from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii5x7
+from waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
+from waveshare.waveshare_green_clock.wavesharegreenclocktag import WaveshareGreenClockTag
 from waveshare.waveshare_green_clock.sm5166p import SM5166P
 from waveshare.waveshare_green_clock.sm16106sc import SM16106SC
 from master.i2c.i2cpico import I2CPico
@@ -20,7 +23,7 @@ class WaveshareGreenClock:
         
         self.i2c = I2CPico(1, 6, 7)
         self.rtc = DS3231_SQW(0, self.i2c, 3)
-        self.rtc.setControlRegister(CONV=1, RS=0, INTCN=0x01, A2IE=0, A1IE=0, EN32kHz=0)
+        self.rtc.setControlRegister(CONV=1, RS=0, INTCN=0x00, A2IE=0, A1IE=0, EN32kHz=0)
 
         self.K0 = PiaIsrPico(15, pullUp=machine.Pin.PULL_UP)
         self.K1 = PiaIsrPico(17, pullUp=machine.Pin.PULL_UP)

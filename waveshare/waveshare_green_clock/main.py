@@ -2,10 +2,6 @@
 import _thread, time
 from waveshare.waveshare_green_clock.wavesharegreenclock import WaveshareGreenClock
 from waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
-from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii4x7
-from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii5x7
-from waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
-from waveshare.waveshare_green_clock.wavesharegreenclocktag import WaveshareGreenClockTag
 
 class AppTime(WaveshareGreenClockApps):
     def __init__(self, clock):
@@ -111,15 +107,13 @@ class AppTest(WaveshareGreenClockApps):
     def cb_rtc(self):
         self.cpt = (self.cpt + 1) % 60
         if self.cpt == 10:
-            prit("simulation d'un appui bouton central")
-            self.clock.k1.activated = True
+            self.clock.K1.activated = True
 
 class AppMain(WaveshareGreenClockApps):
     def __init__(self, clock):
         super().__init__()
         self.cpt = 0
         self.apps = [AppTest(clock), AppTime(clock), AppCompteur(clock), AppTemperature(clock)]
-        self.apps[self.cpt].cb_init()
 
     def cb_init(self):
         try:
@@ -148,7 +142,7 @@ class AppMain(WaveshareGreenClockApps):
 
     def cb_rtc(self):
         try:
-            app.cb_rtc()
+            self.apps[self.cpt].cb_rtc()
         except NotImplementedError:
             pass
 
@@ -164,6 +158,7 @@ try:
 
     clock = WaveshareGreenClock()
     app = AppMain(clock)
+    app.cb_init()
 
     fin = False
     def thread_run():
@@ -196,9 +191,8 @@ try:
         time.sleep(1)
 
 except OSError:
-    fin = True
-    print("quit")
-
+    pass
 except KeyboardInterrupt:
+    pass
+finally:
     fin = True
-    print("quit")
