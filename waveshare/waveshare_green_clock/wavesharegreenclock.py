@@ -5,6 +5,7 @@ from master.i2c.i2cpico import I2CPico
 from device.i2c.ds3231_sqw import DS3231_SQW
 from master.pia.piapico import PiaOutputPico
 from master.pia.piaisrpico import PiaIsrPico
+from master.net.wlanpico import WLanPico
 import micropython
 import machine
 
@@ -19,25 +20,34 @@ class WaveshareGreenClock:
         
         self.i2c = I2CPico(1, 6, 7)
         self.rtc = DS3231_SQW(0, self.i2c, 3)
-        self.rtc.setControlRegister(0x01, 0x00, 0x00, 0x00, 0x00)
+        self.rtc.setControlRegister(CONV=1, RS=0, INTCN=0x01, A2IE=0, A1IE=0, EN32kHz=0)
 
-        self.K0 = PiaIsrPico(15, pullUp=True)
-        self.K1 = PiaIsrPico(17, pullUp=True)
-        self.K2 = PiaIsrPico(2, pullUp=True)
+        self.K0 = PiaIsrPico(15, pullUp=machine.Pin.PULL_UP)
+        self.K1 = PiaIsrPico(17, pullUp=machine.Pin.PULL_UP)
+        self.K2 = PiaIsrPico(2, pullUp=machine.Pin.PULL_UP)
 
         self.buzzer = PiaOutputPico(14)
 
-    def is_k0_beat(self):
-        return self.K0.isActivated()
+        self.buffer = bytearray(4*8)
+        self.codec = WaveshareGreenClockCodec()
+        self.ascii = WaveshareGreenClockAscii4x7()
+        self.tag = WaveshareGreenClockTag(self.buffer)
 
-    def is_k1_beat(self):
-        return self.K1.isActivated()
+        try:
+            self.wlan = WLanPico()
+            self.wlan.connect()
+            data_tuple = self.wlan.ntp()
 
-    def is_k2_beat(self):
-        return self.K2.isActivated()
+            laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
+            lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 
-    def is_rtc_beat(self):
-        return self.rtc.isActivated()
+            self.rtc.setDate(laDate)
+            self.rtc.setDayWeek(str(data_tuple[6]))
+            self.rtc.setTime(lHeure)
+        except OSError:
+            pass
+        finally:
+            self.wlan.disconnect()
 
     # matrice de 4 * 8 bits
     def show(self, buffer):

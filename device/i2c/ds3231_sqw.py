@@ -9,3 +9,11 @@ class DS3231_SQW(DS3231):
 
     def isActivated(self):
         return self.pinSQW.isActivated()
+
+    def isAlarm1Activated(self):
+        OSF, EN32kHz, BSY, A2F, A1F = self.getStatusRegister()
+        return A1F == 0x01
+
+    def isAlarm2Activated(self):
+        OSF, EN32kHz, BSY, A2F, A1F = self.getStatusRegister()
+        return A2F == 0x01

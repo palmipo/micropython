@@ -6,22 +6,18 @@ from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGr
 from waveshare.waveshare_green_clock.wavesharegreenclockascii import WaveshareGreenClockAscii5x7
 from waveshare.waveshare_green_clock.wavesharegreenclockcodec import WaveshareGreenClockCodec
 from waveshare.waveshare_green_clock.wavesharegreenclocktag import WaveshareGreenClockTag
-from master.net.wlanpico import WLanPico
 
 class AppTime(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, clock):
         super().__init__()
-        self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii4x7()
-        self.tag = WaveshareGreenClockTag(buffer)
-        self.buffer = buffer
+        self.clock = clock
         self.timezone = 0
         self.heure = 0 #args[3]
         self.minute = 0 #args[4]
         self.dayOfWeek = 0 #args[6]
 
     def cb_init(self):
-        self.tag.clear()
+        self.clock.tag.clear()
         
         data_tuple = time.localtime()
         self.heure = data_tuple[3]
@@ -30,14 +26,9 @@ class AppTime(WaveshareGreenClockApps):
 
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
-        return 0
-
-    def cb_center(self):
-        pass
 
     def cb_down(self):
         self.timezone = (self.timezone - 1) % 24
-        return 0
 
     def cb_rtc(self):
         data_tuple = time.localtime()
@@ -46,167 +37,133 @@ class AppTime(WaveshareGreenClockApps):
         self.dayOfWeek = data_tuple[6]
 
     def cb_run(self):
-        self.tag.clear()
-        self.tag.setDayWeek(self.dayOfWeek)
+        self.clock.tag.clear()
+        self.clock.tag.setDayWeek(self.dayOfWeek)
         lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
         offset = 0
         for i in range(len(lHeure)):
-            (a, w, h) = self.ascii.encode(lHeure[i])
+            (a, w, h) = self.clock.ascii.encode(lHeure[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
             offset += w + 1
 
 class AppCompteur(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, clock):
         super().__init__()
-        self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii4x7()
-        self.tag = WaveshareGreenClockTag(buffer)
+        self.clock = clock
         self.cpt_gauche = 0
         self.cpt_droit = 0
-        self.buffer = buffer
 
     def cb_init(self):
-        self.tag.clear()
+        self.clock.tag.clear()
 
     def cb_up(self):
         self.cpt_gauche = (self.cpt_gauche + 1) % 100
-        return 0
 
     def cb_down(self):
         self.cpt_droit = (self.cpt_droit + 1) % 100
-        return 0
 
     def cb_center(self):
         if self.cpt_gauche != 0 or self.cpt_droit != 0:
             self.cpt_gauche = 0
             self.cpt_droit = 0
-            return 0
-
-    def cb_rtc(self):
-        pass
+        else:
+            raise NotImplementedError
 
     def cb_run(self):
         texte = '{:02}/{:02}'.format(self.cpt_gauche, self.cpt_droit)
         offset = 0
         for i in range(len(texte)):
-            (a, w, h) = self.ascii.encode(texte[i])
+            (a, w, h) = self.clock.ascii.encode(texte[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
             offset += w + 1
 
 class AppTemperature(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, clock):
         super().__init__()
-        self.codec = WaveshareGreenClockCodec()
-        self.ascii = WaveshareGreenClockAscii4x7()
-        self.tag = WaveshareGreenClockTag(buffer)
-        self.buffer = buffer
+        self.clock = clock
 
     def cb_init(self):
-        self.tag.clear()
-
-    def cb_up(self):
-        pass
-
-    def cb_center(self):
-        pass
-
-    def cb_down(self):
-        pass
-
-    def cb_rtc(self):
-        pass
+        self.clock.tag.clear()
 
     def cb_run(self):
         temp = clock.rtc.getTemperature()
         texte = '{:02.1f}'.format(temp)
         offset = 0
-        self.tag.uniteTemperature(b'\x01', b'\x00')
+        self.clock.tag.uniteTemperature(b'\x01', b'\x00')
         for i in range(len(texte)):
-            (a, w, h) = self.ascii.encode(texte[i])
+            (a, w, h) = self.clock.ascii.encode(texte[i])
             for j in range(h):
-                self.codec.encode(self.codec.Champ(self.buffer, offset + 2 + (j+1) * 32, w), self.codec.Champ(a, j * 8, w))
+                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
             offset += w + 1
 
 class AppTest(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, clock):
         super().__init__()
-        self.buffer = buffer
+        self.clock = clock
 
     def cb_init(self):
-        for i in range(len(self.buffer)):
-            self.buffer[i] = 0xFF
-
-    def cb_up(self):
-        pass
-
-    def cb_center(self):
-        pass
-
-    def cb_down(self):
-        pass
+        self.cpt=0
+        for i in range(len(self.clock.buffer)):
+            self.clock.buffer[i] = 0xFF
 
     def cb_rtc(self):
-        pass
-
-    def cb_run(self):
-        pass
+        self.cpt = (self.cpt + 1) % 60
+        if self.cpt == 10:
+            prit("simulation d'un appui bouton central")
+            self.clock.k1.activated = True
 
 class AppMain(WaveshareGreenClockApps):
-    def __init__(self, buffer):
+    def __init__(self, clock):
         super().__init__()
         self.cpt = 0
-        self.apps = [AppTest(buffer), AppTime(buffer), AppCompteur(buffer), AppTemperature(buffer)]
-        self.tag = WaveshareGreenClockTag(buffer)
+        self.apps = [AppTest(clock), AppTime(clock), AppCompteur(clock), AppTemperature(clock)]
         self.apps[self.cpt].cb_init()
 
     def cb_init(self):
-        self.apps[self.cpt].cb_init()
+        try:
+            self.apps[self.cpt].cb_init()
+        except NotImplementedError:
+            pass
 
     def cb_up(self):
-        self.apps[self.cpt].cb_up()
+        try:
+            self.apps[self.cpt].cb_up()
+        except NotImplementedError:
+            pass
 
     def cb_center(self):
-        if self.apps[self.cpt].cb_center() == None:
+        try:
+            self.apps[self.cpt].cb_center()
+        except NotImplementedError:
             self.cpt = (self.cpt + 1) % len(self.apps)
             self.apps[self.cpt].cb_init()
 
     def cb_down(self):
-        self.apps[self.cpt].cb_down()
+        try:
+            self.apps[self.cpt].cb_down()
+        except NotImplementedError:
+            pass
 
     def cb_rtc(self):
-        for app in self.apps:
+        try:
             app.cb_rtc()
+        except NotImplementedError:
+            pass
 
     def cb_run(self):
-        self.apps[self.cpt].cb_run()
+        try:
+            self.apps[self.cpt].cb_run()
+        except NotImplementedError:
+            pass
 
 
 try:
-
-    buffer = bytearray(4*8)
     buffer2 = bytearray(4*8)
 
-    app = AppMain(buffer)
-
     clock = WaveshareGreenClock()
-
-    try:
-        wlan = WLanPico()
-        wlan.connect()
-        data_tuple = wlan.ntp()
-
-        laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
-        lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
-
-        clock.rtc.setDate(laDate)
-        clock.rtc.setDayWeek(str(data_tuple[6]))
-        clock.rtc.setTime(lHeure)
-    except OSError:
-        pass
-    finally:
-        wlan.disconnect()
+    app = AppMain(clock)
 
     fin = False
     def thread_run():
@@ -216,25 +173,25 @@ try:
     _thread.start_new_thread(thread_run, ());
 
     while (fin != True):
-        if clock.is_k0_beat():
+        if clock.K0.isActivated():
             app.cb_up()
             app.cb_run()
-            buffer2 = buffer
+            buffer2 = clock.buffer
 
-        elif clock.is_k1_beat():
+        elif clock.K1.isActivated():
             app.cb_center()
             app.cb_run()
-            buffer2 = buffer
+            buffer2 = clock.buffer
 
-        elif clock.is_k2_beat():
+        elif clock.K2.isActivated():
             app.cb_down()
             app.cb_run()
-            buffer2 = buffer
+            buffer2 = clock.buffer
 
-        elif clock.is_rtc_beat():
+        elif clock.rtc.isActivated():
             app.cb_rtc()
             app.cb_run()
-            buffer2 = buffer
+            buffer2 = clock.buffer
 
         time.sleep(1)
 
@@ -243,6 +200,5 @@ except OSError:
     print("quit")
 
 except KeyboardInterrupt:
-        fin = True
-        print("quit")
-
+    fin = True
+    print("quit")

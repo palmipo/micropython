@@ -106,7 +106,7 @@ class DS3231(DeviceI2C):
         cmd[3] = (((A2M >> 3) & 0x01) << 7) | (((A2M >> 4) & 0x01) << 6) | ((ord(day[0]) & 0x03) << 4) | (ord(day[1]) & 0x0F)
         self.busi2c.send(self.adresse, cmd)
 
-    def getAlarm1(self):
+    def getAlarm2(self):
         cmd = bytearray(1)
         cmd[0] = 0x0B
         data = self.busi2c.transferer(self.adresse, cmd, 3)
@@ -122,24 +122,33 @@ class DS3231(DeviceI2C):
         return A2M, hour, day
 
     # CONV : convert temperature
-    # SqwareWaveFrequency : 0 : 1Hz / 1 : 1024Hz / 2 : 4096Hz / 3 : 8192Hz
+    # RS : rate select 0 : 1Hz / 1 : 1024Hz / 2 : 4096Hz / 3 : 8192Hz
     # INTCN : interrupt control 0 : alarm / 1 square wave
     # A2IE : alarm 2 interrupt enable
     # A1IE : alarm 1 interrupt enable
-    def setControlRegister(self, CONV, SqwareWaveFrequency, INTCN, A2IE, A1IE):
-        (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
-        while BSY != 0:
-            (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
+    # EN32kHz : Enable 32kHz Output
+    def setControlRegister(self, CONV=0, RS=0, INTCN=0, A2IE=0, A1IE=0, EN32kHz=0):
+        self.waitWhileBusy()
 
-        cmd = bytearray(2)
+        cmd = bytearray(3)
         cmd[0] = 0x0E
-        cmd[1] = ((CONV & 0x01) << 5) | ((SqwareWaveFrequency & 0x03) << 3) | ((INTCN & 0x01) << 2) | ((A2IE & 0x01) << 1) | (A1IE & 0x01)
+        cmd[1] = ((CONV & 0x01) << 5) | ((RS & 0x03) << 3) | ((INTCN & 0x01) << 2) | ((A2IE & 0x01) << 1) | (A1IE & 0x01)
+        cmd[2] = 0x80 | ((EN32kHz & 0x01) << 3)
         self.busi2c.send(self.adresse, cmd)
-        
+
+    def getControlRegister(self):
+        cmd = bytearray(1)
+        cmd[0] = 0x0E
+        data = self.busi2c.transferer(self.adresse, cmd, 1)
+        CONV = (data[0] & 0x20) >> 5
+        RS = (data[0] & 0x18) >> 3
+        INTCN = (data[0] & 0x04) >> 2
+        A2IE = (data[0] & 0x02) >> 1
+        A1IE = data[0] & 0x01
+        return CONV, RS, INTCN, A2IE, A1IE
+
     def getTemperature(self):
-        (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
-        while BSY != 0:
-            (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
+        self.waitWhileBusy()
 
         cmd = bytearray(1)
         cmd[0] = 0x11
@@ -156,3 +165,8 @@ class DS3231(DeviceI2C):
         A2F = (data[0] & 0x02) >> 1
         A1F = data[0] & 0x01
         return (OSF, EN32kHz, BSY, A2F, A1F)
+
+    def waitWhileBusy(self):
+        (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
+        while BSY != 0:
+            (OSF, EN32kHz, BSY, A2F, A1F) = self.getStatusRegister()
