@@ -1,4 +1,4 @@
-import network, time, socket, select, ntptime
+import network, time
 from interface.lanbus import LanBus
 
 class WLanPico(LanBus):
@@ -18,16 +18,3 @@ class WLanPico(LanBus):
 
     def ifconfig(self):
         return self.wlan.ifconfig()[0]
-
-    def ntp(self):
-        ntptime.settime() # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
-        #data_tuple = time.localtime()
-        #j = "{:02}"format(data_tuple[2])
-        #m = "{:02}".format(data_tuple[1])
-        #a = "{:02}".format(data_tuple[0])
-        #hh = "{:02}".format(data_tuple[3])
-        #mm = "{:02}".format(data_tuple[4])
-        #ss = "{:02}".format(data_tuple[5])
-        #return j, m, a, hh, mm, ss
-        return time.localtime()
-

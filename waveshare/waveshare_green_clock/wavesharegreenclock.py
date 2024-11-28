@@ -9,6 +9,7 @@ from device.i2c.ds3231_sqw import DS3231_SQW
 from master.pia.pwmpico import PwmPico
 from master.pia.piaisrpico import PiaIsrPico
 from master.net.wlanpico import WLanPico
+from device.net.ntp import Ntp
 import micropython
 import machine
 
@@ -39,7 +40,9 @@ class WaveshareGreenClock:
         try:
             self.wlan = WLanPico()
             self.wlan.connect()
-            data_tuple = self.wlan.ntp()
+            
+            ntp = Ntp()
+            data_tuple = ntp.ntp()
 
             laDate = "{:02}/{:02}/{:02}".format(data_tuple[2], data_tuple[1], data_tuple[0])
             lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])

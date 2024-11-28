@@ -2,14 +2,16 @@ import time
 from waveshare.waveshare_nixie_clock.nixieclock import NixieClock
 from waveshare.waveshare_nixie_clock.nixiebipapp import NixieBipApp
 from waveshare.waveshare_nixie_clock.nixieconfigapp import NixieConfigApp
+from waveshare.waveshare_nixie_clock.nixieledapp import NixieLedApp
 from waveshare.waveshare_nixie_clock.nixiemainapp import NixieMainApp
 
 horloge = NixieClock()
 try:
     bipApp = NixieBipApp(horloge)
     configApp = NixieConfigApp(horloge)
+    ledApp = NixieLedApp(horloge)
 
-    mainApp = NixieMainApp([bipApp, configApp])
+    mainApp = NixieMainApp([bipApp, configApp, ledApp])
     mainApp.init()
 
     fin = False
@@ -26,11 +28,12 @@ try:
         if horloge.ds1321.isActivated() == True:
             mainApp.rtcActivated()
 
-        time.sleep_ms(500)
+        time.sleep_ms(100)
 
 except KeyboardInterrupt:
-    fin = True
+    pass
 
 finally:
+    fin = True
     horloge.ds1321.setControlRegister(0, 0, 0, 0, 0)
 

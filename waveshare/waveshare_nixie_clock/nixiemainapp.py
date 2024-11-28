@@ -28,8 +28,8 @@ class NixieMainApp(NixieApp):
         try:
             self.apps[self.num].kmActivated()
         except NotImplementedError:
-            print('changement d\'appli {}'.format(self.num))
             self.num = (self.num + 1) % len(self.apps)
+            print('changement d\'appli {}'.format(self.num))
             try:
                 self.apps[self.num].init()
             except NotImplementedError:

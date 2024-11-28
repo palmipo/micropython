@@ -1,4 +1,4 @@
-from st7789v2 import ST7789V2
+from device.spi.st7789v2 import ST7789V2
 
 class Lcd_1inch69(ST7789V2):
     def __init__(self, dc, cs, rst, br, spi):
@@ -7,9 +7,8 @@ class Lcd_1inch69(ST7789V2):
         self.rst = rst
         self.spi = spi
         self.pwm = br
-
-        self.pwm.duty_u16(32768)
-        self.pwm.freq(1000)
+        self.pwm.freq(50)
+        self.pwm.duty_u16(50)
         self.rst(1)
         self.cs(1)
         self.dc(1)
@@ -42,4 +41,4 @@ class Lcd_1inch69(ST7789V2):
         self.rst(1)
 
     def write_brightness(self, val):
-        self.pwm.duty_u16(val * 32768 // 100)#max 65535
+        self.pwm.duty_u16(val)

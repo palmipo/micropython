@@ -1,4 +1,5 @@
 from master.net.wlanpico import WLanPico
+from device.net.ntp import Ntp
 from master.i2c.i2cpico import I2CPico
 from device.i2c.bmp280 import BMP280
 from device.i2c.ds3231_sqw import DS3231_SQW
@@ -11,6 +12,9 @@ class NixieClock:
     def __init__(self):
         self.wlan = WLanPico()
         self.wlan.connect()
+        
+        ntp = Ntp()
+        ntp.ntp()
 
         self.kr = PiaIsrBouncePico(15)
         self.kl = PiaIsrBouncePico(16)
@@ -34,7 +38,7 @@ class NixieClock:
 
         self.ds1321 = DS3231_SQW(0, self.i2c, 18)
         self.ds1321.setAlarm1(A1M=0x0F, hour='08:00:00', day='03')
-        self.ds1321.setControlRegister(CONV=0x01, SqwareWaveFrequency=0x00, INTCN=0x01, A2IE=0x00, A1IE=0x01, EN32kHz=0)
+        self.ds1321.setControlRegister(CONV=0x01, RS=0x00, INTCN=0x00, A2IE=0x00, A1IE=0x01, EN32kHz=0)
 
         self.nixie = NixieLcd(rst_pin = 12, dc_pin = 8, bl_pin = 13, led_pin = 22)
         self.buffer = bytearray(self.nixie.LCDs[0].width * self.nixie.LCDs[0].height * 2)
@@ -44,6 +48,5 @@ class NixieClock:
 
     def clear(self):
         for num in range(len(self.nixie.LCDs)):
-            self.nixie.setLedColor(num, 0x80, 0, 0xff)
             self.dessin.fill(0)
             self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height, self.buffer)

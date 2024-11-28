@@ -1,4 +1,3 @@
-# import ntptime, network, framebuf, sys, time, _thread
 import _thread, time
 from waveshare.waveshare_green_clock.wavesharegreenclock import WaveshareGreenClock
 from waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
