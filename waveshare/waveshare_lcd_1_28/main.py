@@ -1,4 +1,6 @@
 from machine import Pin,I2C,SPI,PWM,ADC
+from device.afficheur.lcd_1inch28 import LCD_1inch28
+from device.i2c.qmi8658 import QMI8658
 import framebuf
 import time
 
@@ -13,8 +15,7 @@ BL = 25
 
 Vbat_Pin = 29
 
-if __name__=='__main__':
-
+try:
     rst = Pin(RST,Pin.OUT)
     rst(1)
     cs = Pin(CS,Pin.OUT)
@@ -24,7 +25,6 @@ if __name__=='__main__':
     dc(1)
     pwm = PWM(Pin(BL))
 
-    from lcd_1inch28 import LCD_1inch28
     LCD = LCD_1inch28(dc, rst, cs, spi, pwm)
     LCD.set_bl_pwm(0xFFFF)
 
@@ -41,7 +41,6 @@ if __name__=='__main__':
     painter.fill(white)
     LCD.show(buffer)
 
-    from qmi8658 import QMI8658
     I2C_SDA = 6
     I2C_SDL = 7
     qmi8658 = QMI8658(I2C(id=1,scl=Pin(I2C_SDL),sda=Pin(I2C_SDA),freq=100_000))
@@ -74,3 +73,9 @@ if __name__=='__main__':
         
         LCD.show(buffer)
         time.sleep(0.1)
+
+except KeyboardInterrupt:
+    pass
+
+finally:
+    pass

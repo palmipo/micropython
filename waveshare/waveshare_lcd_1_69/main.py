@@ -1,4 +1,4 @@
-from lcd_1inch69 import Lcd_1inch69
+from device.afficheur.lcd_1inch69 import Lcd_1inch69
 from machine import Pin,SPI,PWM
 import framebuf
 import time
