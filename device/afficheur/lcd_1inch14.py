@@ -11,7 +11,7 @@ class Lcd_1inch14(ST7789):
         self.RST_PIN = rst
         self.spi = spi
         self.BL_PIN = bl
-        self.BL_PIN.setFrequency(1000)
+        self.BL_PIN.setFrequency(50)
         self.BL_PIN.setDuty(50)
         self.num = num
         self.width = 135

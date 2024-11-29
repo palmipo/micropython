@@ -25,8 +25,6 @@ class NixieLcd:
         self.dc.set(1)
 
         self.bl = PwmPico(bl_pin) # 13
-        self.bl.setFrequency(50)
-        self.bl.setDuty(50)
 
         self.LCDs = []
         for num in range (0,6):

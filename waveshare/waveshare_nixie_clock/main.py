@@ -28,7 +28,7 @@ try:
         if horloge.ds1321.isActivated() == True:
             mainApp.rtcActivated()
 
-        time.sleep_ms(100)
+        time.sleep_ms(500)
 
 except KeyboardInterrupt:
     pass

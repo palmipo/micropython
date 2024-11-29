@@ -6,7 +6,7 @@ from device.i2c.ds3231_sqw import DS3231_SQW
 from master.pwm.pwmpico import PwmPico
 from master.pia.piaisrbouncepico import PiaIsrBouncePico
 from waveshare.waveshare_nixie_clock.nixielcd import NixieLcd
-import framebuf, time
+import framebuf, time, machine, rp2
 
 class NixieClock:
     def __init__(self):
@@ -16,9 +16,9 @@ class NixieClock:
         ntp = Ntp()
         ntp.ntp()
 
-        self.kr = PiaIsrBouncePico(15)
-        self.kl = PiaIsrBouncePico(16)
-        self.km = PiaIsrBouncePico(17)
+        self.kr = PiaIsrBouncePico(15, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
+        self.kl = PiaIsrBouncePico(16, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
+        self.km = PiaIsrBouncePico(17, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
         self.buzzer = PwmPico(14)
         self.buzzer.setFrequency(50)
 

@@ -1,6 +1,5 @@
 from interface.piaisrbus import PiaIsrBus
-import time
-import machine
+import time, machine, rp2
 
 class PiaIsrBounceBus(PiaIsrBus):
     def __init__(self, tempo_ms=20):

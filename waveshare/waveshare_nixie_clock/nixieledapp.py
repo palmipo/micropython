@@ -13,11 +13,11 @@ class NixieLedApp(NixieApp):
         self.show()
 
     def krActivated(self):
-        self.couleur[self.numCouleur] = (self.couleur[self.numCouleur] + 10) % 256
+        self.couleur[self.numCouleur] = (self.couleur[self.numCouleur] + 8) % 256
         self.show()
     
     def klActivated(self):
-        self.couleur[self.numCouleur] = (self.couleur[self.numCouleur] - 10) % 256
+        self.couleur[self.numCouleur] = (self.couleur[self.numCouleur] - 8) % 256
         self.show()
 
     def kmActivated(self):
@@ -37,11 +37,12 @@ class NixieLedApp(NixieApp):
 
         for i in range(len(self.nixieClock.nixie.LCDs)):
             if self.numLed == i:
-                self.nixieClock.dessin.fill(((self.couleur[0] & 0x1F) << 11) | ((self.couleur[1] & 0x3F) << 5) | ((self.couleur[2] & 0x1F)))
-                self.nixieClock.dessin.text("[LED]", 0, 0)
-                self.nixieClock.dessin.text("R : {:03}".format(self.couleur[0]), 0, 10)
-                self.nixieClock.dessin.text("G : {:03}".format(self.couleur[1]), 0, 20)
-                self.nixieClock.dessin.text("B : {:03}".format(self.couleur[2]), 0, 30)
+                # Red Green Blue (16-bit, 5+6+5) color format
+                self.nixieClock.dessin.fill(((self.couleur[0] & 0x1F) << 11) | ((self.couleur[1] & 0x3F) << 5) | (self.couleur[2] & 0x1F))
+                self.nixieClock.dessin.text("[LED]", 0, 0, 0xffff)
+                self.nixieClock.dessin.text("R : {:03}".format(self.couleur[0]), 0, 10, 0xffff)
+                self.nixieClock.dessin.text("G : {:03}".format(self.couleur[1]), 0, 20, 0xffff)
+                self.nixieClock.dessin.text("B : {:03}".format(self.couleur[2]), 0, 30, 0xffff)
             else:
                 self.nixieClock.dessin.fill(0)
 

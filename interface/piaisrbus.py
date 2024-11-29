@@ -1,5 +1,5 @@
 from interface.piabus import PiaBus
-import machine
+import time, machine, rp2
 
 class PiaIsrBus(PiaBus):
     def __init__(self):
@@ -9,6 +9,7 @@ class PiaIsrBus(PiaBus):
     def isr(self, pin):
         state = machine.disable_irq()
         try:
+#             print(pin.value())
             self.activated = True
         finally:
             machine.enable_irq(state)
