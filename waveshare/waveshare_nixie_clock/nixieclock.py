@@ -16,9 +16,9 @@ class NixieClock:
         ntp = Ntp()
         ntp.ntp()
 
-        self.kr = PiaIsrBouncePico(15, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
-        self.kl = PiaIsrBouncePico(16, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
-        self.km = PiaIsrBouncePico(17, pPullUp=machine.Pin.PULL_DOWN, pTrigger=machine.Pin.IRQ_FALLING)
+        self.kr = PiaIsrBouncePico(15, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
+        self.kl = PiaIsrBouncePico(16, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
+        self.km = PiaIsrBouncePico(17, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
         self.buzzer = PwmPico(14)
         self.buzzer.setFrequency(50)
 

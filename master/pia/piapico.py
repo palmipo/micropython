@@ -18,7 +18,7 @@ class PiaOutputPico(PiaPico):
         self.pin = machine.Pin(nPin, machine.Pin.OUT)
 
 class PiaInputPico(PiaPico):
-    def __init__(self, nPin, pPullUp = None):
+    def __init__(self, nPin, pullUp = None):
         super().__init__()
 
-        self.pin = machine.Pin(nPin, machine.Pin.IN, pPullUp)
+        self.pin = machine.Pin(nPin, machine.Pin.IN, pullUp)
