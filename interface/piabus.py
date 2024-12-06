@@ -1,4 +1,4 @@
-import time, machine, rp2
+import time
 
 class PiaBus:
     def __init__(self):
