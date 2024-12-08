@@ -57,7 +57,6 @@ class PCA9685(DeviceI2C):
         prescaler //= 4096
         prescaler *= freq
         prescaler -= 1
-        print(int(prescaler))
         if (prescaler >= 0x03):
             # ecriture de la valeur du prescaler
             scl = bytearray(2)

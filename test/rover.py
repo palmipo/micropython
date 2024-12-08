@@ -1,11 +1,13 @@
-import rp2
-import machine
 from master.i2c.i2cpico import I2CPico 
 from device.i2c.pca9685 import PCA9685
+from device.pwm.l298n import L298N
+from device.pwm.pwmpca9685 import PwmPca9685
+from device.pia.piapca9685 import PiaPca9685
+import time
 
 class Motor:
     def __init__(self, num, pca9685):
-        pontH = L298N(PwmPca9685(num, pca9685), PiaPca9685(num+1, pca9685), PiaPca9685(num+2, pca9685))
+        self.pontH = L298N(PwmPca9685(num, pca9685), PiaPca9685(num+1, pca9685), PiaPca9685(num+2, pca9685), 50000000)
 
 class Chenille:
     def __init__(self, moteur1, moteur2):
@@ -13,16 +15,16 @@ class Chenille:
         self.m2 = moteur2
 
     def stop(self):
-        self.m1.stop()
-        self.m2.stop()
+        self.m1.pontH.stop()
+        self.m2.pontH.stop()
 
     def forward(self, speed):
-        self.m1.forward(speed)
-        self.m2.revert(speed)
+        self.m1.pontH.forward(speed)
+        self.m2.pontH.reverse(speed)
 
     def revert(self, speed):
-        self.m1.revert(speed)
-        self.m2.forward(speed)
+        self.m1.pontH.reverse(speed)
+        self.m2.pontH.forward(speed)
 
 try:
     i2c = I2CPico(0, 20, 21)
