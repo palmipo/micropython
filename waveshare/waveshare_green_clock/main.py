@@ -7,17 +7,17 @@ class AppTime(WaveshareGreenClockApps):
         super().__init__()
         self.clock = clock
         self.timezone = 0
-        self.heure = 0 #args[3]
-        self.minute = 0 #args[4]
-        self.dayOfWeek = 0 #args[6]
+#         self.heure = 0 #args[3]
+#         self.minute = 0 #args[4]
+#         self.dayOfWeek = 0 #args[6]
 
     def cb_init(self):
         self.clock.tag.clear()
         
-        data_tuple = time.localtime()
-        self.heure = data_tuple[3]
-        self.minute = data_tuple[4]
-        self.dayOfWeek = data_tuple[6]
+#         data_tuple = time.localtime()
+#         self.heure = data_tuple[3]
+#         self.minute = data_tuple[4]
+#         self.dayOfWeek = data_tuple[6]
 
     def cb_up(self):
         self.timezone = (self.timezone + 1) % 24
@@ -26,12 +26,18 @@ class AppTime(WaveshareGreenClockApps):
         self.timezone = (self.timezone - 1) % 24
 
     def cb_rtc(self):
+        pass
+#         data_tuple = time.localtime()
+#         self.heure = data_tuple[3]
+#         self.minute = data_tuple[4]
+#         self.dayOfWeek = data_tuple[6]
+
+    def cb_run(self):
         data_tuple = time.localtime()
         self.heure = data_tuple[3]
         self.minute = data_tuple[4]
         self.dayOfWeek = data_tuple[6]
 
-    def cb_run(self):
         self.clock.tag.clear()
         self.clock.tag.setDayWeek(self.dayOfWeek)
         lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
@@ -169,23 +175,21 @@ try:
     while (fin != True):
         if clock.K0.isActivated():
             app.cb_up()
-            app.cb_run()
-            buffer2 = clock.buffer
 
         elif clock.K1.isActivated():
             app.cb_center()
-            app.cb_run()
-            buffer2 = clock.buffer
 
         elif clock.K2.isActivated():
             app.cb_down()
-            app.cb_run()
-            buffer2 = clock.buffer
 
         elif clock.rtc.isActivated():
             app.cb_rtc()
-            app.cb_run()
-            buffer2 = clock.buffer
+
+        app.cb_run()
+        
+        clock.mutex = True
+        buffer2 = clock.buffer
+        clock.mutex = False
 
         time.sleep(1)
 

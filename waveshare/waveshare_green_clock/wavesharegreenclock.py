@@ -18,13 +18,19 @@ micropython.alloc_emergency_exception_buf(100)
 class WaveshareGreenClock:
     def __init__(self):
 
+        self.mutex = False
+
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         self.column.OutputEnable()
         
+#         self.tim = machine.Timer()
+#         self.tim .init(mode=machine.Timer.PERIODIC, freq=1000, callback=self.timer_callback)
+#         self.timer_activayed = False
+
         self.i2c = I2CPico(1, 6, 7)
         self.rtc = DS3231_SQW(0, self.i2c, 3)
-        self.rtc.setControlRegister(CONV=1, RS=0, INTCN=0x00, A2IE=0, A1IE=0, EN32kHz=0)
+        self.rtc.setControlRegister(CONV=1, RS=0, INTCN=0x01, A2IE=1, A1IE=1, EN32kHz=0)
 
         self.K0 = PiaIsrPico(15, pullUp=machine.Pin.PULL_UP)
         self.K1 = PiaIsrPico(17, pullUp=machine.Pin.PULL_UP)
@@ -57,7 +63,18 @@ class WaveshareGreenClock:
 
     # matrice de 4 * 8 bits
     def show(self, buffer):
-        for i in range(8):
-            self.column.send(buffer[i*4 : i*4+4])
-            self.row.setChannel(i)
-            self.column.latch()
+        if self.mutex == False:
+            for i in range(8):
+                self.column.send(buffer[i*4 : i*4+4])
+                self.row.setChannel(i)
+                self.column.latch()
+
+#     def timer_callback(self, t):
+#         self.timer_activayed = True
+#         
+#     def isActivated(self):
+#         if self.timer_activayed:
+#             self.timer_activayed = False
+#             return True
+# 
+#         return self.timer_activayed
