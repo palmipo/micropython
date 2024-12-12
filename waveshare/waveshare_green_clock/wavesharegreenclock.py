@@ -18,15 +18,9 @@ micropython.alloc_emergency_exception_buf(100)
 class WaveshareGreenClock:
     def __init__(self):
 
-        self.mutex = False
-
         self.row = SM5166P(16, 18, 22)
         self.column = SM16106SC(10, 11, 12, 13)
         self.column.OutputEnable()
-        
-#         self.tim = machine.Timer()
-#         self.tim .init(mode=machine.Timer.PERIODIC, freq=1000, callback=self.timer_callback)
-#         self.timer_activayed = False
 
         self.i2c = I2CPico(1, 6, 7)
         self.rtc = DS3231_SQW(0, self.i2c, 3)
@@ -37,6 +31,7 @@ class WaveshareGreenClock:
         self.K2 = PiaIsrPico(2, pullUp=machine.Pin.PULL_UP)
 
         self.buzzer = PwmPico(14)
+        self.buzzer.setFrequency(50)
 
         self.buffer = bytearray(4*8)
         self.codec = WaveshareGreenClockCodec()
@@ -63,18 +58,7 @@ class WaveshareGreenClock:
 
     # matrice de 4 * 8 bits
     def show(self, buffer):
-        if self.mutex == False:
-            for i in range(8):
-                self.column.send(buffer[i*4 : i*4+4])
-                self.row.setChannel(i)
-                self.column.latch()
-
-#     def timer_callback(self, t):
-#         self.timer_activayed = True
-#         
-#     def isActivated(self):
-#         if self.timer_activayed:
-#             self.timer_activayed = False
-#             return True
-# 
-#         return self.timer_activayed
+        for i in range(8):
+            self.column.send(buffer[i*4 : i*4+4])
+            self.row.setChannel(i)
+            self.column.latch()

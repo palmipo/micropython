@@ -1,124 +1,16 @@
-import _thread, time
+import _thread, time, machine
 from waveshare.waveshare_green_clock.wavesharegreenclock import WaveshareGreenClock
 from waveshare.waveshare_green_clock.wavesharegreenclockapps import WaveshareGreenClockApps
-
-class AppTime(WaveshareGreenClockApps):
-    def __init__(self, clock):
-        super().__init__()
-        self.clock = clock
-        self.timezone = 0
-#         self.heure = 0 #args[3]
-#         self.minute = 0 #args[4]
-#         self.dayOfWeek = 0 #args[6]
-
-    def cb_init(self):
-        self.clock.tag.clear()
-        
-#         data_tuple = time.localtime()
-#         self.heure = data_tuple[3]
-#         self.minute = data_tuple[4]
-#         self.dayOfWeek = data_tuple[6]
-
-    def cb_up(self):
-        self.timezone = (self.timezone + 1) % 24
-
-    def cb_down(self):
-        self.timezone = (self.timezone - 1) % 24
-
-    def cb_rtc(self):
-        pass
-#         data_tuple = time.localtime()
-#         self.heure = data_tuple[3]
-#         self.minute = data_tuple[4]
-#         self.dayOfWeek = data_tuple[6]
-
-    def cb_run(self):
-        data_tuple = time.localtime()
-        self.heure = data_tuple[3]
-        self.minute = data_tuple[4]
-        self.dayOfWeek = data_tuple[6]
-
-        self.clock.tag.clear()
-        self.clock.tag.setDayWeek(self.dayOfWeek)
-        lHeure = "{:02}:{:02}".format((self.heure + self.timezone) % 24, self.minute)
-        offset = 0
-        for i in range(len(lHeure)):
-            (a, w, h) = self.clock.ascii.encode(lHeure[i])
-            for j in range(h):
-                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
-            offset += w + 1
-
-class AppCompteur(WaveshareGreenClockApps):
-    def __init__(self, clock):
-        super().__init__()
-        self.clock = clock
-        self.cpt_gauche = 0
-        self.cpt_droit = 0
-
-    def cb_init(self):
-        self.clock.tag.clear()
-
-    def cb_up(self):
-        self.cpt_gauche = (self.cpt_gauche + 1) % 100
-
-    def cb_down(self):
-        self.cpt_droit = (self.cpt_droit + 1) % 100
-
-    def cb_center(self):
-        if self.cpt_gauche != 0 or self.cpt_droit != 0:
-            self.cpt_gauche = 0
-            self.cpt_droit = 0
-        else:
-            raise NotImplementedError
-
-    def cb_run(self):
-        texte = '{:02}/{:02}'.format(self.cpt_gauche, self.cpt_droit)
-        offset = 0
-        for i in range(len(texte)):
-            (a, w, h) = self.clock.ascii.encode(texte[i])
-            for j in range(h):
-                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
-            offset += w + 1
-
-class AppTemperature(WaveshareGreenClockApps):
-    def __init__(self, clock):
-        super().__init__()
-        self.clock = clock
-
-    def cb_init(self):
-        self.clock.tag.clear()
-
-    def cb_run(self):
-        temp = clock.rtc.getTemperature()
-        texte = '{:02.1f}'.format(temp)
-        offset = 0
-        self.clock.tag.uniteTemperature(b'\x01', b'\x00')
-        for i in range(len(texte)):
-            (a, w, h) = self.clock.ascii.encode(texte[i])
-            for j in range(h):
-                self.clock.codec.encode(self.clock.codec.Champ(self.clock.buffer, offset + 2 + (j+1) * 32, w), self.clock.codec.Champ(a, j * 8, w))
-            offset += w + 1
-
-class AppTest(WaveshareGreenClockApps):
-    def __init__(self, clock):
-        super().__init__()
-        self.clock = clock
-
-    def cb_init(self):
-        self.cpt=0
-        for i in range(len(self.clock.buffer)):
-            self.clock.buffer[i] = 0xFF
-
-    def cb_rtc(self):
-        self.cpt = (self.cpt + 1) % 60
-        if self.cpt == 10:
-            self.clock.K1.activated = True
+from waveshare.waveshare_green_clock.wavesharegreenclocktestapp import WaveshareGreenClockTestApp
+from waveshare.waveshare_green_clock.wavesharegreenclocktimeapp import WaveshareGreenClockTimeApp
+from waveshare.waveshare_green_clock.wavesharegreenclockcompteurapp import WaveshareGreenClockCompteurApp
+from waveshare.waveshare_green_clock.wavesharegreenclocktemperatureapp import WaveshareGreenClockTemperatureApp
 
 class AppMain(WaveshareGreenClockApps):
     def __init__(self, clock):
         super().__init__()
         self.cpt = 0
-        self.apps = [AppTest(clock), AppTime(clock), AppCompteur(clock), AppTemperature(clock)]
+        self.apps = [WaveshareGreenClockTestApp(clock), WaveshareGreenClockTimeApp(clock), WaveshareGreenClockCompteurApp(clock), WaveshareGreenClockTemperatureApp(clock)]
 
     def cb_init(self):
         try:
@@ -159,6 +51,8 @@ class AppMain(WaveshareGreenClockApps):
 
 
 try:
+    machine.freq(240000000)
+
     buffer2 = bytearray(4*8)
 
     clock = WaveshareGreenClock()
@@ -166,9 +60,11 @@ try:
     app.cb_init()
 
     fin = False
+    mutex = False
     def thread_run():
         while (fin != True):
-            clock.show(buffer2)
+            if not mutex:
+                clock.show(buffer2)
 
     _thread.start_new_thread(thread_run, ());
 
@@ -187,9 +83,9 @@ try:
 
         app.cb_run()
         
-        clock.mutex = True
+        mutex = True
         buffer2 = clock.buffer
-        clock.mutex = False
+        mutex = False
 
         time.sleep(1)
 
