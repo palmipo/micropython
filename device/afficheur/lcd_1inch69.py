@@ -1,6 +1,6 @@
 from device.spi.st7789v2 import ST7789V2
 
-class Lcd_1inch69(ST7789V2):
+class LCD_1inch69(ST7789V2):
     def __init__(self, dc, cs, rst, br, spi):
         self.dc = dc
         self.cs = cs

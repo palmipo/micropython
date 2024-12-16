@@ -64,7 +64,8 @@ class DS3231(DeviceI2C):
     # X 1 0 0 0 Alarm when hours, minutes, and seconds match
     # 0 0 0 0 0 Alarm when date, hours, minutes, and seconds match
     # 1 0 0 0 0 Alarm when day, hours, minutes, and seconds match
-    # 18:25:59 18
+    # A1M=0 hour='18:25:59' day='18'
+    # A1M=1 hour='18:25:59' day='05'
     def setAlarm1(self, A1M, hour, day):
         cmd = bytearray(5)
         cmd[0] = 0x07
@@ -101,9 +102,9 @@ class DS3231(DeviceI2C):
     def setAlarm2(self, A2M, hour, day):
         cmd = bytearray(4)
         cmd[0] = 0x0B
-        cmd[1] = (((A2M >> 1) & 0x01) << 7) | ((ord(hour[3]) & 0x07) << 4) | (ord(hour[4]) & 0x0F)
-        cmd[2] = (((A2M >> 2) & 0x01) << 7) | ((ord(hour[0]) & 0x03) << 4) | (ord(hour[1]) & 0x0F)
-        cmd[3] = (((A2M >> 3) & 0x01) << 7) | (((A2M >> 4) & 0x01) << 6) | ((ord(day[0]) & 0x03) << 4) | (ord(day[1]) & 0x0F)
+        cmd[1] = ((A2M & 0x01) << 7) | ((ord(hour[3]) & 0x07) << 4) | (ord(hour[4]) & 0x0F)
+        cmd[2] = (((A2M >> 1) & 0x01) << 7) | ((ord(hour[0]) & 0x03) << 4) | (ord(hour[1]) & 0x0F)
+        cmd[3] = (((A2M >> 2) & 0x01) << 7) | (((A2M >> 3) & 0x01) << 6) | ((ord(day[0]) & 0x03) << 4) | (ord(day[1]) & 0x0F)
         self.busi2c.send(self.adresse, cmd)
 
     def getAlarm2(self):
@@ -130,6 +131,8 @@ class DS3231(DeviceI2C):
     def setControlRegister(self, CONV=0, RS=0, INTCN=0, A2IE=0, A1IE=0, EN32kHz=0):
         self.waitWhileBusy()
 
+        # 0Eh EOSC BBSQW CONV RS2 RS1 INTCN A2IE A1IE Control —
+        # 0Fh OSF 0 0 0 EN32kHz BSY A2F A1F Control/Status
         cmd = bytearray(3)
         cmd[0] = 0x0E
         cmd[1] = ((CONV & 0x01) << 5) | ((RS & 0x03) << 3) | ((INTCN & 0x01) << 2) | ((A2IE & 0x01) << 1) | (A1IE & 0x01)

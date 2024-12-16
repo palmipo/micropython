@@ -158,8 +158,8 @@ class EPD:
     
     def drawPoint(self, buffer, x, y, c):
         index = x + y * self.width
-	octet = index >> 3
-	masque = octet - (index << 3)
+        octet = index >> 3
+        masque = octet - (index << 3)
         buffer[octet] = buffer[octet] & ~(0x03 << masque) | (c << masque)
 
     # y = ax + b

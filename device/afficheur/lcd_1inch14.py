@@ -5,7 +5,7 @@ from master.pia.piapico import PiaOutputPico
 from master.pwm.pwmpico import PwmPico
 import time
 
-class Lcd_1inch14(ST7789):
+class LCD_1inch14(ST7789):
     def __init__(self, num, dc, rst, spi, bl):
         self.DC_PIN = dc
         self.RST_PIN = rst
