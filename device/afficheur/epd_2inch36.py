@@ -9,7 +9,7 @@ EPD_WIDTH  = 168
 EPD_HEIGHT = 296
 
 
-class EPD:
+class EPD_2inch36:
     def __init__(self):
         self.reset_pin = PiaPicoOutput(21)
         self.reset_pin.set(1)

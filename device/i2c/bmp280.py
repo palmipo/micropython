@@ -1,112 +1,145 @@
 from device.i2c.devicei2c import DeviceI2C
 
+
+# BMP280 address.
+BMP280_I2C_ADDRESS       =    0x76          #SDO = 0
+
+#Registers  value
+BMP280_ID_Value          =    0x58
+BMP280_RESET_VALUE       =    0xB6
+
+# BMP280 Registers definition  
+BMP280_TEMP_XLSB_REG     =    0xFC  #Temperature XLSB Register 
+BMP280_TEMP_LSB_REG      =    0xFB  #Temperature LSB Register  
+BMP280_TEMP_MSB_REG      =    0xFA  #Temperature LSB Register   
+BMP280_PRESS_XLSB_REG    =    0xF9  #Pressure XLSB  Register 
+BMP280_PRESS_LSB_REG     =    0xF8  #Pressure LSB Register 
+BMP280_PRESS_MSB_REG     =    0xF7  #Pressure MSB Register 
+BMP280_CONFIG_REG        =    0xF5  #Configuration Register 
+BMP280_CTRL_MEAS_REG     =    0xF4  #Ctrl Measure Register  
+BMP280_STATUS_REG        =    0xF3  #Status Register 
+BMP280_RESET_REG         =    0xE0  #Softreset Register  
+BMP280_ID_REG            =    0xD0  #Chip ID Register 
+
+#calibration parameters   
+BMP280_DIG_T1_LSB_REG    =    0x88  
+BMP280_DIG_T1_MSB_REG    =    0x89  
+BMP280_DIG_T2_LSB_REG    =    0x8A  
+BMP280_DIG_T2_MSB_REG    =    0x8B  
+BMP280_DIG_T3_LSB_REG    =    0x8C  
+BMP280_DIG_T3_MSB_REG    =    0x8D  
+BMP280_DIG_P1_LSB_REG    =    0x8E  
+BMP280_DIG_P1_MSB_REG    =    0x8F  
+BMP280_DIG_P2_LSB_REG    =    0x90  
+BMP280_DIG_P2_MSB_REG    =    0x91  
+BMP280_DIG_P3_LSB_REG    =    0x92  
+BMP280_DIG_P3_MSB_REG    =    0x93  
+BMP280_DIG_P4_LSB_REG    =    0x94  
+BMP280_DIG_P4_MSB_REG    =    0x95  
+BMP280_DIG_P5_LSB_REG    =    0x96  
+BMP280_DIG_P5_MSB_REG    =    0x97  
+BMP280_DIG_P6_LSB_REG    =    0x98  
+BMP280_DIG_P6_MSB_REG    =    0x99  
+BMP280_DIG_P7_LSB_REG    =    0x9A  
+BMP280_DIG_P7_MSB_REG    =    0x9B  
+BMP280_DIG_P8_LSB_REG    =    0x9C  
+BMP280_DIG_P8_MSB_REG    =    0x9D  
+BMP280_DIG_P9_LSB_REG    =    0x9E  
+BMP280_DIG_P9_MSB_REG    =    0x9F 
+
 class BMP280(DeviceI2C):
-
-    def __init__(self, bus):
-        super().__init__(0x76, bus)
-
-    def __statusRegister(self):
-        buf = bytearray(1)
-        buf[0] = 0xf3
-        data = self.busi2c.transferer(self.adresse, buf, 1)
-        mesuring = (data[0] & 0x04) >> 3
-        im_update = data[0] & 0x01
-        return mesuring, im_update
-    
-    # osrs_t x2  : 010b
-    # osrs_p x16 : 101b
-    # mode       : normal 11b
-    def ctrlMeasureRegister(self, osrs_t, osrs_p, mode):
-        buf = bytearray(2)
-        buf[0] = 0xf4
-        buf[1] = ((osrs_t & 0x07) << 5) | ((osrs_p & 0x07) << 2) | (mode & 0x02)
-        self.busi2c.send(self.adresse, buf)
-
-    # t_sb   3
-    # filtre 16
-    def configRegister(self, t_sb, filtre):
-        buf = bytearray(2)
-        buf[0] = 0xf5
-        buf[1] = ((t_sb & 0x07) << 5) | ((filtre & 0x07) << 2)
-        self.busi2c.send(self.adresse, buf)
-
-    def __rawMeasureRegister(self):
-        buf = bytearray(1)
-        buf[0] = 0xf7
-        data = self.busi2c.transferer(self.adresse, buf, 6)
-        self.raw_pressure = int((data[0] << 12) | (data[1] << 4) | (data[2] >> 4))
-        self.raw_temperature = int((data[3] << 12) | (data[4] << 4) | (data[5] >> 4))
-
-    def __readCompensationRegister(self):
-        buf = bytearray(1)
-        buf[0] = 0x88
-        data = self.busi2c.transferer(self.adresse, buf, 24)
-        self.dig_T1 = int((data[0] << 8) | data[1])
-        self.dig_T2 = int((1 << 16) - ((data[2] << 8) | data[3]))
-        self.dig_T3 = int((1 << 16) - ((data[4] << 8) | data[5]))
-        self.dig_P1 = int((data[6] << 8) | data[7])
-        self.dig_P2 = int((1 << 16) - ((data[8] << 8) | data[9]))
-        self.dig_P3 = int((1 << 16) - ((data[10] << 8) | data[11]))
-        self.dig_P4 = int((1 << 16) - ((data[12] << 8) | data[13]))
-        self.dig_P5 = int((1 << 16) - ((data[14] << 8) | data[15]))
-        self.dig_P6 = int((1 << 16) - ((data[16] << 8) | data[17]))
-        self.dig_P7 = int((1 << 16) - ((data[18] << 8) | data[19]))
-        self.dig_P8 = int((1 << 16) - ((data[20] << 8) | data[21]))
-        self.dig_P9 = int((1 << 16) - ((data[22] << 8) | data[23]))
-
-    def __calculer_t_fine(self):
-        self.__rawMeasureRegister()
-        self.__readCompensationRegister()
-        var1 = (((self.raw_temperature >> 3) - (self.dig_T1 << 1)) * self.dig_T2) >> 11
-        var2 = (((((self.raw_temperature >> 4) - self.dig_T1) * ((self.raw_temperature >> 4) - self.dig_T1)) >> 12) * self.dig_T3) >> 14
-        t_fine = int(var1) + int(var2)
-        return t_fine
-
-    def compensateT(self):
-        mesuring, im_update = self.__statusRegister()
-        while mesuring != 0:
-            mesuring, im_update = self.__statusRegister()
-        t_fine = self.__calculer_t_fine()
-        t = (t_fine * 5 + 128) >> 8;
-        return float(t) / 100.0
-
-    def compensateP(self):
-        mesuring, im_update = self.__statusRegister()
-        while mesuring != 0:
-            mesuring, im_update = self.__statusRegister()
-        t_fine = self.__calculer_t_fine()
-
-        var1 = t_fine - 128000
-        var2 = var1 * var1 * self.dig_P6
-        var2 = var2 + ((var1 * self.dig_P5) << 17)
-        var2 = var2 + (self.dig_P4 << 35)
-        var1 = ((var1 * var1 * self.dig_P3) >> 8) + ((var1 * self.dig_P2) << 12)
-        var1 = ((1 << 47) * self.dig_P1) >> 33
-        if var1 == 0:
-            return 0.0
+    def __init__(self, bus, osrs_t=2, osrs_p=5, mode=3, t_sb1=3, filtre=16):
+        super().__init__(BMP280_I2C_ADDRESS, bus)
         
-        p = 1048576 - self.raw_pressure
-        p = int((((p << 31) - var2) * 3125) / var1)
-        var1 = (self.dig_P9 * (p >> 13) * (p >> 13)) >> 25
-        var2 = (self.dig_P8 * p) >> 19
-        p = ((p + var1 + var2) >> 8) + (self.dig_P7 << 4)
-
-        return float(p)
-
-    def chipIdRegister(self):
-        buf = bytearray(1)
-        buf[0] = 0xd0
-        id = self.busi2c.transferer(self.adresse, buf, 1)
-        if id[0] in [0x58, 0x60]:
-            return True
+        if self._read_byte(BMP280_ID_REG) == BMP280_ID_Value:
+            self._load_calibration()
+            ctrlmeas = 0xFF # osrs_t << 5 | osrs_p << 2 | mode;  
+            config = 0x14   # t_sb1 << 5 | filtre << 2;
+            self._write_byte(BMP280_CTRL_MEAS_REG, ctrlmeas); 
+            self._write_byte(BMP280_CONFIG_REG, config)
         else:
-            return False
+            print("Read BMP280 id error!\r\n")
+            
+    def _read_byte(self,cmd):
+        return self._bus.transferer(self._address,cmd, 1)
+    
+    def _read_u16(self,cmd):
+        data = self._bus.transferer(self._address,cmd, 2)
+        return (data[1] << 8) + data[0]
 
-    def reset(self):
-        buf = bytearray(2)
-        buf[0] = 0xe0
-        buf[1] = 0xb6
-        self.busi2c.send(self.adresse, buf)
+    def _read_s16(self,cmd):
+        result = self._read_u16(cmd)
+        if result > 32767:result -= 65536
+        return result
+
+    def _write_byte(self,cmd,val):
+        data = bytearray(2)
+        data[0] = cmd
+        data[1] = val
+        self._bus.send(self._address,data)
+
+    def _load_calibration(self):
+        "load calibration"
+        
+        """ read the temperature calibration parameters """
+        self.dig_T1 =self._read_u16(BMP280_DIG_T1_LSB_REG)
+        self.dig_T2 =self._read_s16(BMP280_DIG_T2_LSB_REG)
+        self.dig_T3 =self._read_s16(BMP280_DIG_T3_LSB_REG)
+        """ read the pressure calibration parameters """
+        self.dig_P1 =self._read_u16(BMP280_DIG_P1_LSB_REG)
+        self.dig_P2 =self._read_s16(BMP280_DIG_P2_LSB_REG)
+        self.dig_P3 =self._read_s16(BMP280_DIG_P3_LSB_REG)
+        self.dig_P4 =self._read_s16(BMP280_DIG_P4_LSB_REG)
+        self.dig_P5 =self._read_s16(BMP280_DIG_P5_LSB_REG)
+        self.dig_P6 =self._read_s16(BMP280_DIG_P6_LSB_REG)
+        self.dig_P7 =self._read_s16(BMP280_DIG_P7_LSB_REG)
+        self.dig_P8 =self._read_s16(BMP280_DIG_P8_LSB_REG)
+        self.dig_P9 =self._read_s16(BMP280_DIG_P9_LSB_REG)
+        
+    def compensate_temperature(self,adc_T):
+        """Returns temperature in DegC, double precision. Output value of "1.23"equals 51.23 DegC."""
+        var1 = ((adc_T) / 16384.0 - (self.dig_T1) / 1024.0) * (self.dig_T2)
+        var2 = (((adc_T) / 131072.0 - (self.dig_T1) / 8192.0)  * ((adc_T) / 131072.0  - (self.dig_T1) / 8192.0)) * (self.dig_T3)
+        self.t_fine = var1 + var2
+        temperature = (var1 + var2) / 5120.0
+        return temperature
+            
+    def compensate_pressure(self,adc_P):
+        """Returns pressure in Pa as double. Output value of "6386.2"equals 96386.2 Pa = 963.862 hPa."""
+        var1 = (self.t_fine / 2.0) - 64000.0
+        var2 = var1 * var1 * (self.dig_P6) / 32768.0
+        var2 = var2 + var1 * (self.dig_P5) * 2.0
+        var2 = (var2 / 4.0) + ((self.dig_P4) * 65536.0) 
+        var1 = ((self.dig_P3) * var1 * var1 / 524288.0  + (self.dig_P2) * var1) / 524288.0 
+        var1 = (1.0 + var1 / 32768.0) * (self.dig_P1) 
+
+        if var1 == 0.0: 
+            return 0 # avoid exception caused by division by zero  
+
+        pressure = 1048576.0 - adc_P
+        pressure = (pressure - (var2 / 4096.0)) * 6250.0 / var1
+        var1 = (self.dig_P9) * pressure * pressure / 2147483648.0
+        var2 = pressure * (self.dig_P8) / 32768.0  
+        pressure = pressure + (var1 + var2 + (self.dig_P7)) / 16.0
+
+        return pressure; 
+
+    def get_temperature_and_pressure(self):
+        """Returns pressure in Pa as double. Output value of "6386.2"equals 96386.2 Pa = 963.862 hPa."""
+        xlsb = self._read_byte(BMP280_TEMP_XLSB_REG)
+        lsb =  self._read_byte(BMP280_TEMP_LSB_REG)
+        msb =  self._read_byte(BMP280_TEMP_MSB_REG)
+
+        adc_T = (msb << 12) | (lsb << 4) | (xlsb >> 4)
+        temperature = self.compensate_temperature(adc_T)
+
+        xlsb = self._read_byte(BMP280_PRESS_XLSB_REG)
+        lsb =  self._read_byte(BMP280_PRESS_LSB_REG) 
+        msb =  self._read_byte(BMP280_PRESS_MSB_REG) 
+
+        adc_P = (msb << 12) | (lsb << 4) | (xlsb >> 4)
+        pressure = self.compensate_pressure(adc_P)
+        return temperature,pressure
 
 if __name__ == '__main__':
     try:
@@ -114,23 +147,17 @@ if __name__ == '__main__':
         import time
         i2c = I2CPico(1, 6, 7)
         print (i2c.scan())
-        sensor = BMP280(i2c)
-        sensor.reset()
-        time.sleep(1)
-        print("chipIdRegister {}".format(sensor.chipIdRegister()))
-
+        
         # osrs_t x2  : 010b
         # osrs_p x16 : 101b
         # mode       : normal 11b
-        sensor.ctrlMeasureRegister(osrs_t=2, osrs_p=5, mode=3)
-
-        # t_sb   3
-        # filtre 16
-        sensor.configRegister(t_sb=3, filtre=16)
+        # t_sb       : 3
+        # filtre     : 16
+        sensor = BMP280(i2c, osrs_t=2, osrs_p=5, mode=3, t_sb=3, filtre=16)
+        time.sleep(1)
 
         while True:            
-            print(sensor.compensateT())
-            print(sensor.compensateP())
+            print(sensor.get_temperature_and_pressure())
             time.sleep(1)
 
     except OSError:
@@ -141,3 +168,5 @@ if __name__ == '__main__':
 
     finally:
         pass
+
+
