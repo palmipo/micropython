@@ -13,6 +13,14 @@ CLIENT_ID = binascii.hexlify(machine.unique_id())
 TOPIC = b"led"
 
 
+import network, time
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect('domoticus', '9foF2sxArWU5')
+while not wlan.isconnected() and wlan.status() >= 0:
+    time.sleep(1)
+time.sleep(5)
+
 # def main(server=SERVER):
 c = MQTTClient(CLIENT_ID, SERVER)
 c.connect()
