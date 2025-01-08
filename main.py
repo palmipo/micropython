@@ -1,6 +1,11 @@
-import time
+import time, sys
 
-time.sleep(5)
+try:
+    time.sleep(5)
 
-# Change myprogram to whatever you renamed your current main.py to.
-import waveshare.waveshare_green_clock.main
+    # Change myprogram to whatever you renamed your current main.py to.
+    # import waveshare.waveshare_green_clock.main
+
+except KeyboardInterrupt:
+    print("exit")
+    sys.exit()

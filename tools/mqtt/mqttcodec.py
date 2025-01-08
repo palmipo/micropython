@@ -1,4 +1,4 @@
-import struct
+import struct, select
 
 # taille CONNECT : 44, client_id : 12, user : 4 passwd : 10
 # bytearray(b'\x10\x2a\x00\x04MQTT\x04\xc2\x00\x00\x00\x0c84f703e869e6\x00\x04XXXX\x00\nXXXXXXXXXX')
@@ -127,14 +127,10 @@ class MqttConnect:
 
 # CONNACK – Acknowledge connection request
 class MqttConnAck:
-    def __init__(self, buffer, connectAcknowledgeFlags):
+    def __init__(self, buffer):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x20
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 2
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == connectAcknowledgeFlags
+        print('MqttConnAck connectAcknowledgeFlags : {}'.format(struct.unpack_from('!B', buffer, offset)[0]))
         offset += 1
 
         # 0x00 Connection Accepted Connection accepted
@@ -143,7 +139,7 @@ class MqttConnAck:
         # 0x03 Connection Refused, Server unavailable The Network Connection has been made but the MQTT service is unavailable
         # 0x04 Connection Refused, bad user name or password The data in the user name or password is malformed
         # 0x05 Connection Refused, not authorized The Client is not authorized to connect
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x00
+        print('MqttConnAck connection : {}'.format(struct.unpack_from('!B', buffer, offset)[0] == 0x00))
         offset += 1
 
 class MqttPublish:
@@ -195,51 +191,63 @@ class MqttPublish:
         print(self.buffer)
 
 # PUBACK – Publish acknowledgement
-class MqttPubAck:
-    def __init__(self, buffer, packet_id):
+class MqttPubRecv:
+    def __init__(self, buffer, dup_flag, QoS_level, retain):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x40
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 2
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == packet_id
-        offset += 1
+        topic_len = struct.unpack_from('!H', buffer, offset)[0]
+        offset += 2
+        
+        for i in range(topic_len):
+            print(struct.unpack_from('s', buffer, offset)[0])
+            offset += 1
+
+
+        # VARIABLE_HEADER.PACKED_IDENTIFIER
+        if QoS_level != 0:
+            packed_id_len = struct.unpack_from('!H', self.buffer, offset)[0]
+            offset += 2
+            
+            for i in range(packed_id_len):
+                print(struct.unpack_from('s', self.buffer, offset)[0])
+                offset += 1
+
+        # TEXT
+        taille_text = len(buffer) - offset
+        for i in range(taille_text):
+            print(struct.unpack_from('s', buffer, offset)[0])
+            offset += 1
+
+# PUBACK – Publish acknowledgement
+class MqttPubAck:
+    def __init__(self, buffer):
+
+        offset = 0
+        print('MqttPubAck packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
+        offset += 2
 
 # PUBREC – Publish received (QoS 2 publish received, part 1)
 class MqttPubRec:
-    def __init__(self, buffer, packet_id):
+    def __init__(self, buffer):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x50
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 2
-        offset += 1
-        assert struct.unpack_from('!H', buffer, offset)[0] == packet_id
+        print('MqttPubRec packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
         offset += 2
         
 # PUBREL – Publish release (QoS 2 publish received, part 2)
 class MqttPubRel:
-    def __init__(self, buffer, packet_id):
+    def __init__(self, buffer):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x60
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 2
-        offset += 1
-        assert struct.unpack_from('!H', buffer, offset)[0] == packet_id
+        print('MqttPubRel packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
         offset += 2
        
 # PUBCOMP – Publish complete (QoS 2 publish received, part 3)
 class MqttPubComp:
-    def __init__(self, buffer, packet_id):
+    def __init__(self, buffer):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x70
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 2
-        offset += 1
-        assert struct.unpack_from('!H', buffer, offset)[0] == packet_id
+        print('MqttPubComp packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
         offset += 2
 
 # SUBSCRIBE - Subscribe to topics
@@ -247,7 +255,7 @@ class MqttSubcribe:
     def __init__(self, packed_id, topic_name, QoS):
         topic_len = len(topic_name)
         
-        taille = 9 + topic_len
+        taille = 7 + topic_len
         print("taille SUBSCRIBE : {}".format(taille))
 
         offset = 0
@@ -277,131 +285,129 @@ class MqttSubcribe:
 
 # SUBACK – Subscribe acknowledgement
 class MqttSubAck:
-    def __init__(self, buffer, packet_id, return_code):
+    def __init__(self, buffer):
 
         offset = 0
-        assert struct.unpack_from('!B', buffer, offset)[0] == 0x90
-        offset += 1
-        assert struct.unpack_from('!B', buffer, offset)[0] == 3
-        offset += 1
-        assert struct.unpack_from('!H', buffer, offset)[0] == packet_id
+        print('MqttSubAck packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
         offset += 2
         # 0x00 - Success - Maximum QoS 0
         # 0x01 - Success - Maximum QoS 1
         # 0x02 - Success - Maximum QoS 2
         # 0x80 - Failure
-        assert (struct.unpack_from('!B', buffer, offset)[0] & 0x80) != 0x80
-        assert (struct.unpack_from('!B', buffer, offset)[0] & 0x03) == return_code
+        print('MqttSubAck erreur : {}'.format(struct.unpack_from('!B', buffer, offset)[0] & 0x80) != 0x80)
+        print('MqttSubAck return_code : {}'.format(struct.unpack_from('!B', buffer, offset)[0] & 0x03))
         offset += 1
 
-# # PINGREQ – PING request
-# class MqttPingReq:
-#     def __init__(self):
-# 
-#         PINGREQ = {
-#             "FIXED_HEADER" : (0, FIXED_HEADER)
-#         }
-#         
-#         taille = 2
-#         self.buffer = bytearray(taille)
-#         msg = uctypes.struct(uctypes.addressof(self.buffer), PINGREQ, uctypes.BIG_ENDIAN)
-#         msg.FIXED_HEADER.CTRL_PACKED.TYPE = CTRL_PACKED_TYPE.PINGREQ
-#         msg.FIXED_HEADER.REMAINING_LENGTH = 0
-#         
-#         print(self.buffer)
-# 
-# #  PINGRESP – PING response
-# class MqttPingResp:
-#     def __init__(self, buffer):
-# 
-#         PINGRESP = {
-#             "FIXED_HEADER" : (0, FIXED_HEADER)
-#         }
-#         
-#         msg = uctypes.struct(uctypes.addressof(buffer), PINGRESP, uctypes.BIG_ENDIAN)
-#         assert msg.FIXED_HEADER.CTRL_PACKED.TYPE == CTRL_PACKED_TYPE.PINGRESP
-#         assert msg.FIXED_HEADER.REMAINING_LENGTH == 0
-# 
-# # DISCONNECT – Disconnect notification
-# class MqttDisconnect:
-#     def __init__(self):
-# 
-#         DISCONNECT = {
-#             "FIXED_HEADER" : (0, FIXED_HEADER)
-#         }
-#         
-#         taille = 2
-#         self.buffer = bytearray(taille)
-#         msg = uctypes.struct(uctypes.addressof(self.buffer), DISCONNECT, uctypes.BIG_ENDIAN)
-#         msg.FIXED_HEADER.CTRL_PACKED.TYPE = CTRL_PACKED_TYPE.DISCONNECT
-#         msg.FIXED_HEADER.REMAINING_LENGTH = 0
-#         
-#         print(self.buffer)
+# UNSUBSCRIBE - Unsubscribe to topics
+class MqttUnsubcribe:
+    def __init__(self, packed_id):
+        taille = 4
+        print("taille UNSUBSCRIBE : {}".format(taille))
 
-import network, time
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('domoticus', '9foF2sxArWU5')
-while not wlan.isconnected() and wlan.status() >= 0:
-    time.sleep(1)
-time.sleep(5)
+        offset = 0
+        self.buffer = bytearray(taille)
+        packed_type = 0xA2
+        struct.pack_into('!B', self.buffer, offset, packed_type)
+        offset += 1
+        struct.pack_into('!B', self.buffer, offset, taille-2)
+        offset += 1
 
-import binascii, machine, socket
-PORT =  1883
-SERVER = "192.168.1.108"
-CLIENT_ID = binascii.hexlify(machine.unique_id())
-# CLIENT_ID = (machine.unique_id())
-sock = socket.socket()
-# sock.setblocking(True)
-sock.settimeout(20)
-addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
-print(addr)
-sock.connect(addr)
+        # PACKET_ID
+        struct.pack_into('!H', self.buffer, offset, packed_id)
+        offset += 2
 
-try:
+        print(self.buffer)
 
-    cnx = MqttConnect(client_id=CLIENT_ID, user='toff', passwd='crapaud8))', retain=0, QoS=0, clean=1, keep_alive=10)
-    sock.write(cnx.buffer)
+# UNSUBACK – Unsubscribe acknowledgement
+class MqttUnsubAck:
+    def __init__(self, buffer):
 
-    cnxack = sock.read(4)
-    print('connection ack : {}'.format(cnxack))
-    if len(cnxack) != 0:
-        MqttConnAck(cnxack, 0)
+        offset = 0
+        print('MqttUnsubAck packet_id : {}'.format(struct.unpack_from('!H', buffer, offset)[0]))
+        offset += 2
 
-#     ping = MqttPingReq()
-#     sock.write(ping.buffer)
+# PINGREQ – PING request
+class MqttPingReq:
+    def __init__(self):
 
-#     pingresp = sock.read(2)
-#     print('ping response : {}'.format(pingresp))
-#     if len(pingresp) != 0:
-#         MqttPingResp(pingresp)
+        taille = 2
+        print("taille PINGREQ : {}".format(taille))
 
-    sub = MqttSubcribe(1, "a/b", 0)
-    sock.write(sub.buffer)
-    subresp = sock.read(5)
-    print('sub response : {}'.format(subresp))
-    MqttSubAck(subresp, 1, 0)
+        offset = 0
+        self.buffer = bytearray(taille)
+        struct.pack_into('!B', self.buffer, offset, 0xC0)
+        offset += 1
+        struct.pack_into('!B', self.buffer, offset, 0)
+        offset += 1
+        
+        print(self.buffer)
 
-    pub = MqttPublish("a/b", "coucou")
-    sock.write(pub.buffer)
-    pubresp = sock.read(15)
-    print('pub response : {}'.format(pubresp))
-    if len(pubresp) != 0:
-        MqttPubAck(pubresp, 3)
+#  PINGRESP – PING response
+class MqttPingResp:
+    def __init__(self, buffer):
+        pass
 
-#     print('notification : {}'.format(sock.read(5)))
+# DISCONNECT – Disconnect notification
+class MqttDisconnect:
+    def __init__(self):
+        
+        taille = 2
+        print("taille DISCONNECT : {}".format(taille))
 
-#     discnx = MqttDisconnect()
-#     sock.write(discnx.buffer)
-finally:
-    sock.close()
-    wlan.disconnect()
+        offset = 0
+        self.buffer = bytearray(taille)
+        struct.pack_into('!B', self.buffer, offset, 0xE0)
+        offset += 1
+        struct.pack_into('!B', self.buffer, offset, 0x00)
+        offset += 1
+        
+        print(self.buffer)
 
-# 
-# MqttPubRec(b'\x50\x02\x00\x00', 0)
-# MqttPubRel(b'\x60\x02\x00\x00', 0)
-# MqttPubComp(b'\x70\x02\x00\x00', 0)
-# MqttPingReq()
-# MqttPingResp(b'\xd0\00')
-# MqttDisconnect()
+class MqttResponse:
+    def __init__(self, evnt):
+        if evnt[1] == select.POLLIN:
+            header = evnt[0].read(2)
+            print('header ack : {}'.format(header))
+            (type_packet, taille) = struct.unpack('!BB', header)
+            if taille > 0:
+                buffer = evnt[0].read(taille)
+        
+                # CONNACK
+                if (type_packet & 0xF0) == 0x20:
+                    MqttConnAck(buffer)
+
+                # PUBLISH
+                elif (type_packet & 0xF0) == 0x30:
+                    MqttPubRecv(buffer, ((type_packet & 0x04) >> 3), ((type_packet & 0x06) >> 1), (type_packet & 0x01))
+
+                # PUBACK
+                elif (type_packet & 0xF0) == 0x40:
+                    MqttPubAck(buffer)
+
+                # PUBREC
+                elif (type_packet & 0xF0) == 0x50:
+                    pass
+                
+                # PUBREL
+                elif (type_packet & 0xF0) == 0x60:
+                    MqttPubRel(buffer)
+                
+                # PUBCOMP
+                elif (type_packet & 0xF0) == 0x70:
+                    MqttPubComp(buffer)
+                
+                # SUBACK
+                elif (type_packet & 0xF0) == 0x90:
+                    MqttSubAck(buffer)
+                
+                # UNSUBACK
+                elif (type_packet & 0xB0) == 0xB0:
+                    MqttUnsubAck(buffer)
+                
+                # PINGRESP
+                elif (type_packet & 0xF0) == 0xD0:
+                    MqttPingResp(buffer)
+
+                else:
+                    print('PAS GERER ...')
 
