@@ -4,17 +4,21 @@ from device.spi.st7735 import TFT
 from device.spi.sysfont import sysfont
 from master.pwm.pwmpico import PwmPico
 
+with open("/config.json", "r") as fic:
+    stream = fic.read()
+    config = json.loads(stream)
+
 wlan = network.WLAN(network.STA_IF)
 try:
     wlan.active(True)
-    wlan.connect('domoticus', '9foF2sxArWU5')
+    wlan.connect(config['wifi']['ssid'], config['wifi']['passwd'])
     while not wlan.isconnected() and wlan.status() >= 0:
         time.sleep(1)
     time.sleep(5)
     
     TIMEOUT = 1000
-    PORT =  1883
-    SERVER = "192.168.1.108"
+    PORT =  config['mqtt']['broker']['port']
+    SERVER = config['mqtt']['broker']['ip']
     CLIENT_ID = binascii.hexlify(machine.unique_id())
     
     sock = socket.socket()

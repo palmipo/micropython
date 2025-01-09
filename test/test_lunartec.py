@@ -14,7 +14,7 @@ wlan.active(True)
 #     print(hex(b))
 # print(wlan.config('hostname'))
 
-wlan.connect('domoticus', '9foF2sxArWU5')
+wlan.connect('XXXXX', 'XXXXX')
 aff.send("Waiting to connect:")
 while not wlan.isconnected() and wlan.status() >= 0:
     time.sleep(1)
