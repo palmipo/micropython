@@ -1,26 +1,27 @@
-import network, time, select, binascii, machine, socket
+import network, time, select, binascii, machine, socket, json
 from tools.mqtt.mqttcodec import *
 from device.spi.st7735 import TFT
 from device.spi.sysfont import sysfont
 from master.pwm.pwmpico import PwmPico
+from tools.configfile import ConfigFile
 
-with open("/config.json", "r") as fic:
-    stream = fic.read()
-    config = json.loads(stream)
+cfg = ConfigFile("/config.json")
 
 wlan = network.WLAN(network.STA_IF)
 try:
     wlan.active(True)
-    wlan.connect(config['wifi']['ssid'], config['wifi']['passwd'])
+    wlan.connect(cfg.config()['wifi']['ssid'], cfg.config()['wifi']['passwd'])
     while not wlan.isconnected() and wlan.status() >= 0:
         time.sleep(1)
     time.sleep(5)
     
     TIMEOUT = 1000
-    PORT =  config['mqtt']['broker']['port']
-    SERVER = config['mqtt']['broker']['ip']
+    PORT =  cfg.config()['mqtt']['broker']['port']
+    SERVER = cfg.config()['mqtt']['broker']['ip']
     CLIENT_ID = binascii.hexlify(machine.unique_id())
-    
+    USER = cfg.config()['mqtt']['broker']['user']
+    PASSWD = cfg.config()['mqtt']['broker']['passwd']
+
     sock = socket.socket()
     try:
         addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
@@ -41,7 +42,7 @@ try:
         tft.text((0, 0), 'subscribe',TFT.WHITE, sysfont, 1)
 
         try:
-            cnx = MqttConnect(client_id=CLIENT_ID, user='toff', passwd='crapaud8))', retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
+            cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
             sock.write(cnx.buffer)
             evnt = poule.poll(TIMEOUT)
             if evnt:
@@ -51,10 +52,11 @@ try:
             sock.write(sub.buffer)
             evnt = poule.poll(TIMEOUT)
             if evnt:
-                tft.text((0, 8), 'reception suback ...',TFT.WHITE, sysfont, 1)
+                tft.text((0, 8), 'suback ...',TFT.WHITE, sysfont, 1)
                 MqttResponse(evnt[0])
 
-            while True:
+            fin = False
+            while fin == False:
                 evnt = poule.poll(TIMEOUT)
                 print(evnt)
                 if evnt:
@@ -64,7 +66,11 @@ try:
         finally:
             unsub = MqttUnsubcribe(1)
             sock.write(unsub.buffer)
-            
+            evnt = poule.poll(TIMEOUT)
+            if evnt:
+                tft.text((0, 32), 'unsuback ...',TFT.WHITE, sysfont, 1)
+                MqttResponse(evnt[0])
+
             discnx = MqttDisconnect()
             sock.write(discnx.buffer)
 

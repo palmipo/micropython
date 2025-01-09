@@ -1,21 +1,22 @@
 import network, time, select, binascii, machine, socket, json, os
 from tools.mqtt.mqttcodec import *
+from tools.configfile import ConfigFile
 
-with open("/config.json", "r") as fic:
-    stream = fic.read()
-    config = json.loads(stream)
+cfg = ConfigFile("/config.json")
 
 wlan = network.WLAN(network.STA_IF)
 try:
     wlan.active(True)
-    wlan.connect(config['wifi']['ssid'], config['wifi']['passwd'])
+    wlan.connect(cfg.config()['wifi']['ssid'], cfg.config()['wifi']['passwd'])
     while not wlan.isconnected() and wlan.status() >= 0:
         time.sleep(1)
     time.sleep(5)
 
     TIMEOUT = 1000
-    PORT =  config['mqtt']['broker']['port']
-    SERVER = config['mqtt']['broker']['ip']
+    PORT =  cfg.config()['mqtt']['broker']['port']
+    SERVER = cfg.config()['mqtt']['broker']['ip']
+    USER = cfg.config()['mqtt']['broker']['user']
+    PASSWD = cfg.config()['mqtt']['broker']['passwd']
     CLIENT_ID = binascii.hexlify(machine.unique_id())
     sock = socket.socket()
     try:
@@ -30,7 +31,7 @@ try:
 
         try:
 
-            cnx = MqttConnect(client_id=CLIENT_ID, user='toff', passwd='crapaud8))', retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
+            cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
             sock.write(cnx.buffer)
             evnt = poule.poll(TIMEOUT)
             if evnt:

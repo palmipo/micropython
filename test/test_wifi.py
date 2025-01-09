@@ -11,14 +11,4 @@ lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 print(laDate)
 print(lHeure)
 
-# import socket
-# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# sock.bind((wlan.ifconfig()[0], 2222))
-# sock.listen(1)
-# (clientsocket, (ip, port)) = sock.accept()
-# buffer = clientsocket.recv(48 * 48).decode()
-# print(buffer)
-# clientsocket.close()
-# sock.close()
-
 wlan.disconnect()

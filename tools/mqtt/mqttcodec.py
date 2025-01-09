@@ -294,7 +294,7 @@ class MqttSubAck:
         # 0x01 - Success - Maximum QoS 1
         # 0x02 - Success - Maximum QoS 2
         # 0x80 - Failure
-        print('MqttSubAck erreur : {}'.format(struct.unpack_from('!B', buffer, offset)[0] & 0x80) != 0x80)
+        print('MqttSubAck erreur : {}'.format((struct.unpack_from('!B', buffer, offset)[0] & 0x80) == 0x80))
         print('MqttSubAck return_code : {}'.format(struct.unpack_from('!B', buffer, offset)[0] & 0x03))
         offset += 1
 
