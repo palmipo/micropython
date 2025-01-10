@@ -34,19 +34,20 @@ class Freenove:
 
     class Tank:
         def __init__(self):
-            cfg = ConfigFile('/config.json')
-            self.led_pin = PiaOutputPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['led']]])
+            cfg = ConfigFile('/freenove/tank/config.json')
+            mbd = ConfigFile('/waveshare/rp2040_pizero/config.json')
+            self.led_pin = PiaOutputPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['led']]])
             self.leds = NeoPixel(self.led_pin.pin, 4)
-            self.motorL = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLF']]],
-                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLR']]])
-            self.motorR = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRF']]],
-                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRR']]])
+            self.motorL = Freenove.Motor(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLF']]],
+                                         mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLR']]])
+            self.motorR = Freenove.Motor(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRF']]],
+                                         mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRR']]])
             self.servo_pin = []
-            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo1']]])))
-            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo2']]])))
-            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo3']]])))
-            self.ultrasonic = HC_SR04(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonc_trigger']]],
-                                      cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonic_echo']]])
+            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo1']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo2']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo3']]])))
+            self.ultrasonic = HC_SR04(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonc_trigger']]],
+                                      mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonic_echo']]])
 
         def led(self, num, r, g, b):    
             for i in range(4):

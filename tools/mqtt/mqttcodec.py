@@ -1,8 +1,9 @@
 import struct, select
 
-# taille CONNECT : 44, client_id : 12, user : 4 passwd : 10
-# bytearray(b'\x10\x2a\x00\x04MQTT\x04\xc2\x00\x00\x00\x0c84f703e869e6\x00\x04XXXX\x00\nXXXXXXXXXX')
-class MqttConnect:
+class MqttMsg:
+    pass
+
+class MqttConnect(MqttMsg):
     def __init__(self, client_id, will_topic=None, will_message=None, user=None, passwd=None, retain=0, QoS=0, clean=0, keep_alive=0):
         client_id_len = len(client_id)
         
@@ -126,7 +127,7 @@ class MqttConnect:
         print(self.buffer)
 
 # CONNACK – Acknowledge connection request
-class MqttConnAck:
+class MqttConnAck(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -142,7 +143,7 @@ class MqttConnAck:
         print('MqttConnAck connection : {}'.format(struct.unpack_from('!B', buffer, offset)[0] == 0x00))
         offset += 1
 
-class MqttPublish:
+class MqttPublish(MqttMsg):
     def __init__(self, topic_name, text, dup_flag=0, QoS=0, retain=0, packed_id=None):
         topic_len = len(topic_name)
         text_len = len(text)
@@ -191,7 +192,7 @@ class MqttPublish:
         print(self.buffer)
 
 # PUBACK – Publish acknowledgement
-class MqttPubRecv:
+class MqttPubRecv(MqttMsg):
     def __init__(self, buffer, dup_flag, QoS_level, retain):
 
         offset = 0
@@ -219,7 +220,7 @@ class MqttPubRecv:
             offset += 1
 
 # PUBACK – Publish acknowledgement
-class MqttPubAck:
+class MqttPubAck(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -227,7 +228,7 @@ class MqttPubAck:
         offset += 2
 
 # PUBREC – Publish received (QoS 2 publish received, part 1)
-class MqttPubRec:
+class MqttPubRec(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -235,7 +236,7 @@ class MqttPubRec:
         offset += 2
         
 # PUBREL – Publish release (QoS 2 publish received, part 2)
-class MqttPubRel:
+class MqttPubRel(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -243,7 +244,7 @@ class MqttPubRel:
         offset += 2
        
 # PUBCOMP – Publish complete (QoS 2 publish received, part 3)
-class MqttPubComp:
+class MqttPubComp(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -251,7 +252,7 @@ class MqttPubComp:
         offset += 2
 
 # SUBSCRIBE - Subscribe to topics
-class MqttSubcribe:
+class MqttSubcribe(MqttMsg):
     def __init__(self, packed_id, topic_name, QoS):
         topic_len = len(topic_name)
         
@@ -284,7 +285,7 @@ class MqttSubcribe:
         print(self.buffer)
 
 # SUBACK – Subscribe acknowledgement
-class MqttSubAck:
+class MqttSubAck(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -299,7 +300,7 @@ class MqttSubAck:
         offset += 1
 
 # UNSUBSCRIBE - Unsubscribe to topics
-class MqttUnsubcribe:
+class MqttUnsubcribe(MqttMsg):
     def __init__(self, packed_id):
         taille = 4
         print("taille UNSUBSCRIBE : {}".format(taille))
@@ -319,7 +320,7 @@ class MqttUnsubcribe:
         print(self.buffer)
 
 # UNSUBACK – Unsubscribe acknowledgement
-class MqttUnsubAck:
+class MqttUnsubAck(MqttMsg):
     def __init__(self, buffer):
 
         offset = 0
@@ -327,7 +328,7 @@ class MqttUnsubAck:
         offset += 2
 
 # PINGREQ – PING request
-class MqttPingReq:
+class MqttPingReq(MqttMsg):
     def __init__(self):
 
         taille = 2
@@ -343,12 +344,12 @@ class MqttPingReq:
         print(self.buffer)
 
 #  PINGRESP – PING response
-class MqttPingResp:
+class MqttPingResp(MqttMsg):
     def __init__(self, buffer):
         pass
 
 # DISCONNECT – Disconnect notification
-class MqttDisconnect:
+class MqttDisconnect(MqttMsg):
     def __init__(self):
         
         taille = 2
@@ -363,51 +364,66 @@ class MqttDisconnect:
         
         print(self.buffer)
 
+class MqttException(BaseException):
+    pass
+
 class MqttResponse:
-    def __init__(self, evnt):
-        if evnt[1] == select.POLLIN:
-            header = evnt[0].read(2)
-            print('header ack : {}'.format(header))
-            (type_packet, taille) = struct.unpack('!BB', header)
-            if taille > 0:
-                buffer = evnt[0].read(taille)
-        
-                # CONNACK
-                if (type_packet & 0xF0) == 0x20:
-                    MqttConnAck(buffer)
+    def __init__(self):
+        pass
+    
+    def analayse(self, evnt):
+        if evnt[1] == select.POLLERR:
+            raise MqttException
 
-                # PUBLISH
-                elif (type_packet & 0xF0) == 0x30:
-                    MqttPubRecv(buffer, ((type_packet & 0x04) >> 3), ((type_packet & 0x06) >> 1), (type_packet & 0x01))
+        if evnt[1] == select.POLLHUP:
+            raise MqttException
 
-                # PUBACK
-                elif (type_packet & 0xF0) == 0x40:
-                    MqttPubAck(buffer)
+        header = evnt[0].read(2)
+        if len(header) != 2:
+            print('MqttResponse header length = {}'.format(len(header)))
+            raise MqttException
+    
+        print('header ack : {}'.format(header))
+        (type_packet, taille) = struct.unpack('!BB', header)
+        if taille > 0:
+            buffer = evnt[0].read(taille)
+    
+            # CONNACK
+            if (type_packet & 0xF0) == 0x20:
+                return MqttConnAck(buffer)
 
-                # PUBREC
-                elif (type_packet & 0xF0) == 0x50:
-                    pass
-                
-                # PUBREL
-                elif (type_packet & 0xF0) == 0x60:
-                    MqttPubRel(buffer)
-                
-                # PUBCOMP
-                elif (type_packet & 0xF0) == 0x70:
-                    MqttPubComp(buffer)
-                
-                # SUBACK
-                elif (type_packet & 0xF0) == 0x90:
-                    MqttSubAck(buffer)
-                
-                # UNSUBACK
-                elif (type_packet & 0xB0) == 0xB0:
-                    MqttUnsubAck(buffer)
-                
-                # PINGRESP
-                elif (type_packet & 0xF0) == 0xD0:
-                    MqttPingResp(buffer)
+            # PUBLISH
+            elif (type_packet & 0xF0) == 0x30:
+                return MqttPubRecv(buffer, ((type_packet & 0x04) >> 3), ((type_packet & 0x06) >> 1), (type_packet & 0x01))
 
-                else:
-                    print('PAS GERER ...')
+            # PUBACK
+            elif (type_packet & 0xF0) == 0x40:
+                return MqttPubAck(buffer)
+
+            # PUBREC
+            elif (type_packet & 0xF0) == 0x50:
+                pass
+            
+            # PUBREL
+            elif (type_packet & 0xF0) == 0x60:
+                return MqttPubRel(buffer)
+            
+            # PUBCOMP
+            elif (type_packet & 0xF0) == 0x70:
+                return MqttPubComp(buffer)
+            
+            # SUBACK
+            elif (type_packet & 0xF0) == 0x90:
+                return MqttSubAck(buffer)
+            
+            # UNSUBACK
+            elif (type_packet & 0xB0) == 0xB0:
+                return MqttUnsubAck(buffer)
+            
+            # PINGRESP
+            elif (type_packet & 0xF0) == 0xD0:
+                return MqttPingResp(buffer)
+
+            else:
+                raise MqttException
 
