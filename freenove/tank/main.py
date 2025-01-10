@@ -3,15 +3,16 @@ from master.pia.piapico import PiaOutputPico
 from master.pwm.pwmpico import PwmPico
 from device.pwm.servomoteur import ServoMoteur
 from device.pia.hc_sr04 import HC_SR04
+from tools.configfile import ConfigFile
 import time
 
-# servo_pin = 7/8/25
-# led_pin = 18
-# ultrasonc_trigger_pin = 27
-# ultrasonic_echo_pin = 22
-# motor1 = 24/23
-# motor2 = 5/6
-# line_tracker = 16/20/21
+# servo_pin = 7/8/25 -> broche 26/24/22
+# led_pin = 18 -> broche 12
+# ultrasonc_trigger_pin = 27 -> broche 13
+# ultrasonic_echo_pin = 22 -> broche 15
+# motor1 = 24/23 -> broche 18/16
+# motor2 = 5/6 -> broche 29/31
+# line_tracker = 16/20/21 -> broche 36/38/40
 
 class Freenove:
     class Motor:
@@ -33,15 +34,19 @@ class Freenove:
 
     class Tank:
         def __init__(self):
-            self.led_pin = PiaOutputPico(18)
+            cfg = ConfigFile('/config.json')
+            self.led_pin = PiaOutputPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['led']]])
             self.leds = NeoPixel(self.led_pin.pin, 4)
-            self.motorL = Freenove.Motor(24, 23)
-            self.motorR = Freenove.Motor(15, 6)
+            self.motorL = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLF']]],
+                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLR']]])
+            self.motorR = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRF']]],
+                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRR']]])
             self.servo_pin = []
-            self.servo_pin.append(ServoMoteur(PwmPico(7)))
-            self.servo_pin.append(ServoMoteur(PwmPico(8)))
-            self.servo_pin.append(ServoMoteur(PwmPico(25)))
-            self.ultrasonic = HC_SR04(27, 22)
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo1']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo2']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo3']]])))
+            self.ultrasonic = HC_SR04(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonc_trigger']]],
+                                      cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonic_echo']]])
 
         def led(self, num, r, g, b):    
             for i in range(4):
@@ -59,7 +64,6 @@ class Freenove:
             self.motorL.stop()
             self.motorR.stop()
         
-
 tank = Freenove.Tank()
 tank.led(0, 128, 0, 0)
 tank.led(1, 0, 128, 0)
@@ -67,10 +71,11 @@ tank.led(2, 0, 0, 128)
 tank.forward()
 time.sleep(5)
 tank.stop()
-for i in range(36):
-    tank.servo(0, 10*i)
-    tank.servo(1, 10*i)
-    tank.servo(2, 10*i)
-    time.sleep(1)
+# for i in range(36):
+#     tank.servo(0, 10*i)
+#     tank.servo(1, 10*i)
+#     tank.servo(2, 10*i)
+#     time.sleep(1)
 print(tank.ultrasonic.start())
+
 
