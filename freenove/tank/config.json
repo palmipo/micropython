@@ -1,0 +1,21 @@
+{
+    "freenove" :
+    {
+        "tank" :
+        {
+            "led"               : "GPIO18",
+            "motorRF"           : "GPIO24",
+            "motorRR"           : "GPIO23",
+            "motorLF"           : "GPIO5",
+            "motorLR"           : "GPIO6",
+            "servo1"            : "GPIO7",
+            "servo2"            : "GPIO8",
+            "servo3"            : "GPIO25",
+            "ultrasonc_trigger" : "GPIO27",
+            "ultrasonic_echo"   : "GPIO22",
+            "line_tracker_r"    : "GPIO16",
+            "line_tracker_c"    : "GPIO20",
+            "line_tracker_l"    : "GPIO21",
+        }
+    },
+}

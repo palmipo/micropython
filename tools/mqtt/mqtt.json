@@ -1,0 +1,12 @@
+{
+    "mqtt" :
+    {
+        "broker" :
+        {
+            "ip" : "192.168.1.108",
+            "port" : 1883,
+            "user" : "toff",
+            "passwd" : "crapaud8))",
+        },
+    },
+}
