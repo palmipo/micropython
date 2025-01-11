@@ -194,13 +194,16 @@ class MqttPublish(MqttMsg):
 # PUBACK – Publish acknowledgement
 class MqttPubRecv(MqttMsg):
     def __init__(self, buffer, dup_flag, QoS_level, retain):
+        topic_name =''
+        packed_id = ''
+        text = ''
 
         offset = 0
         topic_len = struct.unpack_from('!H', buffer, offset)[0]
         offset += 2
         
         for i in range(topic_len):
-            print(struct.unpack_from('s', buffer, offset)[0])
+            topic_name += struct.unpack_from('s', buffer, offset)[0]
             offset += 1
 
 
@@ -210,14 +213,16 @@ class MqttPubRecv(MqttMsg):
             offset += 2
             
             for i in range(packed_id_len):
-                print(struct.unpack_from('s', self.buffer, offset)[0])
+                packed_id += struct.unpack_from('s', self.buffer, offset)[0]
                 offset += 1
 
         # TEXT
         taille_text = len(buffer) - offset
         for i in range(taille_text):
-            print(struct.unpack_from('s', buffer, offset)[0])
+            text += struct.unpack_from('s', buffer, offset)[0]
             offset += 1
+            
+        print('reception publication {} : {}'.format(topic_name, text))
 
 # PUBACK – Publish acknowledgement
 class MqttPubAck(MqttMsg):
@@ -364,7 +369,7 @@ class MqttDisconnect(MqttMsg):
         
         print(self.buffer)
 
-class MqttException(BaseException):
+class MqttError(BaseException):
     pass
 
 class MqttResponse:
@@ -373,15 +378,15 @@ class MqttResponse:
     
     def analayse(self, evnt):
         if evnt[1] == select.POLLERR:
-            raise MqttException
+            raise MqttError
 
         if evnt[1] == select.POLLHUP:
-            raise MqttException
+            raise MqttError
 
         header = evnt[0].read(2)
         if len(header) != 2:
             print('MqttResponse header length = {}'.format(len(header)))
-            raise MqttException
+            raise MqttError
     
         print('header ack : {}'.format(header))
         (type_packet, taille) = struct.unpack('!BB', header)
@@ -402,7 +407,7 @@ class MqttResponse:
 
             # PUBREC
             elif (type_packet & 0xF0) == 0x50:
-                pass
+                return MqttPubRec(buffer)
             
             # PUBREL
             elif (type_packet & 0xF0) == 0x60:
@@ -425,5 +430,5 @@ class MqttResponse:
                 return MqttPingResp(buffer)
 
             else:
-                raise MqttException
+                raise MqttError
 

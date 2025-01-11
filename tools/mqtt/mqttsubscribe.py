@@ -58,14 +58,14 @@ try:
             print('2')
             fin = False
             while fin == False:
-                try:
+#                 try:
                     print('3')
                     evnt = poule.poll(TIMEOUT)
                     if evnt:
     #                     tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
                         msg.analayse(evnt[0])
-                finally:
-                    fin = True
+#                 finally:
+#                     fin = True
 
         finally:
             print('4')
