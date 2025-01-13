@@ -231,7 +231,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                ip = struct.unpack('<BBBB', fd.read())
+                ip = struct.unpack('<BBBB', fd.read(4))
                 return '{:03}.{:03}.{:03}.{:03}'.format(ip[0], ip[1], ip[2], ip[3])
         raise Exception
 
@@ -240,7 +240,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                ip = struct.unpack('<BBBB', fd.read())
+                ip = struct.unpack('<BBBB', fd.read(4))
                 return '{:03}.{:03}.{:03}.{:03}'.format(ip[0], ip[1], ip[2], ip[3])
         raise Exception
 
@@ -249,7 +249,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                ip = struct.unpack('<BBBB', fd.read())
+                ip = struct.unpack('<BBBB', fd.read(4))
                 return '{:03}.{:03}.{:03}.{:03}'.format(ip[0], ip[1], ip[2], ip[3])
         raise Exception
 
@@ -258,7 +258,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                return struct.unpack('<H', fd.read())[0]
+                return struct.unpack('<H', fd.read(2))[0]
         raise Exception
 
     def getDestinationIpAddress(self):
@@ -266,7 +266,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                ip = struct.unpack('<BBBB', fd.read())
+                ip = struct.unpack('<BBBB', fd.read(4))
                 return '{:03}.{:03}.{:03}.{:03}'.format(ip[0], ip[1], ip[2], ip[3])
         raise Exception
 
@@ -283,7 +283,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                return struct.unpack('<H', fd.read())
+                return struct.unpack('<H', fd.read(2))
         raise Exception
 
     def getDeviceMacAddress(self):
@@ -291,7 +291,7 @@ class Pico_eth_ch9121:
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
-                mac = struct.unpack('<BBBBBB', fd.read())
+                mac = struct.unpack('<BBBBBB', fd.read(6))
                 return '{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}'.format(mac[0], mac[1], mac[2], mac[3], mac[4], mac[5])
         raise Exception
 
@@ -307,14 +307,14 @@ if __name__ == "__main__":
     eth = Pico_eth_ch9121(uart, CFG, RST)
     eth.config()
 
-    CFG.value(0)
-    time.sleep(0.1)
-    print(eth.getDeviceMode())
-    print(eth.getDeviceIpAddress())
-    print(eth.getDeviceMaskSubnet())
-    print(eth.getDeviceGateway())
-    print(eth.getDevicePort())
-    CFG.value(1)
+#     CFG.value(0)
+#     time.sleep(0.1)
+#     print(eth.getDeviceMode())
+#     print(eth.getDeviceIpAddress())
+#     print(eth.getDeviceMaskSubnet())
+#     print(eth.getDeviceGateway())
+#     print(eth.getDevicePort())
+#     CFG.value(1)
 
     eth.connect(1, '162.159.200.123', 123)
 

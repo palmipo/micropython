@@ -81,19 +81,34 @@ if __name__ == "__main__":
     import time
     eth = PicoEthCh9121('/waveshare/pico_eth_ch9121/pico_eth_ch9121.json')
 
-    eth.eth.CFG.value(0)
-    time.sleep(0.1)
-    print(eth.eth.getDeviceMode())
-    print(eth.eth.getDeviceIpAddress())
-    print(eth.eth.getDeviceMaskSubnet())
-    print(eth.eth.getDeviceGateway())
-    print(eth.eth.getDevicePort())
-    eth.eth.CFG.value(1)
+#     eth.eth.CFG.value(0)
+#     time.sleep(0.1)
+#     print(eth.eth.getDeviceMode())
+#     print(eth.eth.getDeviceIpAddress())
+#     print(eth.eth.getDeviceMaskSubnet())
+#     print(eth.eth.getDeviceGateway())
+#     print(eth.eth.getDevicePort())
+#     eth.eth.CFG.value(1)
 
-    eth.eth.connect(1, '162.159.200.123', 123)
+#     eth.eth.connect(1, '162.159.200.123', 123)
 
     eth.eth.CFG.value(0)
     time.sleep(0.1)
     eth.eth.getConnectionStatus(0)
-    print(eth.eth.getDeviceMacAddress())
+    mac = (eth.eth.getDeviceMacAddress())
+    ip = eth.eth.getDeviceIpAddress()
     eth.eth.CFG.value(1)
+
+    from master.i2c.i2cpico import I2CPico
+    from device.hd44780.lcd2004 import LCD2004
+    from device.hd44780.hd44780 import HD44780
+
+    i2c = I2CPico(0, 4, 5)
+    lcd_io = LCD2004(0, i2c)
+    lcd_io.setBackLight(1)
+    lcd = HD44780(lcd_io)
+    lcd.clear()
+    lcd.home()
+    lcd.writeText(mac)
+    lcd.setDDRAMAdrress(0x28)
+    lcd.writeText(ip)
