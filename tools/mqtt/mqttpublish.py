@@ -33,18 +33,21 @@ try:
 
             cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
             sock.write(cnx.buffer)
-            evnt = poule.poll(TIMEOUT)
-            if evnt:
-                msg.analayse(evnt[0])
+            events = poule.poll(TIMEOUT)
+            for (fd, event) in events:
+                if (event == select.POLLIN):
+                    # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                    msg.analayse(fd)
 
             while True:
-                evnt = poule.poll(TIMEOUT)
-                if evnt:
-                    msg.analayse(evnt[0])
+                events = poule.poll(TIMEOUT)
+                for (fd, event) in events:
+                    if (event == select.POLLIN):
+                        # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                        msg.analayse(fd)
 
-                else:
-                    pub = MqttPublish("a/b", "coucou")
-                    sock.write(pub.buffer)
+                pub = MqttPublish("a/b", "coucou")
+                sock.write(pub.buffer)
 
         finally:
             discnx = MqttDisconnect()

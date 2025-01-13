@@ -376,14 +376,8 @@ class MqttResponse:
     def __init__(self):
         pass
     
-    def analayse(self, evnt):
-        if evnt[1] == select.POLLERR:
-            raise MqttError
-
-        if evnt[1] == select.POLLHUP:
-            raise MqttError
-
-        header = evnt[0].read(2)
+    def analayse(self, fd):
+        header = fd.read(2)
         if len(header) != 2:
             print('MqttResponse header length = {}'.format(len(header)))
             raise MqttError
@@ -391,7 +385,7 @@ class MqttResponse:
         print('header ack : {}'.format(header))
         (type_packet, taille) = struct.unpack('!BB', header)
         if taille > 0:
-            buffer = evnt[0].read(taille)
+            buffer = fd.read(taille)
     
             # CONNACK
             if (type_packet & 0xF0) == 0x20:

@@ -1,0 +1,28 @@
+{
+    "uart" :
+    {
+      "bus": 0,
+      "bdrate": 9600,
+      "pinTx": 0,
+      "pinRx": 1,
+      "bits": 8,
+      "parity": 0,
+      "stop": 1,
+    },
+
+    "pin_cfg" : 14,
+    "pin_reset" : 17,
+    "baud_rate" : 115200,
+    
+    "local_addr" :
+    {
+        "dhcp" : 1,
+        "ip" : "192.168.1.250",
+        "mask" : "255.255.255.0",
+        "gateway" : "192.168.1.25",
+        "randomport" : 1,
+        "port" : 5000,
+    }
+}
+
+

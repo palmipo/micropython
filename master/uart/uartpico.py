@@ -1,10 +1,9 @@
-from machine import UART
+import machine
 from interface.uartbus import UartBus
-from machine import Pin
 
 class UartPico(UartBus):
     def init(self, bus, bdrate, pinTx, pinRx):
-        self.uart = UART(bus, baudrate=bdrate, tx=Pin(pinTx), rx=Pin(pinRx))
+        self.uart = machine.UART(bus, baudrate=bdrate, tx=machine.Pin(pinTx), rx=machine.Pin(pinRx))
         self.uart.init(bdrate, bits=8, parity=None, stop=1)
         
     def send(self, cmd):

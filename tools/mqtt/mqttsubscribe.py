@@ -44,38 +44,40 @@ try:
             print('0')
             cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
             sock.write(cnx.buffer)
-            evnt = poule.poll(TIMEOUT)
-            if evnt:
-                msg.analayse(evnt[0])
+            events = poule.poll(TIMEOUT)
+            for (fd, event) in events:
+                if (event == select.POLLIN):
+                    # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                    msg.analayse(fd)
             
             print('1')
             sub = MqttSubcribe(1, "a/b", 0)
             sock.write(sub.buffer)
-            evnt = poule.poll(TIMEOUT)
-            if evnt:
-#                 tft.text((0, 8), 'reception suback ...',TFT.WHITE, sysfont, 1)
-                msg.analayse(evnt[0])
+            events = poule.poll(TIMEOUT)
+            for (fd, event) in events:
+                if (event == select.POLLIN):
+                    # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                    msg.analayse(fd)
 
             print('2')
             fin = False
             while fin == False:
-#                 try:
-                    print('3')
-                    evnt = poule.poll(TIMEOUT)
-                    if evnt:
-    #                     tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
-                        msg.analayse(evnt[0])
-#                 finally:
-#                     fin = True
+                print('3')
+                events = poule.poll(TIMEOUT)
+                for (fd, event) in events:
+                    if (event == select.POLLIN):
+                        # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                        msg.analayse(fd)
 
         finally:
             print('4')
             unsub = MqttUnsubcribe(1)
             sock.write(unsub.buffer)
-            evnt = poule.poll(TIMEOUT)
-            if evnt:
-#                 tft.text((0, 32), 'reception unsuback ...',TFT.WHITE, sysfont, 1)
-                msg.analayse(evnt[0])
+            events = poule.poll(TIMEOUT)
+            for (fd, event) in events:
+                if (event == select.POLLIN):
+                    # tft.text((0, 16), 'reception ...',TFT.WHITE, sysfont, 1)
+                    msg.analayse(fd)
 
             print('5')
             discnx = MqttDisconnect()

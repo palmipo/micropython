@@ -1,16 +1,16 @@
 import select
 
 class PollCallback:
-    def cb_pollin(self):
+    def cb_pollin(self, fd):
         raise NotImplementedError
     
-    def cb_pollout(self):
+    def cb_pollout(self, fd):
         raise NotImplementedError
     
-    def cb_pollhup(self):
+    def cb_pollhup(self, fd):
         raise NotImplementedError
     
-    def cb_pollerr(self):
+    def cb_pollerr(self, fd):
         raise NotImplementedError
     
 class Poll:
@@ -18,7 +18,7 @@ class Poll:
         self.poll = select.poll()
 
     def add(self, obj):
-        self.poll.register(obj, select.POLLIN)
+        self.poll.register(obj, select.POLLIN | select.POLLERR | select.POLLHUP)
 
     def remove(self, obj):
         self.poll.unregister(obj)
@@ -33,19 +33,19 @@ class Poll:
                 for (fd, event) in events:
                     if (event == select.POLLIN):
                         if obj.cb_pollin != None:
-                            obj.cb_pollin()
+                            obj.cb_pollin(fd)
 
                     elif (event == select.POLLOUT):
                         if obj.cb_pollout != None:
-                            obj.cb_pollout()
+                            obj.cb_pollout(fd)
 
                     elif (event == select.POLLHUP):
                         if obj.cb_pollhup != None:
-                            obj.cb_pollhup()
+                            obj.cb_pollhup(fd)
 
                     elif (event == select.POLLERR):
                         if obj.cb_pollerr != None:
-                            obj.cb_pollerr()
+                            obj.cb_pollerr(fd)
                 return 1
 
         except OSError:

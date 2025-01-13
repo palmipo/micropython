@@ -138,8 +138,3 @@ CFG.value(1)
 time.sleep(0.1)
 
 print("end")
-
-# ppp = network.PPP(uart0)
-# ppp = network.AbstractNIC()
-# ppp = network.WIZNET5K()
-# print(ntptime.settime()) # Year, Month、Day, Hour, Minutes, Seconds, DayWeek, DayYear
