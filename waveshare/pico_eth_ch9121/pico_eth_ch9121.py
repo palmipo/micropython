@@ -13,7 +13,7 @@ class Pico_eth_ch9121:
         if uart1 != None:
             self.poule.register(self.uart[1], select.POLLIN | select.POLLERR | select.POLLHUP)
 
-    def config(self, dhcp=1, ip="192.168.1.3", mask="255.255.255.0", gateway="192.168.1.1", random_port0=1, port0=2222, random_port1=1, port1=2223):
+    def config(self, dhcp=1, ip="192.168.1.3", mask="255.255.255.0", gateway="192.168.1.1", random_port0=1, port0=2000, random_port1=1, port1=2000):
         self.CFG.value(0)
         time.sleep(1)
         
@@ -97,7 +97,7 @@ class Pico_eth_ch9121:
     def setDeviceMode(self, port, mode):
         p = 0x10
         if port == 1:
-            port = 0x40
+            p = 0x40
         self.uart[0].write(b'\x57\xab'+ struct.pack('<BB', p, mode%4))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -128,27 +128,26 @@ class Pico_eth_ch9121:
     def setDevicePortNumber(self, port, random, num_port):
         p = 0x17
         if port == 1:
-            port = 0x47
+            p = 0x47
         self.uart[0].write(b'\x57\xab\x17' + struct.pack('<B', p) + struct.pack('<B', random))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
                 assert fd.read(1) == struct.pack('<B', 0xaa)
 
-        if random == 0:
-            p = 0x14
-            if port == 1:
-                port = 0x41
-            self.uart[0].write(b'\x57\xab'+ struct.pack('<BH', p, num_port))
-            events = self.poule.poll(self.TIMEOUT)
-            for (fd, event) in events:
-                if (event == select.POLLIN):
-                    assert fd.read(1) == struct.pack('<B', 0xaa)
+        p = 0x14
+        if port == 1:
+            p = 0x41
+        self.uart[0].write(b'\x57\xab'+ struct.pack('<BH', p, num_port))
+        events = self.poule.poll(self.TIMEOUT)
+        for (fd, event) in events:
+            if (event == select.POLLIN):
+                assert fd.read(1) == struct.pack('<B', 0xaa)
 
     def setDeviceBaudRate(self, port, baud_rate, data_bit, parity, stop):
         p = 0x21
         if port == 1:
-            port = 0x44
+            p = 0x44
         self.uart[0].write(b'\x57\xab' + struct.pack('<B', p) + struct.pack('<I', baud_rate))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -157,7 +156,7 @@ class Pico_eth_ch9121:
 
         p = 0x22
         if port == 1:
-            port = 0x45
+            p = 0x45
         self.uart[0].write(b'\x57\xab' + struct.pack('<B', p) + struct.pack('<BBB', stop%1, parity%5, data_bit%9))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -167,7 +166,7 @@ class Pico_eth_ch9121:
     def setDeviceTimeout(self, port, timeout):
         p = 0x23
         if port == 1:
-            port = 0x46
+            p = 0x46
         self.uart[0].write(b'\x57\xab'+ struct.pack('<BI', p, timeout))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -184,7 +183,7 @@ class Pico_eth_ch9121:
     def setDeviceReceivingPacketLength(self, port, packet_length):
         p = 0x25
         if port == 1:
-            port = 0x48
+            p = 0x48
         self.uart[0].write(b'\x57\xab' + struct.pack('<BI', p, packet_length))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -194,7 +193,7 @@ class Pico_eth_ch9121:
     def setDestinationIpAddress(self, port, ip):
         p = 0x15
         if port == 1:
-            port = 0x42
+            p = 0x42
         self.uart[0].write(b'\x57\xab' + struct.pack('<B', p) + bytes(map(int, ip.split('.'))))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -204,15 +203,18 @@ class Pico_eth_ch9121:
     def setDestinationPortNumber(self, port, port_number):
         p = 0x16
         if port == 1:
-            port = 0x43
+            p = 0x43
         self.uart[0].write(b'\x57\xab' + struct.pack('<B', p) + struct.pack('<H', port_number))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
                 assert fd.read(1) == struct.pack('<B', 0xaa)
 
-    def setClose(self, port, disconnect):
-        self.uart[0].write(b'\x57\xab\x24'+ struct.pack('<B', disconnect))
+    def setCleanOnConnection(self, port, disconnect):
+        p = 0x26
+        if port == 1:
+            p = 0x49
+        self.uart[0].write(b'\x57\xab'+ struct.pack('<BB', p, disconnect))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
             if (event == select.POLLIN):
@@ -226,9 +228,9 @@ class Pico_eth_ch9121:
                 return fd.read(1).hex()
 
     def getConnectionStatus(self, port):
-        p = 3
+        p = 0x03
         if port == 1:
-            p = 4
+            p = 0x04
         self.uart[0].write(b'\x57\xab' + struct.pack('<B', p))
         events = self.poule.poll(self.TIMEOUT)
         for (fd, event) in events:
@@ -283,6 +285,34 @@ class Pico_eth_ch9121:
             if (event == select.POLLIN):
                 return struct.unpack('<H', fd.read(2))[0]
         raise Exception
+
+    def getDeviceBaudRate(self, port):
+        baud_rate=0
+        data_bit=0
+        parity=0
+        stop=0
+        p = 0x71
+        if port == 1:
+            p = 0x94
+        self.uart[0].write(b'\x57\xab' + struct.pack('<B', p))
+        events = self.poule.poll(self.TIMEOUT)
+        for (fd, event) in events:
+            if (event == select.POLLIN):
+                baud_rate = struct.unpack('<I', fd.read(4))[0]
+
+        p = 0x72
+        if port == 1:
+            p = 0x95
+        self.uart[0].write(b'\x57\xab' + struct.pack('<B', p))
+        events = self.poule.poll(self.TIMEOUT)
+        for (fd, event) in events:
+            if (event == select.POLLIN):
+                data = struct.unpack('<BBB', fd.read(3))
+                stop = data[0]
+                parity = data[1]
+                data_bit = data[2]
+
+        return baud_rate, data_bit, parity, stop
 
     def getDestinationIpAddress(self, port):
         p = 0x65
