@@ -8,32 +8,32 @@ class PicoEthCh9121:
         cfg = ConfigFile(config_file)
         
         serial = machine.UART(
-            cfg.config()['uart']['bus'],
-            baudrate=cfg.config()['uart']['bdrate'],
-            tx=machine.Pin(cfg.config()['uart']['pinTx']),
-            rx=machine.Pin(cfg.config()['uart']['pinRx']))
+            cfg.config()['uart']['0']['bus'],
+            baudrate=cfg.config()['uart']['0']['bdrate'],
+            tx=machine.Pin(cfg.config()['uart']['0']['pinTx']),
+            rx=machine.Pin(cfg.config()['uart']['0']['pinRx']))
         serial.init(
-            baudrate=cfg.config()['uart']['bdrate'],
-            bits=cfg.config()['uart']['bits'],
-            parity=cfg.config()['uart']['parity'],
-            stop=cfg.config()['uart']['stop'])
+            baudrate=cfg.config()['uart']['0']['bdrate'],
+            bits=cfg.config()['uart']['0']['bits'],
+            parity=cfg.config()['uart']['0']['parity'],
+            stop=cfg.config()['uart']['0']['stop'])
 
         CFG = machine.Pin(cfg.config()['pin_cfg'], machine.Pin.OUT)
         CFG.value(1)
 
         RST = machine.Pin(cfg.config()['pin_reset'], machine.Pin.OUT)
 
-        self.eth = Pico_eth_ch9121(serial, CFG, RST)
+        self.eth = Pico_eth_ch9121(CFG, RST, serial)
         self.eth.config(
             dhcp=cfg.config()['local_addr']['dhcp'],
             ip=cfg.config()['local_addr']['ip'],
             mask=cfg.config()['local_addr']['mask'],
             gateway=cfg.config()['local_addr']['gateway'],
-            randomport=cfg.config()['local_addr']['randomport'],
-            port=cfg.config()['local_addr']['port'])
+            random_port0=cfg.config()['local_addr']['0']['random_port'],
+            port0=cfg.config()['local_addr']['0']['port'])
 
     def ntp(self):
-        self.eth.connect(1, '162.159.200.123', 123)
+        self.eth.connect(0, 1, '162.159.200.123', 123)
     
         NTP_QUERY = bytearray(48)
         NTP_QUERY[0] = 0x1B
@@ -69,10 +69,10 @@ class PicoEthCh9121:
         machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
 
     def send(self, buffer):
-        self.eth.uart.write(buffer)
+        self.eth.uart[0].write(buffer)
     
     def recv(self, length):
-        return self.eth.uart.read(length)
+        return self.eth[0].uart.read(length)
 
     def close(self):
         self.eth.setClose(0, 1)
@@ -83,11 +83,11 @@ if __name__ == "__main__":
 
 #     eth.eth.CFG.value(0)
 #     time.sleep(0.1)
-#     print(eth.eth.getDeviceMode())
+#     print(eth.eth.getDeviceMode(0))
 #     print(eth.eth.getDeviceIpAddress())
 #     print(eth.eth.getDeviceMaskSubnet())
 #     print(eth.eth.getDeviceGateway())
-#     print(eth.eth.getDevicePort())
+#     print(eth.eth.getDevicePort(0))
 #     eth.eth.CFG.value(1)
 
 #     eth.eth.connect(1, '162.159.200.123', 123)
