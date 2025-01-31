@@ -17,11 +17,12 @@ class PicoEthCh9121:
             bits=cfg.config()['uart']['0']['bits'],
             parity=cfg.config()['uart']['0']['parity'],
             stop=cfg.config()['uart']['0']['stop'])
-
+        print(serial)
         CFG = machine.Pin(cfg.config()['pin_cfg'], machine.Pin.OUT)
         CFG.value(1)
 
         RST = machine.Pin(cfg.config()['pin_reset'], machine.Pin.OUT)
+        RST.value(1)
 
         self.eth = Pico_eth_ch9121(CFG, RST, serial)
         self.eth.config(
@@ -31,7 +32,7 @@ class PicoEthCh9121:
             gateway=cfg.config()['local_addr']['gateway'],
             random_port0=cfg.config()['local_addr']['0']['random_port'],
             port0=cfg.config()['local_addr']['0']['port'])
-
+        print(self.eth)
     def ntp(self):
         self.eth.connect(0, 1, '162.159.200.123', 123)
     
@@ -81,14 +82,14 @@ if __name__ == "__main__":
     import time
     eth = PicoEthCh9121('/waveshare/pico_eth_ch9121/pico_eth_ch9121.json')
 
-#     eth.eth.CFG.value(0)
-#     time.sleep(0.1)
-#     print(eth.eth.getDeviceMode(0))
-#     print(eth.eth.getDeviceIpAddress())
-#     print(eth.eth.getDeviceMaskSubnet())
-#     print(eth.eth.getDeviceGateway())
-#     print(eth.eth.getDevicePort(0))
-#     eth.eth.CFG.value(1)
+    eth.eth.CFG.value(0)
+    time.sleep(0.1)
+    print(eth.eth.getDeviceMode(0))
+    print(eth.eth.getDeviceIpAddress())
+    print(eth.eth.getDeviceMaskSubnet())
+    print(eth.eth.getDeviceGateway())
+    print(eth.eth.getDevicePort(0))
+    eth.eth.CFG.value(1)
 
 #     eth.eth.connect(1, '162.159.200.123', 123)
 
@@ -98,12 +99,13 @@ if __name__ == "__main__":
     mac = (eth.eth.getDeviceMacAddress())
     ip = eth.eth.getDeviceIpAddress()
     eth.eth.CFG.value(1)
+    print(ip, mac)
 
     from master.i2c.i2cpico import I2CPico
     from device.hd44780.lcd2004 import LCD2004
     from device.hd44780.hd44780 import HD44780
 
-    i2c = I2CPico(0, 4, 5)
+    i2c = I2CPico(0, 8, 9)
     lcd_io = LCD2004(0, i2c)
     lcd_io.setBackLight(1)
     lcd = HD44780(lcd_io)

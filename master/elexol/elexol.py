@@ -1,134 +1,132 @@
-import socket
+import socket, struct
 
 class Elexol:
-    def __init__(self, address):
-        self.__socket__ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.connect(address)
+    def __init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         
     def connect(self, address):
-        self.__socket__.connect(socket.getaddrinfo(address, 2424)[0][-1])
+        addr = socket.getaddrinfo(address, 2424)[0][-1]
+        self.sock.connect(addr)
 
     def disconnect(self):
-        self.__socket__.close()
+        self.sock.close()
 
     def writePort(self, port, valeur):
-        cmd = bytearray(2)
-        cmd[0] = 0x41 + (port & 0x03)
-        cmd[1] = valeur & 0xFF
-        self.__socket__.send(cmd)
+        cmd = struct.pack('!BB', 0x41 + (port & 0x03), valeur)
+        self.sock.send(cmd)
 
     def readPort(self, port):
-        cmd = bytearray(1)
-        cmd[0] = 0x61 + (port & 0x03)
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(2)
-        return rsp[1]
+        cmd = struct.pack('!B', 0x61 + (port & 0x03))
+        self.sock.send(cmd)
+        return struct.unpack('!BB', self.sock.recv(2))[1]
 
     def setDirectionPort(self, port, direction):
-        cmd = bytearray(3)
-        cmd[0] = 0x21
-        cmd[1] = 0x41 + (port & 0x03)
-        cmd[2] = direction & 0xFF
-        self.__socket__.send(cmd)
+        cmd = b'\x21' + struct.pack('!BB', 0x41 + (port & 0x03), direction)
+        self.sock.send(cmd)
 
     def getDirectionPort(self, port):
-        cmd = bytearray(2)
-        cmd[0] = 0x21
-        cmd[1] = 0x61 + (port & 0x03)
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(3)
-        return rsp[2]
+        cmd = b'\x21' + struct.pack('!B', 0x61 + (port & 0x03))
+        self.sock.send(cmd)
+        return struct.unpack('!BBB', self.sock.recv(3))[2]
 
     def setPullUpPort(self, port, value):
-        cmd = bytearray(3)
-        cmd[0] = 0x40
-        cmd[1] = 0x41 + (port & 0x03)
-        cmd[2] = value & 0xFF
-        self.__socket__.send(cmd)
+        cmd = b'\x40' + struct.pack('!BB', 0x41 + (port & 0x03), value)
+        self.sock.send(cmd)
 
     def getPullUpPort(self, port):
-        cmd = bytearray(2)
-        cmd[0] = 0x40
-        cmd[1] = 0x61 + (port & 0x03)
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(3)
-        return rsp[2]
+        cmd = b'\x40' + struct.pack('!B', 0x61 + (port & 0x03))
+        self.sock.send(cmd)
+        return struct.unpack('!BH', self.sock.recv(3))[1]
 
     def setThreasholdPort(self, port, value):
-        cmd = bytearray(3)
-        cmd[0] = 0x23
-        cmd[1] = 0x41 + (port & 0x03)
-        cmd[2] = value & 0xFF
-        self.__socket__.send(cmd)
+        cmd = b'\x23' + struct.pack('!BB', (port & 0x03), value)
+        self.sock.send(cmd)
 
     def getThreasholdPort(self, port):
-        cmd = bytearray(2)
-        cmd[0] = 0x23
-        cmd[1] = 0x61 + (port & 0x03)
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(3)
-        return rsp[2]
+        cmd = b'\x23' + struct.pack('!B', (port & 0x03))
+        self.sock.send(cmd)
+        return struct.unpack('!BH', self.sock.recv(3))[1]
 
     def setSchmittPort(self, port, value):
-        cmd = bytearray(3)
-        cmd[0] = 0x24
-        cmd[1] = 0x41 + (port & 0x03)
-        cmd[2] = value & 0xFF
-        self.__socket__.send(cmd)
+        cmd = b'\x24' + struct.pack('!BB', (port & 0x03), value)
+        self.sock.send(cmd)
 
     def getSchmittPort(self, port):
-        cmd = bytearray(2)
-        cmd[0] = 0x24
-        cmd[1] = 0x61 + (port & 0x03)
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(3)
-        return rsp[2]
-    
-    def identifyIO24Units(self):
-        cmd = b'\x49\x4F\x32\x34'
-        self.__socket.send(cmd)
-        rsp = self.__socket__.recv(12)
-        mac = rsp[4:10]
-        firmware = rsp[10:12]
-        return mac, firmware
+        cmd = b'\x24' + struct.pack('!B', (port & 0x03))
+        self.sock.send(cmd)
+        return struct.unpack('!BH', self.sock.recv(3))[1]
 
+# control bit EEPROM
+# The Control Bits 1 Location is used to turn on and off the Fixed IP address, Preset Port and AutoScan 
+# mode functions. When the EEPROM is blank it reads all ones i.e. each blank word reads 65535 ro 
+# $FFFF. Because of this we use a 0 bit value to turn a function on.
+# The currently used bits are bit 0, which is used to enable the Fixed IP address,
+# Bit 1, which is used to enable the Preset Port function and 
+# Bit 2, which is used to enable the AutoScan function.
+# All the remaining bits should be left as ones for future compatibility as the firmware is upgraded
+# and additional functions adde
     def readEepromWord(self, address):
-        cmd = bytearray(3)
-        cmd[0] = 0x27
-        cmd[1] = 0x52
-        cmd[2] = address & 0xFF
-        self.__socket__.send(cmd)
-        rsp = self.__socket__.recv(4)
+        cmd = b'\x27\x52' + struct.pack('!B', address) + b'\x00\x00'
+        self.sock.send(cmd)
+        rsp = self.sock.recv(4)
         return int.from_bytes(rsp[2:4], byteorder='big', signed=False)
 
     def writeEepromWord(self, address, value):
-        val = value.to_bytes(length=2, byteorder='big', signed=False)
-        cmd = bytearray(5)
-        cmd[0] = 0x27
-        cmd[1] = 0x57
-        cmd[2] = address & 0xFF
-        cmd[3] = val[0]
-        cmd[4] = val[1]
-        self.__socket__.send(cmd)
+        cmd = b'\x27\x57' + struct.pack('!BH', address, value)
+        self.sock.send(cmd)
 
     def eraseEepromWord(self, address):
-        cmd = bytearray(5)
-        cmd[0] = 0x27
-        cmd[1] = 0x45
-        cmd[2] = address & 0xFF
-        cmd[3] = 0xAA
-        cmd[4] = 0x55
-        self.__socket__.send(cmd)
+        cmd = b'\x27\x45' + struct.pack('!B', address) + b'\xAA\x55'
+        self.sock.send(cmd)
 
     def writeEnableEeprom(self):
         cmd = b'\x27\0x31\x00\xAA\x55'
-        self.__socket__.send(cmd)
+        self.sock.send(cmd)
 
     def writeDisableEeprom(self):
         cmd = b'\x27\0x30\x00\x00\x00'
-        self.__socket__.send(cmd)
+        self.sock.send(cmd)
+
+    def echo(self, data):
+        cmd = b'\x2A' + struct.pack('!B', data)
+        self.sock.send(cmd)
+        return struct.unpack('!BB', self.sock.recv(2))[1]
 
     def resetModule(self):
-        cmd = b'\x27\x52\x00\xAA\x55'
-        self.__socket__.send(cmd)
+        cmd = b'\x27\x40\x00\xAA\x55'
+        self.sock.send(cmd)
+    
+    def identifyIO24Units(self):
+        cmd = b'\x49\x4F\x32\x34'
+        self.sock.send(cmd)
+        data = struct.unpack('!BBBBBBBBBBH', self.sock.recv(12))
+        mac = '{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}'.format(data[4], data[5], data[6], data[7], data[8], data[9])
+        firmware = data[10]
+        return (mac, firmware)
+    
+    def sendHostData(self):
+        cmd = b'\x25'
+        self.sock.send(cmd)
+        data = struct.unpack('!BBBBBBBBBBBBBBH', self.sock.recv(16))
+        print(data)
+        serial = '{:03}.{:03}.{:03}'.format(data[1], data[2], data[3])
+        ip = '{:03}.{:03}.{:03}.{:03}'.format(data[4], data[5], data[6], data[7])
+        mac = '{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}'.format(data[8], data[9], data[10], data[11], data[12], data[13])
+        port = data[14]
+        return serial, ip, mac, port
 
+if __name__ == "__main__":
+    from tools.configfile import ConfigFile
+    cfg = ConfigFile('master/net/wifi.json')
+    from master.net.wlanpico import WLanPico
+    wlan = WLanPico()
+    try:
+        wlan.connect(cfg.config()['wifi']['ssid'], cfg.config()['wifi']['passwd'])
+        print(wlan.ifconfig())
+        elexol = Elexol()
+        elexol.connect("192.168.1.120")
+        print(elexol.identifyIO24Units())
+        print(elexol.sendHostData())
+        elexol.disconnect()
+    finally:
+        wlan.disconnect()

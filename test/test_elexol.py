@@ -1,19 +1,26 @@
-import sys
-sys.path.insert(0, '../interface')
-sys.path.insert(0, '../master/elexol')
-sys.path.insert(0, '../device/elexol')
-from elexol import Elexol
-from elexolrelay import ElexolRelay
+from master.elexol.elexol import Elexol
+from device.elexol.elexolrelay import ElexolRelay
 
-io = Elexol("192.168.20.1")
-print(io.identifyIO24Units())
-io.setDirectionPort(0, 0xff)
-io.setDirectionPort(1, 0)
-io.setDirectionPort(2, 0)
+from tools.configfile import ConfigFile
+cfg = ConfigFile('master/net/wifi.json')
+from master.net.wlanpico import WLanPico
+wlan = WLanPico()
+try:
+    wlan.connect(cfg.config()['wifi']['ssid'], cfg.config()['wifi']['passwd'])
+    print(wlan.ifconfig())
 
-print(hex(io.readPort(0)))
+    io = Elexol()
+    io.connect("192.168.1.120")
+    print(io.identifyIO24Units())
+    io.setDirectionPort(0, 0xff)
+    io.setDirectionPort(1, 0)
+    io.setDirectionPort(2, 0)
 
-relay = ElexolRelay(io, 2)
-relay.momentary(2)
-io.deconnexion()
+    print(hex(io.readPort(0)))
+
+    relay = ElexolRelay(io, 2)
+    relay.momentary(2)
+    io.disconnect()
+finally:
+    wlan.disconnect()
 
