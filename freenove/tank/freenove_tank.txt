@@ -1,0 +1,23 @@
+LED_PIN = 18
+
+LINE_TRACKER
+	self.IR01 = 16
+	self.IR02 = 20
+	self.IR03 = 21
+
+PWM
+	self.pwm1 = 24
+	self.pwm2 = 23
+	self.pwm3 = 5
+	self.pwm4 = 6    
+		
+Servo
+	self.channel1=7
+	self.channel2=8
+	self.channel3=25
+		
+Ultrasonic:
+	self.trigger_pin = 27
+	self.echo_pin = 22
+		
+		
