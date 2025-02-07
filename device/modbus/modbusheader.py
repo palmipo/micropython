@@ -1,20 +1,18 @@
-from modbuscodec import ModbusCodec
 from modbusexception import ModbusException
+import struct
 
 class ModbusHeader:
     def init(self, slaveId):
-        self.slaveId = ModbusCodec.Champ(slaveId, 0, 8)
+        self.slaveId = slaveId
 
     def encode(self):
-        bitBuffer = bytearray(1)
-        codec = ModbusCodec()
-        codec.encode(bitBuffer, self.slaveId)
+        bitBuffer = struct.pack('>B', self.slaveId)
         return bitBuffer
 
     def decode(self, bitBuffer):
-        slaveId = ModbusCodec.Champ(0x00, 0, 8)
+        slaveId = struct.unpack('>B', bitBuffer[0:1])
 
-        codec = ModbusCodec()
-        codec.decode(bitBuffer, slaveId)
-        if slaveId.valeur() != self.slaveId.valeur():
-            raise ModbusException
+        if slaveId != self.slaveId:
+            raise ModbusException('ModbusHeader.decode() erreur')
+
+        return bitBuffer[1:]

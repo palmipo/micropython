@@ -21,5 +21,5 @@ class UartRaspi(UartBus):
         self.send(cmd)
         return self.recv(n_byte)
 
-
-raspi = UartRaspi("/dev/ttyAMA0", 115200)
+if __name__ == "__main__":
+  raspi = UartRaspi("/dev/ttyAMA0", 115200)
