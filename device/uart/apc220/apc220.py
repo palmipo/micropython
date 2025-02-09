@@ -12,6 +12,7 @@ class APC220:
         self.aux_pin.value(0)
         time.sleep_ms(50)
 
+# 418MHz to 455MHz (1KHz stepping)
 # Frequency 6bytes Unit is KHz,for example 434MHz is 434000.
 # Rf data rate 1byte 1,2,3 and 4 refer to 2400,4800,9600,19200bps separetely.
 # Output power 1byte 0 to 9, 9 means 13dBm(20mW).
