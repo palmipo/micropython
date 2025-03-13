@@ -2,31 +2,26 @@ from modbusmsg import ModbusMsg
 from modbuscodec import ModbusCodec
 
 class ModbusMsg03(ModbusMsg):
-    def init(self, slaveId, bus):
-        super().init(slaveId, 0x03)
+    def __init__(self, modbus_id, bus):
+        super().init(modbus_id, 0x03)
         self.bus = bus
 
     def readHoldingRegisters(self, dataAdress, nbReg):
-        self.adresse = dataAdress
-        self.nb = nbReg
-        sendBuffer = self.encode()
-        recvBuffer = self.bus.transfer(sendBuffer, 3 + 2 * nbReg)
-        return self.decode(recvBuffer)
+        recvBuffer = self.bus.transfer(struct.pack('>BBHH', super().modbus_id, super().msg_id, dataAdress, nbReg), 3 + 2 * nbReg)
+        modbus_id, msg_id, nb_data = struct.unpack('>BBB', recvBuffer[0:3])
 
-    def encode(self):
-        bitBuffer = super().encode() + struct.pack('>HH', self.adresse, self.nb)
-        return bitBuffer
+        if struct.unpack('>B', recvBuffer[0]) != ModbusHeader.modbus_id:
+            raise ModbusException()
 
-    def decode(self, bitBuffer):
-        b = super().decode(bitBuffer)
-        nbReg = struct.unpack('>B', b[0:1])
+        if struct.unpack('>B', recvBuffer[0]) & 0x80 != 0:
+            raise ModbusException()
 
-        if (nbReg != self.nb):
-            raise ModbusException('ModbusMsg03.decode() erreur')
+        if struct.unpack('>B', recvBuffer[1]) != ModbusMsg.msg_id:
+            raise ModbusException()
 
-        res = []
-        offset=1
+        data = []
+        offset=3
         for i in range(nbReg):
-            res.append(struct.unpack('>H', b[offset:offset+2]))
+            data.append(struct.unpack('>H', recvBuffer[offset:offset+2]))
             offset += 2
-        return res
+        return data
