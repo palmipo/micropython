@@ -3,6 +3,7 @@ from interface.uartbus import UartBus
 
 class UartRaspi(UartBus):
     def __init__(self, device, bdrate):
+    # uart = serial.Serial('/dev/ttyUSB0', baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=5)
         self.__uart = serial.Serial(bus, baudrate=bdrate, timeout=3.0)
         self.__uart.init(bdrate, bits=8, parity=None, stop=1)
         

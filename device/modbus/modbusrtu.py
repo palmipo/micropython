@@ -1,8 +1,8 @@
-from modbusexception import ModbusException
+from device.modbus.modbusexception import ModbusException
 import time
 
 class ModbusRtu:
-    def init(self, rs485):
+    def __init__(self, rs485):
         self.rs485 = rs485
     
     def transfer(self, sendBuffer, recvLen):
@@ -10,12 +10,12 @@ class ModbusRtu:
         buffer[0:len(sendBuffer)] = sendBuffer
         crc0 = self.calcul_crc(sendBuffer)
         buffer[len(sendBuffer):] = crc0
-        print(buffer)
+        #print(buffer)
         
         self.rs485.send(buffer)
         time.sleep_ms(100)
         recvBuffer = self.rs485.recv(recvLen + 2)
-        print(recvBuffer)
+        #print(recvBuffer)
         if recvBuffer == None:
             raise ModbusException("buffer de reception vide !")
 
