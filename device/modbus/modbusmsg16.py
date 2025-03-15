@@ -8,13 +8,25 @@ class ModbusMsg16(ModbusMsg):
         self.bus = bus
         
     def presetMultipleRegisters(self, dataAdress, data):
-        msg = struct.pack('>BBHHB', self.modbus_id, self.msg_id, dataAdress, len(data), len(data)*2)
+        sendBuffer = bytearray(7 + 2 * len(data))
+        super().encode(sendBuffer)
+        struct.pack_into('>HHB', sendBuffer, 2, dataAdress, len(data), len(data)*2)
+
         offset = 7
         for i in range(len(data)):
-            struct.pack_into('>H', msg, offset, data[i])
+            struct.pack_into('>H', sendBuffer, offset, data[i])
             offset += 2
-        recvBuffer = self.bus.transfer(msg, 6)
-        modbus_id, msg_id, addr, nb = struct.unpack('>BBHH', recvBuffer)
+
+        recvBuffer = self.bus.transfer(sendBuffer, 6)
+        super().decode(recvBuffer)
+
+        addr, nb = struct.unpack_from('>HH', recvBuffer, 2)
+
+        if addr != dataAdress:
+            raise ModbusException()
+
+        if nb != len(data):
+            raise ModbusException()
 
 if __name__ == "__main__":
     from master.uart.uartpico import UartPico
@@ -23,8 +35,14 @@ if __name__ == "__main__":
 #     uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
     uart1 = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
     bus1 = ModbusRtu(uart1)
-    msg = struct.pack('>BBHHBHH', 1, 0x10, 0x07, 2, 4, 0, 0)
-    recvBuffer = bus1.transfer(msg, 6)
-    print(recvBuffer)
-#     msg = ModbusMsg16(0x01, bus1)
-#     print(msg.presetMultipleRegisters(0x0007, [0x0000, 0x0000]))
+
+    passwd = struct.pack('>BBHHBHH', 0x00, 0x28, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
+    recvBuffer = bus1.transfer(passwd, 6)
+
+    time.sleep(5)
+ 
+    try:
+        msg16 = ModbusMsg16(0, bus1)
+        msg16.presetMultipleRegisters(0x0f, b'\x00\x01')
+    except ModbusException:
+        print('ModbusException')

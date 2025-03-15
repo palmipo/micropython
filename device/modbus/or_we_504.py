@@ -71,45 +71,75 @@ class OR_WE_504:
         bd = msg.readHoldingRegisters(0x0F, 0x01)
         return bd[0]
 
-    def passwordEfficacy(self, passwd):
-        r = bus.transfer(struct.pack('>BBHHB', self.modbus_id, 0x10, 0x0040, len(passwd)>>1, len(passwd)) + passwd, 6)
-        if len(r) != 0:
-            rr = struct.unpack('>BBHH', r[0:6])
-            if (rr[1] & 0x80) != 0x00:
-                return 'erreur'
+    # setting：01 28 FE 01 00 02 04 00 00 00 00 FB 12 //00 00 00 00 password
+    # return：01 28 FE 01 00 01 C0 24
+    def login(self, passwd):
+        sendBuffer = bytearray(15)
+        msg = ModbusMsg(self.modbus_id, 0x28)
+        
+        msg.encode(sendBuffer)
+        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
+        
+        recvBuffer = bus.transfer(sendBuffer, 6)
 
+        msg.decode(recvBuffer)
+
+    # Write password：02 10 00 10 00 02 04 11 11 11 11 64 82 //setting password 11 11 11 11
+    # return：02 10 00 10 00 02 40 3E
+    def passwordEfficacy(self, passwd):
+        msg16 = ModbusMsg16(self.modbus_id, self.bus)
+        msg16.presetMultipleRegisters(0x10, passwd)
+
+    # setting : 01 28 FE 01 00 02 04 00 00 00 00 -> 00 00 00 00 password
+    # return  : 01 28 FE 01 00 01
     def removePassword(self, passwd):
-        r = bus.transfer(struct.pack('>BBHHB', self.modbus_id, 0x10, 0x0116, len(passwd)>>1, len(passwd)) + passwd, 6)
-        if len(r) != 0:
-            rr = struct.unpack('>BBHH', r[0:6])
-            if (rr[1] & 0x80) != 0x00:
-                return 'erreur'
-            #time.sleep(10)
+        sendBuffer = bytearray(15)
+        msg = ModbusMsg(self.modbus_id, 0x28)
+        
+        msg.encode(sendBuffer)
+        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, passwd)
+        
+        recvBuffer = bus.transfer(sendBuffer, 6)
+        
+        msg.decode(recvBuffer)
+        addr, value = struct.unpack_from('>HH', recvBuffer, 2)
+
+        if addr != 0xFE01:
+            raise ModbusException()
+
+        if value != 0x0001:
+            raise ModbusException()
 
 if __name__ == "__main__":
     from master.uart.uartpico import UartPico
     from device.modbus.modbusrtu import ModbusRtu
+    from device.modbus.modbusexception import ModbusException
     import time
     uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
     uart2 = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
     bus1 = ModbusRtu(uart1)
     bus2 = ModbusRtu(uart2)
-    cpt1 = OR_WE_504(0x01, bus1)
+    cpt1 = OR_WE_504(0x00, bus1)
     cpt2 = OR_WE_504(0x01, bus2)
 
     while True:
-    # print(cpt.getModbusId())
-    # print(cpt.getBaudRate())
-        print('tension', cpt1.voltage(), cpt2.voltage())
-        print('intensite', cpt1.intensite(), cpt2.intensite())
-        print('frequence', cpt1.frequence(), cpt2.frequence())
-        print('puissance active', cpt1.activePower(), cpt2.activePower())
-        print('puissance reactive', cpt1.reactivePower(), cpt2.reactivePower())
-        print('puissance apparente', cpt1.apparentPower(), cpt2.apparentPower())
-        print('dephasage', cpt1.powerFactor(), cpt2.powerFactor())
-        print(cpt1.activeEnergie(), cpt2.activeEnergie())
-        print(cpt1.reactiveEnergie(), cpt2.reactiveEnergie())
-        time.sleep(20)
+        try:
+            # print(cpt.getModbusId())
+            # print(cpt.getBaudRate())
+            print('tension', cpt1.voltage(), cpt2.voltage())
+            print('intensite', cpt1.intensite(), cpt2.intensite())
+            print('frequence', cpt1.frequence(), cpt2.frequence())
+            print('puissance active', cpt1.activePower(), cpt2.activePower())
+            print('puissance reactive', cpt1.reactivePower(), cpt2.reactivePower())
+            print('puissance apparente', cpt1.apparentPower(), cpt2.apparentPower())
+            print('dephasage', cpt1.powerFactor(), cpt2.powerFactor())
+            print(cpt1.activeEnergie(), cpt2.activeEnergie())
+            print(cpt1.reactiveEnergie(), cpt2.reactiveEnergie())
+            time.sleep(20)
+        except ModbusException:
+            print('erreur')
 
 #     uart.close()
+
+
 

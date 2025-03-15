@@ -380,7 +380,7 @@ class MqttResponse:
         header = fd.read(2)
         if len(header) != 2:
             print('MqttResponse header length = {}'.format(len(header)))
-            raise MqttError
+            raise MqttError()
     
         print('header ack : {}'.format(header))
         (type_packet, taille) = struct.unpack('!BB', header)
@@ -424,5 +424,5 @@ class MqttResponse:
                 return MqttPingResp(buffer)
 
             else:
-                raise MqttError
+                raise MqttError()
 

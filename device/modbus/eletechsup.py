@@ -1,10 +1,8 @@
-from modbusrtu import ModbusRtu
-from modbusexception import ModbusException
-from modbusmsg03 import ModbusMsg03
-from modbusmsg06 import ModbusMsg06
+from device.modbus.modbusmsg03 import ModbusMsg03
+from device.modbus.modbusmsg06 import ModbusMsg06
 
 class Eletechsup:
-    def init(self, modbusId, rtu):
+    def __init__(self, modbusId, rtu):
         self.modbusId = modbusId
         self.rtu = rtu
 

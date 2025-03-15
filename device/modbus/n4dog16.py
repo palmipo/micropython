@@ -1,11 +1,9 @@
-from modbusrtu import ModbusRtu
-from modbusexception import ModbusException
-from modbusmsg03 import ModbusMsg03
-from modbusmsg06 import ModbusMsg06
-from eletechsup import Eletechsup
+from device.modbus.modbusmsg03 import ModbusMsg03
+from device.modbus.modbusmsg06 import ModbusMsg06
+from device.modbus.eletechsup import Eletechsup
 
 class N4DOG16(Eletechsup):
-    def init(self, modbusId, rtu):
+    def __init__(self, modbusId, rtu):
         super().init(modbusId, rtu)
 
     def read(self, voie):
@@ -35,3 +33,13 @@ class N4DOG16(Eletechsup):
     def delay(self, voie, tempo):
         fc06 = ModbusMsg06(self.modbusId, self.rtu)
         fc06.presetSingleRegister(voie & 0x1F, 0X0600 | (tempo & 0xFF))
+
+
+if __name__ == "__main__":
+    from master.uart.uartpico import UartPico
+    from device.modbus.modbusrtu import ModbusRtu
+    uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
+    bus1 = ModbusRtu(uart1)
+    cpt1 = N4DOG16(0x01, bus1)
+    cpt1.momentary(0)
+

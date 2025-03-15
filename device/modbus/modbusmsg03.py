@@ -8,25 +8,20 @@ class ModbusMsg03(ModbusMsg):
         self.bus = bus
 
     def readHoldingRegisters(self, dataAdress, nbReg):
-        recvBuffer = self.bus.transfer(struct.pack('>BBHH', self.modbus_id, self.msg_id, dataAdress, nbReg), 3 + 2 * nbReg)
-        modbus_id, msg_id, nb_data = struct.unpack('>BBB', recvBuffer[0:3])
+        sendBuffer = bytearray(6)
+        super().encode(sendBuffer)
+        struct.pack_into('>HH', sendBuffer, 2, dataAdress, nbReg)
+        recvBuffer = self.bus.transfer(sendBuffer, 3 + 2 * nbReg)
+        super().decode(recvBuffer)
 
-        if modbus_id != self.modbus_id:
-            raise ModbusException()
-
-        if msg_id & 0x80 != 0:
-            raise ModbusException()
-
-        if msg_id & 0x7F != self.msg_id:
-            raise ModbusException()
-
+        nb_data = struct.unpack_from('>B', recvBuffer, 2)[0]
         if nb_data != 2 * nbReg:
             raise ModbusException()
 
         data = []
         offset=3
         for i in range(nbReg):
-            data.append(struct.unpack('>H', recvBuffer[offset:offset+2])[0])
+            data.append(struct.unpack_from('>H', recvBuffer, offset)[0])
             offset += 2
         return data
 
@@ -37,5 +32,5 @@ if __name__ == "__main__":
 #     uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
     uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
     bus = ModbusRtu(uart)
-    msg = ModbusMsg03(0x01, bus)
-    print(msg.readHoldingRegisters(0x03, 0x01))
+    msg = ModbusMsg03(0, bus)
+    print(msg.readHoldingRegisters(0x02, 0x01))
