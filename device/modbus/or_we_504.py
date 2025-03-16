@@ -2,6 +2,12 @@ import struct
 from device.modbus.modbusmsg03 import ModbusMsg03
 from device.modbus.modbusmsg06 import ModbusMsg06
 from device.modbus.modbusrtu import ModbusRtu
+from master.uart.uartpico import UartPico
+from device.modbus.modbusexception import ModbusException
+from tools.mqtt.mqttcodec import *
+from tools.configfile import ConfigFile
+from master.net.wlanpico import WLanPico
+import time, network, select, binascii, machine, socket, json, os, sys
 
 class OR_WE_504:
     def __init__(self, modbus_id, rs485):
@@ -110,47 +116,37 @@ class OR_WE_504:
         if value != 0x0001:
             raise ModbusException()
 
-if __name__ == "__main__":
-    from master.uart.uartpico import UartPico
-    from device.modbus.modbusrtu import ModbusRtu
-    from device.modbus.modbusexception import ModbusException
-    from device.modbus.or_we_504 import OR_WE_504
-    from tools.mqtt.mqttcodec import *
-    from tools.configfile import ConfigFile
-    from master.net.wlanpico import WLanPico
-    import time, network, select, binascii, machine, socket, json, os, sys
+TIMEOUT = 1000
 
-    def publier(num, texte, valeur):
-        try:
-            pub = MqttPublish("capteur/energie/{}/{}".format(num, texte), "{}".format(valeur))
-            sock.send(pub.buffer)
+def publier(sock, poule, num, texte, valeur):
+    pub = MqttPublish("capteur/energie/{}/{}".format(num, texte), "{}".format(valeur))
+    sock.write(pub.buffer)
+
+    events = poule.poll(TIMEOUT)
+
+    for (fd, event) in events:
+        if (event == select.POLLIN):
+    
+            recvBuffer = fd.read(2)
+
+            type_packet, taille = msg.analayseHeader(recvBuffer)
 
             events = poule.poll(TIMEOUT)
             for (fd, event) in events:
                 if (event == select.POLLIN):
-            
-                    recvBuffer = fd.recv(2)
-                    type_packet, taille = msg.analayseHeader(recvBuffer)
 
-                    events = poule.poll(TIMEOUT)
-                    for (fd, event) in events:
-                        if (event == select.POLLIN):
+                    recvBuffer = fd.read(taille)
 
-                            recvBuffer = fd.recv(taille)
-                            reponse = msg.analayseBody(type_packet, recvBuffer)
-
-        except ModbusException:
-            print('ModbusException')
-        except Exception:
-            print('exception')
+                    reponse = msg.analayseBody(type_packet, recvBuffer)
 
 
-
+def main():
     try:
         uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
         uart2 = UartPico(bus=1, bdrate=9600, pinTx=4, pinRx=5)
         bus1 = ModbusRtu(uart1)
         bus2 = ModbusRtu(uart2)
+
         cpt = []
         cpt.append(OR_WE_504(0x00, bus1))
         cpt.append(OR_WE_504(0x01, bus2))
@@ -161,7 +157,6 @@ if __name__ == "__main__":
 
             wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
 
-            TIMEOUT = 1000
             cfg = ConfigFile("mqtt.json")
             PORT =  cfg.config()['mqtt']['broker']['port']
             SERVER = cfg.config()['mqtt']['broker']['ip']
@@ -182,33 +177,41 @@ if __name__ == "__main__":
                 try:
 
                     cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
-                    sock.send(cnx.buffer)
+                    sock.write(cnx.buffer)
 
                     events = poule.poll(TIMEOUT)
                     for (fd, event) in events:
                         if (event == select.POLLIN):
 
-                            recvBuffer = fd.recv(2)
+                            recvBuffer = fd.read(2)
                             type_packet, taille = msg.analayseHeader(recvBuffer)
 
                             events = poule.poll(TIMEOUT)
                             for (fd, event) in events:
                                 if (event == select.POLLIN):
 
-                                    recvBuffer = fd.recv(taille)
+                                    recvBuffer = fd.read(taille)
                                     reponse = msg.analayseBody(type_packet, recvBuffer)
 
                             i = 0
                             while True:
-                                publier(i, 'voltage', cpt[i].voltage())
-                                publier(i, 'intensite', cpt[i].intensite())
-                                publier(i, 'frequence', cpt[i].frequence())
-                                publier(i, 'activePower', cpt[i].activePower())
-                                publier(i, 'reactivePower', cpt[i].reactivePower())
-                                publier(i, 'apparentPower', cpt[i].apparentPower())
-                                publier(i, 'powerFactor', cpt[i].powerFactor())
-                                publier(i, 'activeEnergie', cpt[i].activeEnergie())
-                                publier(i, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                                try:
+                                    publier(sock, poule, i, 'voltage', cpt[i].voltage())
+                                    publier(sock, poule, i, 'intensite', cpt[i].intensite())
+                                    publier(sock, poule, i, 'frequence', cpt[i].frequence())
+                                    publier(sock, poule, i, 'activePower', cpt[i].activePower())
+                                    publier(sock, poule, i, 'reactivePower', cpt[i].reactivePower())
+                                    publier(sock, poule, i, 'apparentPower', cpt[i].apparentPower())
+                                    publier(sock, poule, i, 'powerFactor', cpt[i].powerFactor())
+                                    publier(sock, poule, i, 'activeEnergie', cpt[i].activeEnergie())
+                                    publier(sock, poule, i, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                                
+                                except ModbusException:
+                                    print('ModbusException')
+
+                                except Exception:
+                                    print('exception')
+
                                 i = (i + 1) % len(cpt)
                                 
                                 time.sleep(30)
@@ -230,3 +233,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("exit")
         sys.exit()
+
+if __name__ == "__main__":
+    main()

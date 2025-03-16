@@ -49,49 +49,52 @@ class AppMain(WaveshareGreenClockApps):
         except NotImplementedError:
             pass
 
+def main():
+    try:
+        machine.freq(240000000)
 
-try:
-    machine.freq(240000000)
+        buffer2 = bytearray(4*8)
 
-    buffer2 = bytearray(4*8)
+        clock = WaveshareGreenClock()
+        app = AppMain(clock)
+        app.cb_init()
 
-    clock = WaveshareGreenClock()
-    app = AppMain(clock)
-    app.cb_init()
-
-    fin = False
-    mutex = False
-    def thread_run():
-        while (fin != True):
-            if not mutex:
-                clock.show(buffer2)
-
-    _thread.start_new_thread(thread_run, ());
-
-    while (fin != True):
-        if clock.K0.isActivated():
-            app.cb_up()
-
-        elif clock.K1.isActivated():
-            app.cb_center()
-
-        elif clock.K2.isActivated():
-            app.cb_down()
-
-        elif clock.rtc.isActivated():
-            app.cb_rtc()
-
-        app.cb_run()
-        
-        mutex = True
-        buffer2 = clock.buffer
+        fin = False
         mutex = False
+        def thread_run():
+            while (fin != True):
+                if not mutex:
+                    clock.show(buffer2)
 
-        time.sleep(1)
+        _thread.start_new_thread(thread_run, ());
 
-except OSError:
-    pass
-except KeyboardInterrupt:
-    pass
-finally:
-    fin = True
+        while (fin != True):
+            if clock.K0.isActivated():
+                app.cb_up()
+
+            elif clock.K1.isActivated():
+                app.cb_center()
+
+            elif clock.K2.isActivated():
+                app.cb_down()
+
+            elif clock.rtc.isActivated():
+                app.cb_rtc()
+
+            app.cb_run()
+            
+            mutex = True
+            buffer2 = clock.buffer
+            mutex = False
+
+            time.sleep(1)
+
+    except OSError:
+        pass
+    except KeyboardInterrupt:
+        pass
+    finally:
+        fin = True
+
+if __name__ == "__main__":
+    main()

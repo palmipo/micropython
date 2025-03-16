@@ -9,6 +9,13 @@ class ModbusMsg16(ModbusMsg):
         
     def presetMultipleRegisters(self, dataAdress, data):
         sendBuffer = bytearray(7 + 2 * len(data))
+        self.encode(sendBuffer, dataAdress, data)
+
+        recvBuffer = self.bus.transfer(sendBuffer, 6)
+        
+        self.decode(recvBuffer, dataAdress, data)
+
+    def encode(self, sendBuffer, dataAdress, data):
         super().encode(sendBuffer)
         struct.pack_into('>HHB', sendBuffer, 2, dataAdress, len(data), len(data)*2)
 
@@ -17,7 +24,7 @@ class ModbusMsg16(ModbusMsg):
             struct.pack_into('>H', sendBuffer, offset, data[i])
             offset += 2
 
-        recvBuffer = self.bus.transfer(sendBuffer, 6)
+    def decode(self, recvBuffer, dataAdress, data):
         super().decode(recvBuffer)
 
         addr, nb = struct.unpack_from('>HH', recvBuffer, 2)

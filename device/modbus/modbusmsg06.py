@@ -9,9 +9,15 @@ class ModbusMsg06(ModbusMsg):
         
     def presetSingleRegister(self, dataAdress, data):
         sendBuffer = bytearray(6)
+        self.encode(sendBuffer, dataAdress, data)
+        recvBuffer = self.bus.transfer(sendBuffer, 6)
+        self.decode(recvBuffer, dataAdress, data)
+
+    def encode(self, sendBuffer, dataAdress, data):
         super().encode(sendBuffer)
         struct.pack_into('>HH', sendBuffer, 2, dataAdress, data)
-        recvBuffer = self.bus.transfer(sendBuffer, 6)
+
+    def decode(self, recvBuffer, dataAdress, data):
         super().decode(recvBuffer)
 
         addr, value = struct.unpack_from('>HH', recvBuffer, 2)
@@ -20,7 +26,6 @@ class ModbusMsg06(ModbusMsg):
 
         if value != data:
             raise ModbusException()
-
 
 if __name__ == "__main__":
     from master.uart.uartpico import UartPico

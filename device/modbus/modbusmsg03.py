@@ -9,11 +9,16 @@ class ModbusMsg03(ModbusMsg):
 
     def readHoldingRegisters(self, dataAdress, nbReg):
         sendBuffer = bytearray(6)
+        self.encode(sendBuffer, dataAdress, nbReg)
+        recvBuffer = self.bus.transfer(sendBuffer, 3 + 2 * nbReg)
+        return self.decode(recvBuffer, nbReg)
+
+    def encode(self, sendBuffer, dataAdress, nbReg):
         super().encode(sendBuffer)
         struct.pack_into('>HH', sendBuffer, 2, dataAdress, nbReg)
-        recvBuffer = self.bus.transfer(sendBuffer, 3 + 2 * nbReg)
-        super().decode(recvBuffer)
 
+    def decode(self, recvBuffer, nbReg):
+        super().decode(recvBuffer)
         nb_data = struct.unpack_from('>B', recvBuffer, 2)[0]
         if nb_data != 2 * nbReg:
             raise ModbusException()
@@ -29,7 +34,6 @@ if __name__ == "__main__":
     from master.uart.uartpico import UartPico
     from device.modbus.modbusrtu import ModbusRtu
     import time
-#     uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
     uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
     bus = ModbusRtu(uart)
     msg = ModbusMsg03(0, bus)
