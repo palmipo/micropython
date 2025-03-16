@@ -194,34 +194,27 @@ class MqttPublish(MqttMsg):
 # PUBACK – Publish acknowledgement
 class MqttPubRecv(MqttMsg):
     def __init__(self, buffer, dup_flag, QoS_level, retain):
-        topic_name =''
-        packed_id = ''
-        text = ''
-
         offset = 0
         topic_len = struct.unpack_from('!H', buffer, offset)[0]
         offset += 2
         
-        for i in range(topic_len):
-            topic_name += struct.unpack_from('s', buffer, offset)[0]
-            offset += 1
+        topic_name = buffer[offset:offset+topic_len]
+        offset += topic_len
 
 
         # VARIABLE_HEADER.PACKED_IDENTIFIER
         if QoS_level != 0:
-            packed_id_len = struct.unpack_from('!H', self.buffer, offset)[0]
+            packed_id_len = struct.unpack_from('!H', buffer, offset)[0]
             offset += 2
             
-            for i in range(packed_id_len):
-                packed_id += struct.unpack_from('s', self.buffer, offset)[0]
-                offset += 1
+            packed_id = buffer[offset:offset+packed_id_len]
+            offset += packed_id_len
 
         # TEXT
         taille_text = len(buffer) - offset
-        for i in range(taille_text):
-            text += struct.unpack_from('s', buffer, offset)[0]
-            offset += 1
-            
+        text = buffer[offset:offset+taille_text]
+        offset += taille_text
+
         print('reception publication {} : {}'.format(topic_name, text))
 
 # PUBACK – Publish acknowledgement
@@ -376,48 +369,56 @@ class MqttResponse:
     def __init__(self):
         pass
     
-    def analayseHeader(self, header):
-        print('header ack : {}'.format(header))
-        type_packet, taille = struct.unpack('!BB', header)
+    def analayseHeader(self, buffer):
+        print('analayseHeader : ', buffer)
+        if len(buffer) != 2:
+            raise MqttError()
+
+        type_packet, taille = struct.unpack('!BB', buffer)
         return type_packet, taille
 
-    def analayseBody(self, type_packet, buffer):
-            # CONNACK
-            if (type_packet & 0xF0) == 0x20:
-                return MqttConnAck(buffer)
+    def analayseBody(self, type_packet, taille, buffer):
+        print('analayseBody : ', buffer)
 
-            # PUBLISH
-            elif (type_packet & 0xF0) == 0x30:
-                return MqttPubRecv(buffer, ((type_packet & 0x04) >> 3), ((type_packet & 0x06) >> 1), (type_packet & 0x01))
+        if len(buffer) != taille:
+            raise MqttError()
 
-            # PUBACK
-            elif (type_packet & 0xF0) == 0x40:
-                return MqttPubAck(buffer)
+        # CONNACK
+        if (type_packet & 0xF0) == 0x20:
+            return MqttConnAck(buffer)
 
-            # PUBREC
-            elif (type_packet & 0xF0) == 0x50:
-                return MqttPubRec(buffer)
-            
-            # PUBREL
-            elif (type_packet & 0xF0) == 0x60:
-                return MqttPubRel(buffer)
-            
-            # PUBCOMP
-            elif (type_packet & 0xF0) == 0x70:
-                return MqttPubComp(buffer)
-            
-            # SUBACK
-            elif (type_packet & 0xF0) == 0x90:
-                return MqttSubAck(buffer)
-            
-            # UNSUBACK
-            elif (type_packet & 0xB0) == 0xB0:
-                return MqttUnsubAck(buffer)
-            
-            # PINGRESP
-            elif (type_packet & 0xF0) == 0xD0:
-                return MqttPingResp(buffer)
+        # PUBLISH
+        elif (type_packet & 0xF0) == 0x30:
+            return MqttPubRecv(buffer, ((type_packet & 0x04) >> 3), ((type_packet & 0x06) >> 1), (type_packet & 0x01))
 
-            else:
-                raise MqttError()
+        # PUBACK
+        elif (type_packet & 0xF0) == 0x40:
+            return MqttPubAck(buffer)
+
+        # PUBREC
+        elif (type_packet & 0xF0) == 0x50:
+            return MqttPubRec(buffer)
+        
+        # PUBREL
+        elif (type_packet & 0xF0) == 0x60:
+            return MqttPubRel(buffer)
+        
+        # PUBCOMP
+        elif (type_packet & 0xF0) == 0x70:
+            return MqttPubComp(buffer)
+        
+        # SUBACK
+        elif (type_packet & 0xF0) == 0x90:
+            return MqttSubAck(buffer)
+        
+        # UNSUBACK
+        elif (type_packet & 0xB0) == 0xB0:
+            return MqttUnsubAck(buffer)
+        
+        # PINGRESP
+        elif (type_packet & 0xF0) == 0xD0:
+            return MqttPingResp(buffer)
+
+        else:
+            raise MqttError()
 

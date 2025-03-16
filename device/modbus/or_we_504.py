@@ -137,7 +137,7 @@ def publier(sock, poule, num, texte, valeur):
 
                     recvBuffer = fd.read(taille)
 
-                    reponse = msg.analayseBody(type_packet, recvBuffer)
+                    reponse = msg.analayseBody(type_packet, taille, recvBuffer)
 
 
 def main():
@@ -148,7 +148,7 @@ def main():
         bus2 = ModbusRtu(uart2)
 
         cpt = []
-        cpt.append(OR_WE_504(0x00, bus1))
+        cpt.append(OR_WE_504(0x01, bus1))
         cpt.append(OR_WE_504(0x01, bus2))
 
         wlan = WLanPico()
@@ -164,7 +164,7 @@ def main():
             PASSWD = cfg.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            sock = socket.socket()
+            sock = socket.socket(family=AF_INET, type=SOCK_STREAM, proto=0)
             try:
                 addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
                 sock.connect(addr)
@@ -191,7 +191,7 @@ def main():
                                 if (event == select.POLLIN):
 
                                     recvBuffer = fd.read(taille)
-                                    reponse = msg.analayseBody(type_packet, recvBuffer)
+                                    reponse = msg.analayseBody(type_packet, taille, recvBuffer)
 
                             i = 0
                             while True:

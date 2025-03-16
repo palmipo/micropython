@@ -5,12 +5,12 @@ from master.net.wlanpico import WLanPico
 
 wlan = WLanPico()
 try:
-    wifi = ConfigFile("/master/net/wifi.json")
+    wifi = ConfigFile("wifi.json")
 
     wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
 
     TIMEOUT = 1000
-    cfg = ConfigFile("/tools/mqtt/mqtt.json")
+    cfg = ConfigFile("mqtt.json")
     PORT =  cfg.config()['mqtt']['broker']['port']
     SERVER = cfg.config()['mqtt']['broker']['ip']
     USER = cfg.config()['mqtt']['broker']['user']
