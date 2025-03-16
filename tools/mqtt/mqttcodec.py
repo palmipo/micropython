@@ -376,17 +376,12 @@ class MqttResponse:
     def __init__(self):
         pass
     
-    def analayse(self, fd):
-        header = fd.read(2)
-        if len(header) != 2:
-            print('MqttResponse header length = {}'.format(len(header)))
-            raise MqttError()
-    
+    def analayseHeader(self, header):
         print('header ack : {}'.format(header))
-        (type_packet, taille) = struct.unpack('!BB', header)
-        if taille > 0:
-            buffer = fd.read(taille)
-    
+        type_packet, taille = struct.unpack('!BB', header)
+        return type_packet, taille
+
+    def analayseBody(self, type_packet, buffer):
             # CONNACK
             if (type_packet & 0xF0) == 0x20:
                 return MqttConnAck(buffer)

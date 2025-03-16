@@ -114,32 +114,119 @@ if __name__ == "__main__":
     from master.uart.uartpico import UartPico
     from device.modbus.modbusrtu import ModbusRtu
     from device.modbus.modbusexception import ModbusException
-    import time
-    uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
-    uart2 = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
-    bus1 = ModbusRtu(uart1)
-    bus2 = ModbusRtu(uart2)
-    cpt1 = OR_WE_504(0x00, bus1)
-    cpt2 = OR_WE_504(0x01, bus2)
+    from device.modbus.or_we_504 import OR_WE_504
+    from tools.mqtt.mqttcodec import *
+    from tools.configfile import ConfigFile
+    from master.net.wlanpico import WLanPico
+    import time, network, select, binascii, machine, socket, json, os, sys
 
-    while True:
+    def publier(num, texte, valeur):
         try:
-            # print(cpt.getModbusId())
-            # print(cpt.getBaudRate())
-            print('tension', cpt1.voltage(), cpt2.voltage())
-            print('intensite', cpt1.intensite(), cpt2.intensite())
-            print('frequence', cpt1.frequence(), cpt2.frequence())
-            print('puissance active', cpt1.activePower(), cpt2.activePower())
-            print('puissance reactive', cpt1.reactivePower(), cpt2.reactivePower())
-            print('puissance apparente', cpt1.apparentPower(), cpt2.apparentPower())
-            print('dephasage', cpt1.powerFactor(), cpt2.powerFactor())
-            print(cpt1.activeEnergie(), cpt2.activeEnergie())
-            print(cpt1.reactiveEnergie(), cpt2.reactiveEnergie())
-            time.sleep(20)
+            pub = MqttPublish("capteur/energie/{}/{}".format(num, texte), "{}".format(valeur))
+            sock.send(pub.buffer)
+
+            events = poule.poll(TIMEOUT)
+            for (fd, event) in events:
+                if (event == select.POLLIN):
+            
+                    recvBuffer = fd.recv(2)
+                    type_packet, taille = msg.analayseHeader(recvBuffer)
+
+                    events = poule.poll(TIMEOUT)
+                    for (fd, event) in events:
+                        if (event == select.POLLIN):
+
+                            recvBuffer = fd.recv(taille)
+                            reponse = msg.analayseBody(type_packet, recvBuffer)
+
         except ModbusException:
-            print('erreur')
+            print('ModbusException')
+        except Exception:
+            print('exception')
 
-#     uart.close()
 
 
+    try:
+        uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
+        uart2 = UartPico(bus=1, bdrate=9600, pinTx=4, pinRx=5)
+        bus1 = ModbusRtu(uart1)
+        bus2 = ModbusRtu(uart2)
+        cpt = []
+        cpt.append(OR_WE_504(0x00, bus1))
+        cpt.append(OR_WE_504(0x01, bus2))
 
+        wlan = WLanPico()
+        try:
+            wifi = ConfigFile("wifi.json")
+
+            wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
+
+            TIMEOUT = 1000
+            cfg = ConfigFile("mqtt.json")
+            PORT =  cfg.config()['mqtt']['broker']['port']
+            SERVER = cfg.config()['mqtt']['broker']['ip']
+            USER = cfg.config()['mqtt']['broker']['user']
+            PASSWD = cfg.config()['mqtt']['broker']['passwd']
+            CLIENT_ID = binascii.hexlify(machine.unique_id())
+
+            sock = socket.socket()
+            try:
+                addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
+                sock.connect(addr)
+                sock.setblocking(True)
+
+                poule = select.poll()
+                poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
+
+                msg = MqttResponse()
+                try:
+
+                    cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
+                    sock.send(cnx.buffer)
+
+                    events = poule.poll(TIMEOUT)
+                    for (fd, event) in events:
+                        if (event == select.POLLIN):
+
+                            recvBuffer = fd.recv(2)
+                            type_packet, taille = msg.analayseHeader(recvBuffer)
+
+                            events = poule.poll(TIMEOUT)
+                            for (fd, event) in events:
+                                if (event == select.POLLIN):
+
+                                    recvBuffer = fd.recv(taille)
+                                    reponse = msg.analayseBody(type_packet, recvBuffer)
+
+                            i = 0
+                            while True:
+                                publier(i, 'voltage', cpt[i].voltage())
+                                publier(i, 'intensite', cpt[i].intensite())
+                                publier(i, 'frequence', cpt[i].frequence())
+                                publier(i, 'activePower', cpt[i].activePower())
+                                publier(i, 'reactivePower', cpt[i].reactivePower())
+                                publier(i, 'apparentPower', cpt[i].apparentPower())
+                                publier(i, 'powerFactor', cpt[i].powerFactor())
+                                publier(i, 'activeEnergie', cpt[i].activeEnergie())
+                                publier(i, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                                i = (i + 1) % len(cpt)
+                                
+                                time.sleep(30)
+                    print('FIN.')
+
+                finally:
+                    print('MqttDisconnect')
+                    discnx = MqttDisconnect()
+                    sock.write(discnx.buffer)
+
+            finally:
+                print('sock.close')
+                sock.close()
+
+        finally:
+            print('wlan.disconnect')
+            wlan.disconnect()
+
+    except KeyboardInterrupt:
+        print("exit")
+        sys.exit()
