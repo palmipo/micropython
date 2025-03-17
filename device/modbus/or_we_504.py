@@ -118,10 +118,12 @@ class OR_WE_504:
 
 TIMEOUT = 1000
 
-def publier(sock, poule, num, texte, valeur):
+def publier(sock, num, texte, valeur):
     pub = MqttPublish("capteur/energie/{}/{}".format(num, texte), "{}".format(valeur))
     sock.write(pub.buffer)
 
+def recevoir(poule):
+    msg = MqttResponse()
     events = poule.poll(TIMEOUT)
 
     for (fd, event) in events:
@@ -164,7 +166,7 @@ def main():
             PASSWD = cfg.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            sock = socket.socket(family=AF_INET, type=SOCK_STREAM, proto=0)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
                 sock.connect(addr)
@@ -173,48 +175,43 @@ def main():
                 poule = select.poll()
                 poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
 
-                msg = MqttResponse()
                 try:
 
                     cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
                     sock.write(cnx.buffer)
+                    recevoir(poule)
 
-                    events = poule.poll(TIMEOUT)
-                    for (fd, event) in events:
-                        if (event == select.POLLIN):
+                    i = 0
+                    while True:
+                        try:
+                            publier(sock, i+1, 'voltage', cpt[i].voltage())
+                            recevoir(poule)
+                            publier(sock, i+1, 'intensite', cpt[i].intensite())
+                            recevoir(poule)
+                            publier(sock, i+1, 'frequence', cpt[i].frequence())
+                            recevoir(poule)
+                            publier(sock, i+1, 'activePower', cpt[i].activePower())
+                            recevoir(poule)
+                            publier(sock, i+1, 'reactivePower', cpt[i].reactivePower())
+                            recevoir(poule)
+                            publier(sock, i+1, 'apparentPower', cpt[i].apparentPower())
+                            recevoir(poule)
+                            publier(sock, i+1, 'powerFactor', cpt[i].powerFactor())
+                            recevoir(poule)
+                            publier(sock, i+1, 'activeEnergie', cpt[i].activeEnergie())
+                            recevoir(poule)
+                            publier(sock, i+1, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                            recevoir(poule)
+                        
+                        except ModbusException:
+                            print('ModbusException')
 
-                            recvBuffer = fd.read(2)
-                            type_packet, taille = msg.analayseHeader(recvBuffer)
+                        except Exception:
+                            print('exception')
 
-                            events = poule.poll(TIMEOUT)
-                            for (fd, event) in events:
-                                if (event == select.POLLIN):
-
-                                    recvBuffer = fd.read(taille)
-                                    reponse = msg.analayseBody(type_packet, taille, recvBuffer)
-
-                            i = 0
-                            while True:
-                                try:
-                                    publier(sock, poule, i, 'voltage', cpt[i].voltage())
-                                    publier(sock, poule, i, 'intensite', cpt[i].intensite())
-                                    publier(sock, poule, i, 'frequence', cpt[i].frequence())
-                                    publier(sock, poule, i, 'activePower', cpt[i].activePower())
-                                    publier(sock, poule, i, 'reactivePower', cpt[i].reactivePower())
-                                    publier(sock, poule, i, 'apparentPower', cpt[i].apparentPower())
-                                    publier(sock, poule, i, 'powerFactor', cpt[i].powerFactor())
-                                    publier(sock, poule, i, 'activeEnergie', cpt[i].activeEnergie())
-                                    publier(sock, poule, i, 'reactiveEnergie', cpt[i].reactiveEnergie())
-                                
-                                except ModbusException:
-                                    print('ModbusException')
-
-                                except Exception:
-                                    print('exception')
-
-                                i = (i + 1) % len(cpt)
-                                
-                                time.sleep(30)
+                        i = (i + 1) % len(cpt)
+                        
+                        time.sleep(30)
                     print('FIN.')
 
                 finally:

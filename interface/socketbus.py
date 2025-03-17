@@ -1,4 +1,9 @@
 class SocketBus:
+    def __init__(self):
+        self.SERVEUR = 1
+        self.CLIENT = 2
+        self.mode = self.CLIENT
+
     def serveur(self, port):
         raise NotImplementedError
     
