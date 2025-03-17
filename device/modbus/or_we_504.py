@@ -143,93 +143,92 @@ def recevoir(poule):
 
 
 def main():
+    uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
+    uart2 = UartPico(bus=1, bdrate=9600, pinTx=4, pinRx=5)
+    bus1 = ModbusRtu(uart1)
+    bus2 = ModbusRtu(uart2)
+
+    cpt = []
+    cpt.append(OR_WE_504(0x01, bus1))
+    cpt.append(OR_WE_504(0x01, bus2))
+
+    wlan = WLanPico()
     try:
-        uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
-        uart2 = UartPico(bus=1, bdrate=9600, pinTx=4, pinRx=5)
-        bus1 = ModbusRtu(uart1)
-        bus2 = ModbusRtu(uart2)
+        wifi = ConfigFile("wifi.json")
 
-        cpt = []
-        cpt.append(OR_WE_504(0x01, bus1))
-        cpt.append(OR_WE_504(0x01, bus2))
+        wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
 
-        wlan = WLanPico()
+        cfg = ConfigFile("mqtt.json")
+        PORT =  cfg.config()['mqtt']['broker']['port']
+        SERVER = cfg.config()['mqtt']['broker']['ip']
+        USER = cfg.config()['mqtt']['broker']['user']
+        PASSWD = cfg.config()['mqtt']['broker']['passwd']
+        CLIENT_ID = binascii.hexlify(machine.unique_id())
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            wifi = ConfigFile("wifi.json")
+            addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
+            sock.connect(addr)
+            sock.setblocking(True)
 
-            wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
+            poule = select.poll()
+            poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
 
-            cfg = ConfigFile("mqtt.json")
-            PORT =  cfg.config()['mqtt']['broker']['port']
-            SERVER = cfg.config()['mqtt']['broker']['ip']
-            USER = cfg.config()['mqtt']['broker']['user']
-            PASSWD = cfg.config()['mqtt']['broker']['passwd']
-            CLIENT_ID = binascii.hexlify(machine.unique_id())
-
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
-                sock.connect(addr)
-                sock.setblocking(True)
 
-                poule = select.poll()
-                poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
+                cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
+                sock.write(cnx.buffer)
+                recevoir(poule)
 
-                try:
+                i = 0
+                while True:
+                    try:
+                        publier(sock, i+1, 'voltage', cpt[i].voltage())
+                        recevoir(poule)
+                        publier(sock, i+1, 'intensite', cpt[i].intensite())
+                        recevoir(poule)
+                        publier(sock, i+1, 'frequence', cpt[i].frequence())
+                        recevoir(poule)
+                        publier(sock, i+1, 'activePower', cpt[i].activePower())
+                        recevoir(poule)
+                        publier(sock, i+1, 'reactivePower', cpt[i].reactivePower())
+                        recevoir(poule)
+                        publier(sock, i+1, 'apparentPower', cpt[i].apparentPower())
+                        recevoir(poule)
+                        publier(sock, i+1, 'powerFactor', cpt[i].powerFactor())
+                        recevoir(poule)
+                        publier(sock, i+1, 'activeEnergie', cpt[i].activeEnergie())
+                        recevoir(poule)
+                        publier(sock, i+1, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                        recevoir(poule)
+                    
+                    except ModbusException:
+                        print('ModbusException')
 
-                    cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
-                    sock.write(cnx.buffer)
-                    recevoir(poule)
+                    except Exception:
+                        print('exception')
 
-                    i = 0
-                    while True:
-                        try:
-                            publier(sock, i+1, 'voltage', cpt[i].voltage())
-                            recevoir(poule)
-                            publier(sock, i+1, 'intensite', cpt[i].intensite())
-                            recevoir(poule)
-                            publier(sock, i+1, 'frequence', cpt[i].frequence())
-                            recevoir(poule)
-                            publier(sock, i+1, 'activePower', cpt[i].activePower())
-                            recevoir(poule)
-                            publier(sock, i+1, 'reactivePower', cpt[i].reactivePower())
-                            recevoir(poule)
-                            publier(sock, i+1, 'apparentPower', cpt[i].apparentPower())
-                            recevoir(poule)
-                            publier(sock, i+1, 'powerFactor', cpt[i].powerFactor())
-                            recevoir(poule)
-                            publier(sock, i+1, 'activeEnergie', cpt[i].activeEnergie())
-                            recevoir(poule)
-                            publier(sock, i+1, 'reactiveEnergie', cpt[i].reactiveEnergie())
-                            recevoir(poule)
-                        
-                        except ModbusException:
-                            print('ModbusException')
-
-                        except Exception:
-                            print('exception')
-
-                        i = (i + 1) % len(cpt)
-                        
-                        time.sleep(30)
-                    print('FIN.')
-
-                finally:
-                    print('MqttDisconnect')
-                    discnx = MqttDisconnect()
-                    sock.write(discnx.buffer)
+                    i = (i + 1) % len(cpt)
+                    
+                    time.sleep(30)
+                print('FIN.')
 
             finally:
-                print('sock.close')
-                sock.close()
+                print('MqttDisconnect')
+                discnx = MqttDisconnect()
+                sock.write(discnx.buffer)
 
         finally:
-            print('wlan.disconnect')
-            wlan.disconnect()
+            print('sock.close')
+            sock.close()
 
+    finally:
+        print('wlan.disconnect')
+        wlan.disconnect()
+
+if __name__ == "__main__":
+    try:
+        main()
     except KeyboardInterrupt:
         print("exit")
         sys.exit()
-
-if __name__ == "__main__":
-    main()

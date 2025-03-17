@@ -3,7 +3,7 @@ from device.modbus.eletechsup import Eletechsup
 
 class N4DIH32(Eletechsup):
     def __init__(self, modbusId, rtu):
-        super().init(modbusId, rtu)
+        super().__init__(modbusId, rtu)
 
     def read(self, voie):
         fc03 = ModbusMsg03(self.modbusId, self.rtu)
