@@ -20,11 +20,11 @@ class Freenove:
             self.motor1 = PiaOutputPico(pin1)
             self.motor2 = PiaOutputPico(pin2)
         
-        def forward(self):
+        def reverte(self):
             self.motor1.set(1)
             self.motor2.set(0)
         
-        def reverte(self):
+        def forward(self):
             self.motor1.set(0)
             self.motor2.set(1)
         
@@ -34,28 +34,38 @@ class Freenove:
 
     class Tank:
         def __init__(self):
-            cfg = ConfigFile('/freenove/tank/config.json')
-            mbd = ConfigFile('/waveshare/rp2040_pizero/config.json')
-            self.led_pin = PiaOutputPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['led']]])
+            cfg = ConfigFile('/config.json')
+            self.led_pin = PiaOutputPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['led']]])
             self.leds = NeoPixel(self.led_pin.pin, 4)
-            self.motorL = Freenove.Motor(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLF']]],
-                                         mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLR']]])
-            self.motorR = Freenove.Motor(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRF']]],
-                                         mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRR']]])
+            self.motorL = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLF']]],
+                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorLR']]])
+            self.motorR = Freenove.Motor(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRF']]],
+                                         cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['motorRR']]])
             self.servo_pin = []
-            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo1']]])))
-            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo2']]])))
-            self.servo_pin.append(ServoMoteur(PwmPico(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo3']]])))
-            self.ultrasonic = HC_SR04(mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonc_trigger']]],
-                                      mbd.config()['motherboard']['rp2040_pizero'][mbd.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonic_echo']]])
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo1']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo2']]])))
+            self.servo_pin.append(ServoMoteur(PwmPico(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['servo3']]])))
+            self.ultrasonic = HC_SR04(cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonc_trigger']]],
+                                      cfg.config()['motherboard']['rp2040_pizero'][cfg.config()['motherboard']['raspi'][cfg.config()['freenove']['tank']['ultrasonic_echo']]])
 
         def led(self, num, r, g, b):    
-            for i in range(4):
-                self.leds[num%4] = (r, g, b) # set the first pixel to white
+            self.leds[num%4] = (r, g, b) # set the first pixel to white
             self.leds.write()              # write data to all pixels
 
-        def servo(self, num, val):
-            self.servo_pin[num%3].setAngle(val)
+        def mesure(self):
+            return self.ultrasonic.start()
+
+        def bras(self, num):
+            if num == 0:
+                self.servo_pin[0].setAngle(0)
+            else:
+                self.servo_pin[0].setAngle(90)
+
+        def pince(self, num):
+            if num == 0:
+                self.servo_pin[1].setAngle(0)
+            else:
+                self.servo_pin[1].setAngle(90)
 
         def forward(self):
             self.motorL.forward()
@@ -64,19 +74,28 @@ class Freenove:
         def stop(self):
             self.motorL.stop()
             self.motorR.stop()
-        
-tank = Freenove.Tank()
-tank.led(0, 128, 0, 0)
-tank.led(1, 0, 128, 0)
-tank.led(2, 0, 0, 128)
-tank.forward()
-time.sleep(5)
-tank.stop()
-# for i in range(36):
-#     tank.servo(0, 10*i)
-#     tank.servo(1, 10*i)
-#     tank.servo(2, 10*i)
-#     time.sleep(1)
-print(tank.ultrasonic.start())
 
+        def close(self):
+            self.servo_pin[0].close()
+            self.servo_pin[1].close()
+            self.motorL.stop()
+            self.motorR.stop()
+            for i in range(4):
+                self.leds[i] = (0, 0, 0)
+            self.leds.write()
 
+if __name__ == "__main__":
+    tank = Freenove.Tank()
+    tank.led(0, 128, 0, 0)
+    tank.led(1, 0, 128, 0)
+    tank.led(2, 0, 0, 128)
+    tank.led(3, 128, 128, 128)
+    tank.forward()
+    time.sleep(5)
+    tank.stop()
+    tank.bras(1)
+    tank.pince(1)
+    time.sleep(1)
+    print(tank.mesure())
+
+    tank.close()

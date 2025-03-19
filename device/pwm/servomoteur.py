@@ -8,15 +8,8 @@ class ServoMoteur:
         # angle de 180° => 2ms
     def setAngle(self, angle):
         ms = 65536//20
-        print('ms = {}, angle = {} => {}'.format(ms, angle, (angle % 360) * 2 // 360))
-        self.pwm.setDuty(ms + (angle % 360) * ms // 180)
-        
-# import time
-# from master.pwm.pwmpico import PwmPico
-# p = PwmPico(0)
-# print (p.pwm)
-# s = ServoMoteur(p)
-# s.setAngle(0)
-# for i in range(0, 180):
-#     s.setAngle(i)
-#     time.sleep_ms(100)
+        print('ms = {}, angle = {} => {}'.format(ms, angle, (angle % 180) * 2 // 180))
+        self.pwm.setDuty(ms + (angle % 180) * ms // 180)
+    
+    def close(self):
+        self.pwm.setDuty(0)
