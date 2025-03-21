@@ -74,23 +74,23 @@ if __name__ == "__main__":
                     i = 0
                     while True:
                         try:
-                            publier(sock, i+1, 'voltage', cpt[i].voltage())
+                            publier(sock, i, 'voltage', cpt[i].voltage())
                             recevoir(poule)
-                            publier(sock, i+1, 'intensite', cpt[i].intensite())
+                            publier(sock, i, 'intensite', cpt[i].intensite())
                             recevoir(poule)
-                            publier(sock, i+1, 'frequence', cpt[i].frequence())
+                            publier(sock, i, 'frequence', cpt[i].frequence())
                             recevoir(poule)
-                            publier(sock, i+1, 'activePower', cpt[i].activePower())
+                            publier(sock, i, 'activePower', cpt[i].activePower())
                             recevoir(poule)
-                            publier(sock, i+1, 'reactivePower', cpt[i].reactivePower())
+                            publier(sock, i, 'reactivePower', cpt[i].reactivePower())
                             recevoir(poule)
-                            publier(sock, i+1, 'apparentPower', cpt[i].apparentPower())
+                            publier(sock, i, 'apparentPower', cpt[i].apparentPower())
                             recevoir(poule)
-                            publier(sock, i+1, 'powerFactor', cpt[i].powerFactor())
+                            publier(sock, i, 'powerFactor', cpt[i].powerFactor())
                             recevoir(poule)
-                            publier(sock, i+1, 'activeEnergie', cpt[i].activeEnergie())
+                            publier(sock, i, 'activeEnergie', cpt[i].activeEnergie())
                             recevoir(poule)
-                            publier(sock, i+1, 'reactiveEnergie', cpt[i].reactiveEnergie())
+                            publier(sock, i, 'reactiveEnergie', cpt[i].reactiveEnergie())
                             recevoir(poule)
                         
                         except ModbusException:
