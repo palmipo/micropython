@@ -1,7 +1,5 @@
-from master.net.wlanpico import WLanPico
-from device.net.ntp import Ntp
 from master.i2c.i2cpico import I2CPico
-from device.i2c.bmp280 import BMP280
+# from device.i2c.bmp280 import BMP280
 from device.i2c.ds3231_sqw import DS3231_SQW
 from master.pwm.pwmpico import PwmPico
 from master.pia.piaisrbouncepico import PiaIsrBouncePico
@@ -10,11 +8,6 @@ import framebuf, time, machine, rp2
 
 class NixieClock:
     def __init__(self):
-        self.wlan = WLanPico()
-        self.wlan.connect()
-        
-        ntp = Ntp()
-        ntp.ntp()
 
         self.kr = PiaIsrBouncePico(15, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
         self.kl = PiaIsrBouncePico(16, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
@@ -24,17 +17,17 @@ class NixieClock:
 
         self.i2c = I2CPico(1, 6, 7)
 
-        self.bmp280 = BMP280(self.i2c)
-        self.bmp280.reset()
-        time.sleep(1)
-        print("chipIdRegister {}".format(self.bmp280.chipIdRegister()))
-        # osrs_t x2  : 010b
-        # osrs_p x16 : 101b
-        # mode       : normal 11b
-        self.bmp280.ctrlMeasureRegister(osrs_t=2, osrs_p=5, mode=3)
-        # t_sb   3
-        # filtre 16
-        self.bmp280.configRegister(t_sb=3, filtre=16)
+#         self.bmp280 = BMP280(self.i2c)
+#         self.bmp280.reset()
+#         time.sleep(1)
+#         print("chipIdRegister {}".format(self.bmp280.chipIdRegister()))
+#         # osrs_t x2  : 010b
+#         # osrs_p x16 : 101b
+#         # mode       : normal 11b
+#         self.bmp280.ctrlMeasureRegister(osrs_t=2, osrs_p=5, mode=3)
+#         # t_sb   3
+#         # filtre 16
+#         self.bmp280.configRegister(t_sb=3, filtre=16)
 
         self.ds1321 = DS3231_SQW(0, self.i2c, 18)
         self.ds1321.setAlarm1(A1M=0x0F, hour='08:00:00', day='03')
@@ -50,3 +43,6 @@ class NixieClock:
         for num in range(len(self.nixie.LCDs)):
             self.dessin.fill(0)
             self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height, self.buffer)
+
+        self.ds1321.setControlRegister(0, 0, 0, 0, 0)
+

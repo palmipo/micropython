@@ -4,9 +4,20 @@ from waveshare.waveshare_nixie_clock.nixiebipapp import NixieBipApp
 from waveshare.waveshare_nixie_clock.nixieconfigapp import NixieConfigApp
 from waveshare.waveshare_nixie_clock.nixieledapp import NixieLedApp
 from waveshare.waveshare_nixie_clock.nixiemainapp import NixieMainApp
+from master.net.wlanpico import WLanPico
+from device.net.ntp import Ntp
+from tools.configfile import ConfigFile
 
 horloge = NixieClock()
 try:
+    wifi = ConfigFile("wifi.json")
+
+    wlan = WLanPico()
+    wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
+
+    ntp = Ntp()
+    ntp.ntp()
+
     bipApp = NixieBipApp(horloge)
     configApp = NixieConfigApp(horloge)
     ledApp = NixieLedApp(horloge)
@@ -35,5 +46,6 @@ except KeyboardInterrupt:
 
 finally:
     fin = True
-    horloge.ds1321.setControlRegister(0, 0, 0, 0, 0)
+    horloge.clear()
+
 

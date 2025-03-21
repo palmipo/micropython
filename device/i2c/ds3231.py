@@ -1,4 +1,5 @@
 from device.i2c.devicei2c import DeviceI2C
+import struct
 
 class DS3231(DeviceI2C):
     def __init__(self, address, bus):
@@ -6,8 +7,7 @@ class DS3231(DeviceI2C):
 
     def setDayWeek(self, day):
         cmd = bytearray(2)
-        cmd[0] = 0x03
-        cmd[1] = ord(day) & 0x07
+        struct.pack_into('!BB', cmd, 0, 0x03, day & 0x07)
         self.busi2c.send(self.adresse, cmd)
 
     def getDayWeek(self):

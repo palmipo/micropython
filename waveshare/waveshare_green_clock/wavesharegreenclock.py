@@ -10,6 +10,7 @@ from master.pwm.pwmpico import PwmPico
 from master.pia.piaisrpico import PiaIsrPico
 from master.net.wlanpico import WLanPico
 from device.net.ntp import Ntp
+from tools.configfile import ConfigFile
 import micropython
 import machine
 
@@ -38,10 +39,11 @@ class WaveshareGreenClock:
         self.ascii = WaveshareGreenClockAscii4x7()
         self.tag = WaveshareGreenClockTag(self.buffer)
 
+        self.wlan = WLanPico()
         try:
-            self.wlan = WLanPico()
-            self.wlan.connect()
-            
+            wifi = ConfigFile("wifi.json")
+            self.wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
+
             ntp = Ntp()
             data_tuple = ntp.ntp()
 
@@ -49,7 +51,7 @@ class WaveshareGreenClock:
             lHeure = "{:02}:{:02}:{:02}".format(data_tuple[3], data_tuple[4], data_tuple[5])
 
             self.rtc.setDate(laDate)
-            self.rtc.setDayWeek(str(data_tuple[6]))
+            self.rtc.setDayWeek(data_tuple[6])
             self.rtc.setTime(lHeure)
         except OSError:
             pass

@@ -61,10 +61,10 @@ class BMP280(DeviceI2C):
             print("Read BMP280 id error!\r\n")
             
     def _read_byte(self,cmd):
-        return self._bus.transferer(self._address,cmd, 1)
+        return self.busi2c.transferer(self._address,cmd, 1)
     
     def _read_u16(self,cmd):
-        data = self._bus.transferer(self._address,cmd, 2)
+        data = self.busi2c.transferer(self._address,cmd, 2)
         return (data[1] << 8) + data[0]
 
     def _read_s16(self,cmd):
@@ -76,7 +76,7 @@ class BMP280(DeviceI2C):
         data = bytearray(2)
         data[0] = cmd
         data[1] = val
-        self._bus.send(self._address,data)
+        self.busi2c.send(self._address,data)
 
     def _load_calibration(self):
         "load calibration"
