@@ -1,7 +1,6 @@
 import struct
 from device.modbus.modbusmsg03 import ModbusMsg03
 from device.modbus.modbusmsg06 import ModbusMsg06
-from device.modbus.modbusrtu import ModbusRtu
 from device.modbus.modbusexception import ModbusException
 
 class OR_WE_504:

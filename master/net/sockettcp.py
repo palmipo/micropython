@@ -3,7 +3,7 @@ import socket
 
 class SocketTcp(SocketBus):
     def __init__(self, sock=None):
-        super.__init__()
+        super().__init__()
 
         if sock == None:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
