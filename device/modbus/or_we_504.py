@@ -1,4 +1,5 @@
 import struct
+from device.modbus.modbusmsg import ModbusMsg
 from device.modbus.modbusmsg03 import ModbusMsg03
 from device.modbus.modbusmsg06 import ModbusMsg06
 from device.modbus.modbusexception import ModbusException
@@ -74,7 +75,7 @@ class OR_WE_504:
     # setting：01 28 FE 01 00 02 04 00 00 00 00 FB 12 //00 00 00 00 password
     # return：01 28 FE 01 00 01 C0 24
     def login(self, passwd):
-        sendBuffer = bytearray(15)
+        sendBuffer = bytearray(11)
         msg = ModbusMsg(self.modbus_id, 0x28)
         
         msg.encode(sendBuffer)
@@ -109,3 +110,15 @@ class OR_WE_504:
 
         if value != 0x0001:
             raise ModbusException()
+
+if __name__ == "__main__":
+    from master.uart.uartpico import UartPico
+    from device.modbus.modbusrtu import ModbusRtu
+    from device.modbus.modbusexception import ModbusException
+    try:
+        orno = OR_WE_504(0, ModbusRtu(UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)))
+        orno.login(struct.pack('>BBBB', 0, 0, 0, 0))
+        orno.setModbusId(1)
+    except KeyboardInterrupt:
+        print("exit")
+        sys.quit()
