@@ -83,7 +83,8 @@ def main():
                     recevoir(poule)
 
                     i = 0
-                    while True:
+                    fin = False
+                    while fin == False:
                         try:
                             publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
                             recevoir(poule)
@@ -114,6 +115,10 @@ def main():
                         
                         time.sleep(30)
                     print('FIN.')
+                        
+                except ModbusException as err:
+                    print('ModbusException', err)
+                    fin = True
 
                 finally:
                     print('MqttDisconnect')
