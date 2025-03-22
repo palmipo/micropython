@@ -1,0 +1,18 @@
+{
+    "capteur" :
+    {
+        "rs485" :
+        {
+            "bus" : 0,
+        },
+        "modbus" :
+        {
+            "id" : 0,
+        },
+        "mqtt":
+        {
+            "voltage" : "capteur/energie/0/voltage"
+        },
+    },
+}
+

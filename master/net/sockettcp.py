@@ -14,9 +14,11 @@ class SocketTcp(SocketBus):
         self.sock.setblocking(True)
 
     def serveur(self, port):
-        self.mode = self.SERVEUR
         self.sock.bind(port)
         self.sock.listen()
+
+    def accept(self):
+        return self.sock.accept() # conn, address
 
     def connect(self, adresse, port):
         self.sock.connect(socket.getaddrinfo(adresse, port)[0][-1])
@@ -37,20 +39,9 @@ class SocketTcp(SocketBus):
         rsp = self.sock.recv(n_byte)
         return rsp
 
-def serveur(port):
-    srv = SocketTcp()
-    srv.serveur(port)
-    fin = False
-    lst = []
-    while fin != True:
-        buffer = srv.recv(100)
-        print('reception message socket cliente')
-        srv.send(buffer)
-    srv.disconnect()
-
-def client(adresse, port):
+if __name__ == "__main__":
     clnt = SocketTcp()
-    clnt.connect(adresse, port)
+    clnt.connect("192.168.1.1", 2222)
     clnt.send(b'hello world')
     print(clnt.recv(100))
     clnt.disconnect()

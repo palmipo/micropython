@@ -46,15 +46,16 @@ if __name__ == "__main__":
         wlan = WLanPico()
         try:
             wifi = ConfigFile("wifi.json")
-
             wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
 
-            cfg = ConfigFile("mqtt.json")
-            PORT =  cfg.config()['mqtt']['broker']['port']
-            SERVER = cfg.config()['mqtt']['broker']['ip']
-            USER = cfg.config()['mqtt']['broker']['user']
-            PASSWD = cfg.config()['mqtt']['broker']['passwd']
+            mqtt = ConfigFile("mqtt.json")
+            PORT =  mqtt.config()['mqtt']['broker']['port']
+            SERVER = mqtt.config()['mqtt']['broker']['ip']
+            USER = mqtt.config()['mqtt']['broker']['user']
+            PASSWD = mqtt.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
+
+            orno = ConfigFile("orno.json")
 
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
