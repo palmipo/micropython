@@ -35,14 +35,13 @@ def recevoir(poule):
 
 
 def main():
-    try:
         uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
         uart2 = UartPico(bus=1, bdrate=9600, pinTx=4, pinRx=5)
         bus1 = ModbusRtu(uart1)
         bus2 = ModbusRtu(uart2)
 
         cpt = []
-        cpt.append(OR_WE_504(0x00, bus1))
+        cpt.append(OR_WE_504(0x01, bus1))
         cpt.append(OR_WE_504(0x01, bus2))
 
         wlan = WLanPico()
@@ -123,9 +122,11 @@ def main():
             print('wlan.disconnect')
             wlan.disconnect()
 
-    except KeyboardInterrupt:
-        print("exit")
-        sys.exit()
 
 if __name__ == "__main__":
+try:
     main()
+except KeyboardInterrupt:
+    print("exit")
+    sys.quit()
+
