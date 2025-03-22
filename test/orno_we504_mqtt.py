@@ -9,20 +9,18 @@ from device.modbus.modbusexception import ModbusException
 from tools.mqtt.mqttcodec import *
 from tools.configfile import ConfigFile
 
-#import time, network, select, binascii, machine, socket, json, os, sys
 import time, binascii, os, sys, machine
 
 TIMEOUT = 1000
 
 def publier(sock, texte, valeur):
     pub = MqttPublish(texte, "{}".format(valeur))
-    sock.write(pub.buffer)
+    sock.send(pub.buffer)
 
 def recevoir(poule):
     fd, event = poule.scrute(TIMEOUT)
     if (event == select.POLLIN):
 
-        #recvBuffer = fd.read(2)
         recvBuffer = fd.recv(2)
 
         type_packet, taille = msg.analayseHeader(recvBuffer)
@@ -30,7 +28,6 @@ def recevoir(poule):
         fd, event = poule.poll(TIMEOUT)
         if (event == select.POLLIN):
 
-            #recvBuffer = fd.read(taille)
             recvBuffer = fd.recv(taille)
 
             msg = MqttResponse()
@@ -45,7 +42,7 @@ def main():
         bus2 = ModbusRtu(uart2)
 
         cpt = []
-        cpt.append(OR_WE_504(0x01, bus1))
+        cpt.append(OR_WE_504(0x00, bus1))
         cpt.append(OR_WE_504(0x01, bus2))
 
         wlan = WLanPico()
@@ -62,23 +59,16 @@ def main():
 
             orno = ConfigFile("orno.json")
 
-            #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock = SocketTcp()
             try:
-                #addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
-                #sock.connect(addr)
-                #sock.setblocking(True)
                 sock.connect(SERVER, PORT)
 
-                #poule = select.poll()
-                #poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
                 poule = PollStream()
                 poule.register(sock.sock)
 
                 try:
 
                     cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
-                    #sock.write(cnx.buffer)
                     sock.send(cnx.buffer)
                     recevoir(poule)
 
@@ -102,7 +92,7 @@ def main():
                             recevoir(poule)
                             publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
                             recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/reactiveEnergie.format(i)', cpt[i].reactiveEnergie())
+                            publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
                             recevoir(poule)
                         
                         except ModbusException as err:
@@ -123,7 +113,6 @@ def main():
                 finally:
                     print('MqttDisconnect')
                     discnx = MqttDisconnect()
-                    #sock.write(discnx.buffer)
                     sock.send(discnx.buffer)
 
             finally:
