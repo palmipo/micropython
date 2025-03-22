@@ -4,9 +4,9 @@ try:
     time.sleep(5)
 
     # Change myprogram to whatever you renamed your current main.py to.
-#     import device.modbus.or_we_504
-#     device.modbus.or_we_504.main()
+    import orno_we504_mqtt
+    orno_we504_mqtt.main()
 
 except KeyboardInterrupt:
     print("exit")
-    sys.exit()
+    sys.quit()
