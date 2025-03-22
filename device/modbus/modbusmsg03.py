@@ -31,10 +31,14 @@ class ModbusMsg03(ModbusMsg):
         return data
 
 if __name__ == "__main__":
-    from master.uart.uartpico import UartPico
-    from device.modbus.modbusrtu import ModbusRtu
-    import time
-    uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
-    bus = ModbusRtu(uart)
-    msg = ModbusMsg03(0, bus)
-    print(msg.readHoldingRegisters(0x02, 0x01))
+    try:
+        from master.uart.uartpico import UartPico
+        from device.modbus.modbusrtu import ModbusRtu
+        import time
+        uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
+        bus = ModbusRtu(uart)
+        msg = ModbusMsg03(1, bus)
+        print(msg.readHoldingRegisters(0x00, 0x01))
+    except KeyboardInterrupt:
+        print("exit")
+        sys.quit()

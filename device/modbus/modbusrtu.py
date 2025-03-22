@@ -4,7 +4,7 @@ import time
 class ModbusRtu:
     def __init__(self, rs485):
         self.rs485 = rs485
-    
+
     def transfer(self, sendBuffer, recvLen):
         buffer = bytearray(len(sendBuffer) + 2)
         buffer[0:len(sendBuffer)] = sendBuffer

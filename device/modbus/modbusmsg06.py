@@ -28,20 +28,18 @@ class ModbusMsg06(ModbusMsg):
             raise ModbusException()
 
 if __name__ == "__main__":
-    from master.uart.uartpico import UartPico
-    from device.modbus.modbusrtu import ModbusRtu
-    import time
-#     uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
-    uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
-    bus = ModbusRtu(uart)
-
-    passwd = struct.pack('>BBHHBHH', 0x00, 0x28, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
-    recvBuffer = bus.transfer(passwd, 6)
-
-    time.sleep(5)
-    
     try:
-        msg = ModbusMsg06(0x00, bus)
-        print(msg.presetSingleRegister(0x0f, 0x01))
-    except ModbusException:
-        print('ModbusException')
+        from master.uart.uartpico import UartPico
+        from device.modbus.modbusrtu import ModbusRtu
+        import time
+        uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
+        bus = ModbusRtu(uart)
+
+        try:
+            msg = ModbusMsg06(0x00, bus)
+            print(msg.presetSingleRegister(0x0f, 0x01))
+        except ModbusException as err:
+            print('ModbusException', err)
+    except KeyboardInterrupt:
+        print("exit")
+        sys.quit()

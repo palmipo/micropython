@@ -2,7 +2,7 @@ from master.net.wlanpico import WLanPico
 from master.net.sockettcp import SocketTcp
 from master.net.pollstream import PollStream
 from master.uart.uartpico import UartPico
-from device.modbus.or_we_504 import OR_WE_504
+from device.modbus.r4dcb08 import R4DCB08
 from device.modbus.modbusrtu import ModbusRtu
 from device.modbus.modbusexception import ModbusException
 
@@ -41,8 +41,7 @@ def main():
         bus2 = ModbusRtu(uart2)
 
         cpt = []
-        cpt.append(OR_WE_504(0x01, bus1))
-        cpt.append(OR_WE_504(0x01, bus2))
+        cpt.append(R4DCB08(0x01, bus1))
 
         wlan = WLanPico()
         try:
@@ -56,7 +55,7 @@ def main():
             PASSWD = mqtt.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            orno = ConfigFile("orno.json")
+#             eletechsup = ConfigFile("eletechsup.json")
 
             sock = SocketTcp()
             try:
@@ -75,23 +74,7 @@ def main():
                     fin = False
                     while fin == False:
                         try:
-                            publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                            recevoir(poule)
-                            publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                            publier(sock, 'capteur/temperature/{}'.format(i), cpt[0].read(i))
                             recevoir(poule)
                         
                         except ModbusException as err:
@@ -100,7 +83,7 @@ def main():
                         except Exception as err:
                             print('exception', err)
 
-                        i = (i + 1) % len(cpt)
+#                         i = (i + 1) % 8
                         
                         time.sleep(30)
                     print('FIN.')
