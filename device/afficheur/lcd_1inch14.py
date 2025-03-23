@@ -12,15 +12,15 @@ class LCD_1inch14(ST7789):
         self.spi = spi
         self.BL_PIN = bl
         self.BL_PIN.setFrequency(50)
-        self.BL_PIN.setDuty(50)
+        self.BL_PIN.setPourcent(50)
         self.num = num
         self.width = 135
         self.height = 240
 
         super().__init__()
 
-    def setLcdBlackLight(self, lev):#0-100
-        self.BL_PIN.setDuty(lev % 100)
+    def setLcdBlackLight(self, lev):#0-99
+        self.BL_PIN.setPourcent(lev)
 
     def write_cmd(self, cmd):
         self.DC_PIN.set(0)

@@ -32,8 +32,7 @@ class NixieLedApp(NixieApp):
                 raise NotImplementedError
 
     def show(self):
-        self.nixieClock.nixie.leds[self.numLed] = (self.couleur[0], self.couleur[1], self.couleur[2])
-        self.nixieClock.nixie.leds.write()
+        self.nixieClock.nixie.setLedColor(self.numLed, self.couleur[0], self.couleur[1], self.couleur[2])
 
         for i in range(len(self.nixieClock.nixie.LCDs)):
             if self.numLed == i:
@@ -45,5 +44,5 @@ class NixieLedApp(NixieApp):
                 self.nixieClock.dessin.text("B : {:03}".format(self.couleur[2]), 0, 30, 0xffff)
             else:
                 self.nixieClock.dessin.fill(0)
-
+            self.nixieClock.nixie.LCDs[i].setLcdBlackLight(99)
             self.nixieClock.nixie.LCDs[i].show(0, 0, self.nixieClock.nixie.LCDs[i].width, self.nixieClock.nixie.LCDs[i].height, self.nixieClock.buffer)

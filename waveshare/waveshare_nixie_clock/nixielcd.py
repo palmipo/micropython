@@ -1,5 +1,5 @@
 from neopixel import NeoPixel
-from device.afficheur.lcd_1inch14 import Lcd_1inch14
+from device.afficheur.lcd_1inch14 import LCD_1inch14
 from master.pia.piapico import PiaOutputPico
 from master.pwm.pwmpico import PwmPico
 from master.spi.spipico import SpiPico
@@ -28,7 +28,7 @@ class NixieLcd:
 
         self.LCDs = []
         for num in range (0,6):
-            self.LCDs.append(Lcd_1inch14(num, self.dc, self.rst, self.spi, self.bl))
+            self.LCDs.append(LCD_1inch14(num, self.dc, self.rst, self.spi, self.bl))
 
     def setLedColor(self, num, r, g, b):
         self.leds[num] = (r, g, b)

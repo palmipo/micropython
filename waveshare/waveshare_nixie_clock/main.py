@@ -19,7 +19,7 @@ try:
     ntp.ntp()
 
     bipApp = NixieBipApp(horloge)
-    configApp = NixieConfigApp(horloge)
+    configApp = NixieConfigApp(horloge, wlan)
     ledApp = NixieLedApp(horloge)
 
     mainApp = NixieMainApp([bipApp, configApp, ledApp])
@@ -39,7 +39,7 @@ try:
         if horloge.ds1321.isActivated() == True:
             mainApp.rtcActivated()
 
-        time.sleep_ms(500)
+        time.sleep_ms(10)
 
 except KeyboardInterrupt:
     pass
