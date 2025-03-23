@@ -7,22 +7,21 @@ class ModbusMsgFree(ModbusMsg):
         super().__init__(modbus_id, msg_id)
         self.bus = bus
 
-    def transfer(self, reg, msg, recvLength):
-        sendBuffer = bytearray(4+len(msg))
-        self.encode(sendBuffer, reg, msg)
+    def transfer(self, msg, recvLength):
+        sendBuffer = bytearray(2+len(msg))
+        self.encode(sendBuffer, msg)
         print(sendBuffer)
-        recvBuffer = self.bus.transfer(sendBuffer, 4 + 2 * recvLength)
+        recvBuffer = self.bus.transfer(sendBuffer, 2 + 2 * recvLength)
         return self.decode(recvBuffer)
 
-    def encode(self, sendBuffer, reg, msg):
+    def encode(self, sendBuffer, msg):
         super().encode(sendBuffer)
-        struct.pack_into('>H', sendBuffer, 2, reg)
-        sendBuffer[4:] = msg
+        sendBuffer[2:] = msg
 
     def decode(self, recvBuffer):
         super().decode(recvBuffer)
-        reg, data = struct.unpack_from('>HH', recvBuffer, 2)
-        return reg, data
+        data = recvBuffer[2:]
+        return data
 
 if __name__ == "__main__":
     try:
@@ -31,8 +30,8 @@ if __name__ == "__main__":
         import time
         uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
         bus = ModbusRtu(uart)
-        msg = ModbusMsgFree(1, 0x28, bus)
-        print(msg.transfer(0xFE01, b'\x00\x02\x04\x00\x00\x00\x00', 0x01))
+        msg = ModbusMsgFree(0x01, 0x28, bus)
+        print(msg.transfer(b'\xFE\x01\x00\x02\x04\x00\x00\x00\x00', 0x02))
     except KeyboardInterrupt:
         print("exit")
         sys.quit()

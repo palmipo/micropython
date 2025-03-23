@@ -10,9 +10,9 @@ class ModbusMsg16(ModbusMsg):
     def presetMultipleRegisters(self, dataAdress, data):
         sendBuffer = bytearray(7 + 2 * len(data))
         self.encode(sendBuffer, dataAdress, data)
-
+        print(sendBuffer)
         recvBuffer = self.bus.transfer(sendBuffer, 6)
-        
+        print(recvBuffer)
         self.decode(recvBuffer, dataAdress, data)
 
     def encode(self, sendBuffer, dataAdress, data):
@@ -43,13 +43,13 @@ if __name__ == "__main__":
     uart1 = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
     bus1 = ModbusRtu(uart1)
 
-    passwd = struct.pack('>BBHHBHH', 0x00, 0x28, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
+    passwd = struct.pack('>BBHHBHH', 0x01, 0x28, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
     recvBuffer = bus1.transfer(passwd, 6)
 
     time.sleep(5)
  
     try:
-        msg16 = ModbusMsg16(0, bus1)
-        msg16.presetMultipleRegisters(0x0f, b'\x00\x01')
+        msg16 = ModbusMsg16(1, bus1)
+        msg16.presetMultipleRegisters(0x0f, [0x0001])
     except ModbusException:
         print('ModbusException')
