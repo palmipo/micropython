@@ -2,7 +2,7 @@ from interface.socketbus import SocketBus
 import socket
 
 class SocketTcp(SocketBus):
-    def __init__(self, sock=None):
+    def __init__(self, sock=None, timeout=100):
         super().__init__()
 
         if sock == None:
@@ -11,7 +11,8 @@ class SocketTcp(SocketBus):
         else:
             self.sock = sock
 
-        self.sock.setblocking(True)
+        #self.sock.setblocking(True)
+        self.sock.settimeout(timeout)
 
     def serveur(self, port):
         self.sock.bind(port)

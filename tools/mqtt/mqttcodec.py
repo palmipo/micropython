@@ -198,7 +198,7 @@ class MqttPubRecv(MqttMsg):
         topic_len = struct.unpack_from('!H', buffer, offset)[0]
         offset += 2
         
-        topic_name = buffer[offset:offset+topic_len]
+        self.topic_name = buffer[offset:offset+topic_len]
         offset += topic_len
 
 
@@ -212,10 +212,10 @@ class MqttPubRecv(MqttMsg):
 
         # TEXT
         taille_text = len(buffer) - offset
-        text = buffer[offset:offset+taille_text]
+        self.text = buffer[offset:offset+taille_text]
         offset += taille_text
 
-        print('reception publication {} : {}'.format(topic_name, text))
+        print('reception publication {} : {}'.format(self.topic_name, self.text))
 
 # PUBACK – Publish acknowledgement
 class MqttPubAck(MqttMsg):

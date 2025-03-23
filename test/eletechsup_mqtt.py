@@ -3,6 +3,8 @@ from master.net.sockettcp import SocketTcp
 from master.net.pollstream import PollStream
 from master.uart.uartpico import UartPico
 from device.modbus.r4dcb08 import R4DCB08
+from device.modbus.n4dog16 import N4DOG16
+from device.modbus.n4dih32 import N4DIH32
 from device.modbus.modbusrtu import ModbusRtu
 from device.modbus.modbusexception import ModbusException
 
@@ -11,28 +13,23 @@ from tools.configfile import ConfigFile
 
 import time, binascii, os, sys, machine
 
-TIMEOUT = 1000
+TIMEOUT = 300000
 
 def publier(sock, texte, valeur):
     pub = MqttPublish(texte, "{}".format(valeur))
     sock.send(pub.buffer)
 
-def recevoir(poule):
-    fd, event = poule.scrute(TIMEOUT)
-    if (event == select.POLLIN):
+def recevoir(sock):
+        msg = MqttResponse()
 
-        recvBuffer = fd.recv(2)
-
+        recvBuffer = sock.recv(2)
         type_packet, taille = msg.analayseHeader(recvBuffer)
 
-        fd, event = poule.poll(TIMEOUT)
-        if (event == select.POLLIN):
-
-            recvBuffer = fd.recv(taille)
-
-            msg = MqttResponse()
-            reponse = msg.analayseBody(type_packet, taille, recvBuffer)
-
+        recvBuffer = sock.recv(taille)
+        rep = msg.analayseBody(type_packet, taille, recvBuffer)
+        if type(rep) == MqttPubRecv:
+            print('========> ', rep.topic_name, rep.text, ' <========')
+        return rep
 
 def main():
         uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
@@ -42,6 +39,9 @@ def main():
 
         cpt = []
         cpt.append(R4DCB08(0x01, bus1))
+        cpt.append(R4DCB08(0x01, bus2))
+        cpt.append(N4DOG16(0x02, bus2))
+        cpt.append(N4DIH32(0x04, bus2))
 
         wlan = WLanPico()
         try:
@@ -57,35 +57,50 @@ def main():
 
 #             eletechsup = ConfigFile("eletechsup.json")
 
-            sock = SocketTcp()
+            sock = SocketTcp(timeout=30)
             try:
                 sock.connect(SERVER, PORT)
-
-                poule = PollStream()
-                poule.register(sock.sock)
 
                 try:
 
                     cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
                     sock.send(cnx.buffer)
-                    recevoir(poule)
+                    recevoir(sock)
 
-                    i = 0
+                    sub = MqttSubcribe(1, "output/lampe/cabane/0", 0)
+                    sock.send(sub.buffer)
+                    recevoir(sock)
+
                     fin = False
                     while fin == False:
                         try:
-                            publier(sock, 'capteur/temperature/{}'.format(i), cpt[0].read(i))
-                            recevoir(poule)
+                            publier(sock, 'capteur/temperature/0', cpt[0].read(0))
                         
                         except ModbusException as err:
                             print('ModbusException', err)
 
-                        except Exception as err:
-                            print('exception', err)
-
-#                         i = (i + 1) % 8
+                        try:
+                            publier(sock, 'capteur/temperature/9', cpt[1].read(0))
                         
-                        time.sleep(30)
+                        except ModbusException as err:
+                            print('ModbusException', err)
+
+                        try:
+                            publier(sock, 'capteur/bp/all', cpt[3].readAll())
+                            publier(sock, 'capteur/bp/1', cpt[3].read(1))
+                        
+                        except ModbusException as err:
+                            print('ModbusException', err)
+
+                        try:
+                            rep = recevoir(sock)
+                            if rep.topic_name == b'output/lampe/cabane/0':
+                                cpt[2].momentary(0)
+                        except OSError as err:
+                            print('OSError', err)
+                        except ModbusException as err:
+                            print('ModbusException', err)
+
                     print('FIN.')
                         
                 except ModbusException as err:

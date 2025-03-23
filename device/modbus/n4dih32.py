@@ -7,11 +7,11 @@ class N4DIH32(Eletechsup):
 
     def read(self, voie):
         fc03 = ModbusMsg03(self.modbusId, self.rtu)
-        return fc03.readHoldingRegisters(0x80 | (voie & 0x2F), 2)
+        return fc03.readHoldingRegisters(0x80 | (voie & 0x1F), 2)[1]
 
     def readAll(self):
         fc03 = ModbusMsg03(self.modbusId, self.rtu)
-        return fc03.readHoldingRegisters(0x00C0, 4)
+        return fc03.readHoldingRegisters(0x00C0, 2)
 
 if __name__ == "__main__":
     from master.uart.uartpico import UartPico
