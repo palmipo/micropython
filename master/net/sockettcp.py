@@ -2,7 +2,7 @@ from interface.socketbus import SocketBus
 import socket
 
 class SocketTcp(SocketBus):
-    def __init__(self, sock=None, timeout=100):
+    def __init__(self, sock=None, timeout=1): # timeout en secondes
         super().__init__()
 
         if sock == None:

@@ -2,6 +2,7 @@ import struct
 from device.modbus.modbusmsg import ModbusMsg
 from device.modbus.modbusmsg03 import ModbusMsg03
 from device.modbus.modbusmsg06 import ModbusMsg06
+from device.modbus.modbusmsg16 import ModbusMsg16
 from device.modbus.modbusexception import ModbusException
 
 class OR_WE_504:
@@ -97,7 +98,7 @@ class OR_WE_504:
         msg.encode(sendBuffer)
         struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, passwd[0], passwd[1])
         
-        recvBuffer = bus.transfer(sendBuffer, 6)
+        recvBuffer = self.bus.transfer(sendBuffer, 6)
 
         msg.decode(recvBuffer)
 

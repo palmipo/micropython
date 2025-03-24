@@ -1,6 +1,5 @@
 from master.net.wlanpico import WLanPico
 from master.net.sockettcp import SocketTcp
-from master.net.pollstream import PollStream
 from master.uart.uartpico import UartPico
 from device.modbus.or_we_504 import OR_WE_504
 from device.modbus.modbusrtu import ModbusRtu
@@ -17,21 +16,16 @@ def publier(sock, texte, valeur):
     pub = MqttPublish(texte, "{}".format(valeur))
     sock.send(pub.buffer)
 
-def recevoir(poule):
-    fd, event = poule.scrute(TIMEOUT)
-    if (event == select.POLLIN):
+def recevoir(fd):
+    msg = MqttResponse()
 
-        recvBuffer = fd.recv(2)
+    recvBuffer = fd.recv(2)
 
-        type_packet, taille = msg.analayseHeader(recvBuffer)
+    type_packet, taille = msg.analayseHeader(recvBuffer)
 
-        fd, event = poule.poll(TIMEOUT)
-        if (event == select.POLLIN):
+    recvBuffer = fd.recv(taille)
 
-            recvBuffer = fd.recv(taille)
-
-            msg = MqttResponse()
-            reponse = msg.analayseBody(type_packet, taille, recvBuffer)
+    reponse = msg.analayseBody(type_packet, taille, recvBuffer)
 
 
 def main():
@@ -62,38 +56,43 @@ def main():
             try:
                 sock.connect(SERVER, PORT)
 
-                poule = PollStream()
-                poule.register(sock.sock)
-
                 try:
 
                     cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
                     sock.send(cnx.buffer)
-                    recevoir(poule)
+                    recevoir(sock)
 
                     i = 0
                     fin = False
                     while fin == False:
                         try:
                             publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                            recevoir(poule)
+                            time.sleep(1)
+
                             publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
-                            recevoir(poule)
-                        
+                            time.sleep(1)
+
                         except ModbusException as err:
                             print('ModbusException', err)
 
