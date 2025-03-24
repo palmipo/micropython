@@ -8,9 +8,6 @@ class NixieConfigApp(NixieApp):
         self.wlan = wlan
 
     def init(self):
-        self.nixie.clear()
-
-    def rtcActivated(self):
         datetime = time.localtime()
         
         # affichage WIFI

@@ -13,18 +13,21 @@ class NixieMainApp(NixieApp):
             pass
 
     def krActivated(self):
+        print('krActivated', self.num, type(self.apps[self.num]))
         try:
             self.apps[self.num].krActivated()
         except NotImplementedError:
             pass
 
     def klActivated(self):
+        print('klActivated', self.num, type(self.apps[self.num]))
         try:
             self.apps[self.num].klActivated()
         except NotImplementedError:
             pass
 
     def kmActivated(self):
+        print('kmActivated', self.num, type(self.apps[self.num]))
         try:
             self.apps[self.num].kmActivated()
         except NotImplementedError:

@@ -7,9 +7,14 @@ class NixieBipApp(NixieApp):
         self.nixie = nixie
         self.valeur = [0, 99]
         self.cpt = 0
+
     def init(self):
         self.nixie.buzzer.setFrequency(100)
         self.nixie.clear()
+
+    def kmActivated(self):
+        self.nixie.buzzer.setPourcent(0)
+        raise NotImplementedError
 
     def rtcActivated(self):
         self.nixie.buzzer.setPourcent(self.valeur[self.cpt])

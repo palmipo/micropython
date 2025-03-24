@@ -2,6 +2,7 @@ from master.i2c.i2cpico import I2CPico
 # from device.i2c.bmp280 import BMP280
 from device.i2c.ds3231_sqw import DS3231_SQW
 from master.pwm.pwmpico import PwmPico
+from master.pia.piaisrpico import PiaIsrPico
 from master.pia.piaisrbouncepico import PiaIsrBouncePico
 from waveshare.waveshare_nixie_clock.nixielcd import NixieLcd
 import framebuf, time, machine, rp2
@@ -9,9 +10,9 @@ import framebuf, time, machine, rp2
 class NixieClock:
     def __init__(self):
 
-        self.kr = PiaIsrBouncePico(15, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
-        self.kl = PiaIsrBouncePico(16, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
-        self.km = PiaIsrBouncePico(17, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
+        self.kr = PiaIsrBouncePico(15, trigger=machine.Pin.IRQ_FALLING)
+        self.kl = PiaIsrBouncePico(16, trigger=machine.Pin.IRQ_FALLING)
+        self.km = PiaIsrBouncePico(17, trigger=machine.Pin.IRQ_FALLING)
         self.buzzer = PwmPico(14)
         self.buzzer.setFrequency(50)
 
@@ -44,5 +45,5 @@ class NixieClock:
             self.dessin.fill(0)
             self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height, self.buffer)
 
-        self.ds1321.setControlRegister(0, 0, 0, 0, 0)
+        #self.ds1321.setControlRegister(0, 0, 0, 0, 0)
 
