@@ -39,17 +39,12 @@ if __name__ == "__main__":
     from master.uart.uartpico import UartPico
     from device.modbus.modbusrtu import ModbusRtu
     import time
-#     uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
-    uart1 = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
-    bus1 = ModbusRtu(uart1)
-
-    passwd = struct.pack('>BBHHBHH', 0x01, 0x28, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
-    recvBuffer = bus1.transfer(passwd, 6)
-
-    time.sleep(5)
- 
     try:
+        # uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
+        uart1 = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
+        bus1 = ModbusRtu(uart1)
+
         msg16 = ModbusMsg16(1, bus1)
-        msg16.presetMultipleRegisters(0x0f, [0x0001])
+        msg16.presetMultipleRegisters(0x07, [0, 0])
     except ModbusException:
         print('ModbusException')

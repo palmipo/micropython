@@ -49,12 +49,26 @@ class OR_WE_504:
         ae = msg.readHoldingRegisters(0x07, 0x02)
         return ae[1]
 
+    def clearActiveEnergy(self, passwd):
+        self.login(passwd)
+
+        msg16 = ModbusMsg16(self.modbus_id, self.bus)
+        msg16.presetMultipleRegisters(0x07, [0, 0])
+
     def reactiveEnergie(self):
         msg = ModbusMsg03(self.modbus_id, self.bus)
         re = msg.readHoldingRegisters(0x09, 0x02)
         return re[1]
 
-    def setBaudRate(self, baud_rate):
+    def clearReactiveEnergie(self, passwd):
+        self.login(passwd)
+
+        msg16 = ModbusMsg16(self.modbus_id, self.bus)
+        msg16.presetMultipleRegisters(0x09, [0, 0])
+
+    def setBaudRate(self, passwd, baud_rate):
+        self.login(passwd)
+
         msg = ModbusMsg06(self.modbus_id, self.bus)
         msg.presetSingleRegister(0x0E, baud_rate)
 
@@ -63,7 +77,9 @@ class OR_WE_504:
         bd = msg.readHoldingRegisters(0x0E, 0x01)
         return bd[0]
 
-    def setModbusId(self, modbus_id):
+    def setModbusId(self, passwd, modbus_id):
+        self.login(passwd)
+
         msg = ModbusMsg06(self.modbus_id, self.bus)
         msg.presetSingleRegister(0x0F, modbus_id)
 
@@ -79,7 +95,7 @@ class OR_WE_504:
         msg = ModbusMsg(self.modbus_id, 0x28)
         
         msg.encode(sendBuffer)
-        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, 0x0000, 0x0000)
+        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, passwd[0], passwd[1])
         
         recvBuffer = bus.transfer(sendBuffer, 6)
 
@@ -116,9 +132,8 @@ if __name__ == "__main__":
     from device.modbus.modbusrtu import ModbusRtu
     from device.modbus.modbusexception import ModbusException
     try:
-        orno = OR_WE_504(0, ModbusRtu(UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)))
-        orno.login(struct.pack('>BBBB', 0, 0, 0, 0))
-        orno.setModbusId(1)
+        orno = OR_WE_504(1, ModbusRtu(UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)))
+        orno.clearActiveEnergy([0, 0])
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
