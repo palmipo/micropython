@@ -9,7 +9,7 @@ class ModbusHeader:
         modbus_id = struct.unpack_from('>B', recvBuffer, 0)[0]
 
         if modbus_id != self.modbus_id:
-            raise ModbusException()
+            raise ModbusException('adresse modbus de la reponse differente de la question')
 
     def encode(self, sendBuffer):
         struct.pack_into('>B', sendBuffer, 0, self.modbus_id)

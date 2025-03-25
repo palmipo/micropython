@@ -14,10 +14,10 @@ class ModbusMsg(ModbusHeader):
 
         if msg_id & 0x80 != 0:
             err = struct.unpack_from('>B', recvBuffer, 2)[0]
-            raise ModbusException()
+            raise ModbusException('erreur de l\'esclave')
 
         if msg_id & 0x7F != self.msg_id:
-            raise ModbusException()
+            raise ModbusException('numero de fonction de la reponse differente de la question')
 
     def encode(self, sendBuffer):
         super().encode(sendBuffer)

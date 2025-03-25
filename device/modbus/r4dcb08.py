@@ -22,8 +22,9 @@ if __name__ == "__main__":
     try:
         from master.uart.uartpico import UartPico
         from device.modbus.modbusrtu import ModbusRtu
-        uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
-        bus1 = ModbusRtu(uart1)
+        uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
+        #uart = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
+        bus1 = ModbusRtu(uart)
         cpt1 = R4DCB08(0x01, bus1)
         print(cpt1.readAll())
         print(cpt1.read(0))

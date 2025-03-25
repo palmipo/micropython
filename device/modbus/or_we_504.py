@@ -67,9 +67,7 @@ class OR_WE_504:
         msg16 = ModbusMsg16(self.modbus_id, self.bus)
         msg16.presetMultipleRegisters(0x09, [0, 0])
 
-    def setBaudRate(self, passwd, baud_rate):
-        self.login(passwd)
-
+    def setBaudRate(self, baud_rate):
         msg = ModbusMsg06(self.modbus_id, self.bus)
         msg.presetSingleRegister(0x0E, baud_rate)
 
@@ -78,9 +76,7 @@ class OR_WE_504:
         bd = msg.readHoldingRegisters(0x0E, 0x01)
         return bd[0]
 
-    def setModbusId(self, passwd, modbus_id):
-        self.login(passwd)
-
+    def setModbusId(self, modbus_id):
         msg = ModbusMsg06(self.modbus_id, self.bus)
         msg.presetSingleRegister(0x0F, modbus_id)
 
@@ -94,7 +90,7 @@ class OR_WE_504:
     def login(self, passwd=b'\x00\x00\x00\x00'):
         msg = ModbusMsgFree(self.modbus_id, 0x28, self.bus)
         recvBuffer = msg.transfer(b'\xFE\x01\x00\x02\x04' + passwd, 4)
-        addr, value = struct.unpack_from('>HH', recvBuffer, 2)
+        addr, value = struct.unpack_from('>HH', recvBuffer, 0)
 
         if addr != 0xFE01:
             raise ModbusException()
@@ -125,12 +121,16 @@ if __name__ == "__main__":
     from master.uart.uartpico import UartPico
     from device.modbus.modbusrtu import ModbusRtu
     from device.modbus.modbusexception import ModbusException
+    import time
     try:
         #uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
         uart = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
         orno = OR_WE_504(1, ModbusRtu(uart))
-        orno.clearActiveEnergy(b'\x00\x00\x00\x00')
-        orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
+        orno.login(b'\x00\x00\x00\x00')
+        time.sleep(5)
+        orno.setModbusId(1)
+#         orno.clearActiveEnergy(b'\x00\x00\x00\x00')
+#         orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
     except KeyboardInterrupt:
         print("exit")
         sys.quit()

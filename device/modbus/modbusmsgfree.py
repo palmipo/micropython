@@ -10,9 +10,7 @@ class ModbusMsgFree(ModbusMsg):
     def transfer(self, msg, recvLength):
         sendBuffer = bytearray(2+len(msg))
         self.encode(sendBuffer, msg)
-        print(sendBuffer)
         recvBuffer = self.bus.transfer(sendBuffer, 2 + recvLength)
-        print(recvBuffer)
         return self.decode(recvBuffer)
 
     def encode(self, sendBuffer, msg):
