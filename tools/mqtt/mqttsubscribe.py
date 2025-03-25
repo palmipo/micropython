@@ -3,25 +3,14 @@ from tools.mqtt.mqttcodec import *
 from tools.configfile import ConfigFile
 from master.net.wlanpico import WLanPico
 
-TIMEOUT = 10000
+TIMEOUT = 10
 
-def envoyer(buffer):
-    sock.write(buffer)
+def recevoir(fd):
+    recvBuffer1 = fd.recv(2)
+    type_packet, taille = msg.analayseHeader(recvBuffer1)
 
-def recevoir():
-    events1 = poule.poll(TIMEOUT)
-    for (fd1, event1) in events1:
-        if (event1 == select.POLLIN):
-            recvBuffer1 = fd1.read(2)
-
-            type_packet, taille = msg.analayseHeader(recvBuffer1)
-
-            events2 = poule.poll(TIMEOUT)
-            for (fd2, event2) in events2:
-                if (event2 == select.POLLIN):
-
-                    recvBuffer2 = fd2.read(taille)
-                    return msg.analayseBody(type_packet, taille, recvBuffer2)
+    recvBuffer2 = fd.recv(taille)
+    return msg.analayseBody(type_packet, taille, recvBuffer2)
 
 wlan = WLanPico()
 try:
@@ -36,34 +25,27 @@ try:
     PASSWD = cfg.config()['mqtt']['broker']['passwd']
     CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-    sock = socket.socket()
+    sock = SocketTcp()
     try:
-        addr = socket.getaddrinfo(SERVER, PORT)[0][-1]
-        print(addr)
-        sock.connect(addr)
-        sock.setblocking(True)
+        sock.connect(SERVER, PORT)
 
-        poule = select.poll()
-        poule.register(sock, select.POLLIN | select.POLLERR | select.POLLHUP)
-
-        msg = MqttResponse()
         try:
             cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1, keep_alive=2*TIMEOUT)
-            envoyer(cnx.buffer)
-            recevoir()
+            sock.send(cnx.buffer)
+            recevoir(sock)
             
             sub = MqttSubcribe(1, "capteur/energie/0/activePower", 0)
-            envoyer(sub.buffer)
-            recevoir()
+            sock.send(sub.buffer)
+            recevoir(sock)
 
             sub = MqttSubcribe(2, "capteur/energie/1/activePower", 0)
-            envoyer(sub.buffer)
-            recevoir()
+            sock.send(sub.buffer)
+            recevoir(sock)
 
             fin = False
             while fin == False:
                 try:
-                    reponse = recevoir()
+                    reponse = recevoir(sock)
                     print(type(reponse))
                     
                 except KeyboardInterrupt:
@@ -77,15 +59,15 @@ try:
 
         finally:
             unsub = MqttUnsubcribe(1)
-            envoyer(unsub.buffer)
-            recevoir()
+            sock.send(unsub.buffer)
+            recevoir(sock)
 
             unsub = MqttUnsubcribe(2)
-            envoyer(unsub.buffer)
-            recevoir()
+            sock.send(unsub.buffer)
+            recevoir(sock)
 
             discnx = MqttDisconnect()
-            envoyer(discnx.buffer)
+            sock.send(discnx.buffer)
 
     finally:    
         sock.close()

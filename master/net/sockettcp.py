@@ -2,7 +2,7 @@ from interface.socketbus import SocketBus
 import socket
 
 class SocketTcp(SocketBus):
-    def __init__(self, sock=None, timeout=1): # timeout en secondes
+    def __init__(self, sock=None, timeout=10): # timeout en secondes
         super().__init__()
 
         if sock == None:
@@ -42,7 +42,7 @@ class SocketTcp(SocketBus):
 
 if __name__ == "__main__":
     clnt = SocketTcp()
-    clnt.connect("192.168.1.1", 2222)
+    clnt.connect("192.168.1.108", 1883)
     clnt.send(b'hello world')
     print(clnt.recv(100))
     clnt.disconnect()

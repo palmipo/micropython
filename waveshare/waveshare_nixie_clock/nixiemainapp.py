@@ -43,3 +43,9 @@ class NixieMainApp(NixieApp):
             self.apps[self.num].rtcActivated()
         except NotImplementedError:
             pass
+
+    def publisherRecev(self, topic, value):
+        try:
+            self.apps[self.num].publisherRecev(topic, value)
+        except NotImplementedError:
+            pass

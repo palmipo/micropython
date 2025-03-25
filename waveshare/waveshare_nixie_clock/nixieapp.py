@@ -17,3 +17,6 @@ class NixieApp:
 
     def rtcActivated(self):
         raise NotImplementedError
+
+    def publisherRecev(self, topic, value):
+        raise NotImplementedError

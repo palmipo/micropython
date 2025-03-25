@@ -46,3 +46,9 @@ class NixieLedApp(NixieApp):
                 self.nixieClock.dessin.fill(0)
             self.nixieClock.nixie.LCDs[i].setLcdBlackLight(99)
             self.nixieClock.nixie.LCDs[i].show(0, 0, self.nixieClock.nixie.LCDs[i].width, self.nixieClock.nixie.LCDs[i].height, self.nixieClock.buffer)
+
+    def publisherRecev(self, topic, value):
+        self.nixieClock.dessin.fill(0)
+        self.nixieClock.dessin.text(topic, 0, 0, 0xffff)
+        self.nixieClock.dessin.text(value, 0, 10, 0xffff)
+        self.nixieClock.nixie.LCDs[5].show(0, 0, self.nixieClock.nixie.LCDs[5].width, self.nixieClock.nixie.LCDs[5].height>>1, self.nixieClock.buffer)

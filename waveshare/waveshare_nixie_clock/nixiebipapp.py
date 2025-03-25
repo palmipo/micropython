@@ -19,3 +19,9 @@ class NixieBipApp(NixieApp):
     def rtcActivated(self):
         self.nixie.buzzer.setPourcent(self.valeur[self.cpt])
         self.cpt = (self.cpt + 1) % len(self.valeur)
+
+    def publisherRecev(self, topic, value):
+        self.nixie.dessin.fill(0)
+        self.nixie.dessin.text(topic, 0, 0, 0xffff)
+        self.nixie.dessin.text(value, 0, 10, 0xffff)
+        self.nixie.nixie.LCDs[5].show(0, 0, self.nixie.nixie.LCDs[5].width, self.nixie.nixie.LCDs[5].height>>1, self.nixie.buffer)

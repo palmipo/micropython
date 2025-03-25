@@ -13,6 +13,7 @@ class NixieClock:
         self.kr = PiaIsrBouncePico(15, trigger=machine.Pin.IRQ_FALLING)
         self.kl = PiaIsrBouncePico(16, trigger=machine.Pin.IRQ_FALLING)
         self.km = PiaIsrBouncePico(17, trigger=machine.Pin.IRQ_FALLING)
+
         self.buzzer = PwmPico(14)
         self.buzzer.setFrequency(50)
 
@@ -35,15 +36,13 @@ class NixieClock:
         self.ds1321.setControlRegister(CONV=0x01, RS=0x00, INTCN=0x00, A2IE=0x00, A1IE=0x01, EN32kHz=0)
 
         self.nixie = NixieLcd(rst_pin = 12, dc_pin = 8, bl_pin = 13, led_pin = 22)
-        self.buffer = bytearray(self.nixie.LCDs[0].width * self.nixie.LCDs[0].height * 2)
-        self.dessin = framebuf.FrameBuffer(self.buffer, self.nixie.LCDs[0].width, self.nixie.LCDs[0].height, framebuf.RGB565)    
+        self.buffer = bytearray(self.nixie.LCDs[0].width * self.nixie.LCDs[0].height)
+        self.dessin = framebuf.FrameBuffer(self.buffer, self.nixie.LCDs[0].width, self.nixie.LCDs[0].height>>1, framebuf.RGB565)    
 
         self.clear()
 
     def clear(self):
         for num in range(len(self.nixie.LCDs)):
             self.dessin.fill(0)
-            self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height, self.buffer)
-
-        #self.ds1321.setControlRegister(0, 0, 0, 0, 0)
+            self.nixie.LCDs[num].show(0, 0, self.nixie.LCDs[num].width, self.nixie.LCDs[num].height>>1, self.buffer)
 
