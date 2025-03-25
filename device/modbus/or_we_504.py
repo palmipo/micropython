@@ -1,8 +1,8 @@
 import struct
-from device.modbus.modbusmsg import ModbusMsg
 from device.modbus.modbusmsg03 import ModbusMsg03
 from device.modbus.modbusmsg06 import ModbusMsg06
 from device.modbus.modbusmsg16 import ModbusMsg16
+from device.modbus.modbusmsgfree import ModbusMsgFree
 from device.modbus.modbusexception import ModbusException
 
 class OR_WE_504:
@@ -91,35 +91,28 @@ class OR_WE_504:
 
     # setting：01 28 FE 01 00 02 04 00 00 00 00 FB 12 //00 00 00 00 password
     # return：01 28 FE 01 00 01 C0 24
-    def login(self, passwd):
-        sendBuffer = bytearray(11)
-        msg = ModbusMsg(self.modbus_id, 0x28)
-        
-        msg.encode(sendBuffer)
-        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, passwd[0], passwd[1])
-        
-        recvBuffer = self.bus.transfer(sendBuffer, 6)
+    def login(self, passwd=b'\x00\x00\x00\x00'):
+        msg = ModbusMsgFree(self.modbus_id, 0x28, self.bus)
+        recvBuffer = msg.transfer(b'\xFE\x01\x00\x02\x04' + passwd, 4)
+        addr, value = struct.unpack_from('>HH', recvBuffer, 2)
 
-        msg.decode(recvBuffer)
+        if addr != 0xFE01:
+            raise ModbusException()
+
+        if value != 0x0001:
+            raise ModbusException()
 
     # Write password：02 10 00 10 00 02 04 11 11 11 11 64 82 //setting password 11 11 11 11
     # return：02 10 00 10 00 02 40 3E
-    def passwordEfficacy(self, passwd):
+    def setPassword(self, passwd):
         msg16 = ModbusMsg16(self.modbus_id, self.bus)
         msg16.presetMultipleRegisters(0x10, passwd)
 
     # setting : 01 28 FE 01 00 02 04 00 00 00 00 -> 00 00 00 00 password
     # return  : 01 28 FE 01 00 01
     def removePassword(self, passwd):
-        sendBuffer = bytearray(15)
-        msg = ModbusMsg(self.modbus_id, 0x28)
-        
-        msg.encode(sendBuffer)
-        struct.pack_into('>HHBHH', sendBuffer, 2, 0xFE01, 0x0002, 0x04, passwd)
-        
-        recvBuffer = bus.transfer(sendBuffer, 6)
-        
-        msg.decode(recvBuffer)
+        msg = ModbusMsgFree(self.modbus_id, 0x28, self.bus)
+        recvBuffer = msg.transfer(b'\xFE\x01\x00\x02\x04' + passwd, 4)
         addr, value = struct.unpack_from('>HH', recvBuffer, 2)
 
         if addr != 0xFE01:
@@ -133,8 +126,11 @@ if __name__ == "__main__":
     from device.modbus.modbusrtu import ModbusRtu
     from device.modbus.modbusexception import ModbusException
     try:
-        orno = OR_WE_504(1, ModbusRtu(UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)))
-        orno.clearActiveEnergy([0, 0])
+        #uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
+        uart = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
+        orno = OR_WE_504(1, ModbusRtu(uart))
+        orno.clearActiveEnergy(b'\x00\x00\x00\x00')
+        orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
     except KeyboardInterrupt:
         print("exit")
         sys.quit()

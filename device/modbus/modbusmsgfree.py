@@ -11,7 +11,8 @@ class ModbusMsgFree(ModbusMsg):
         sendBuffer = bytearray(2+len(msg))
         self.encode(sendBuffer, msg)
         print(sendBuffer)
-        recvBuffer = self.bus.transfer(sendBuffer, 2 + 2 * recvLength)
+        recvBuffer = self.bus.transfer(sendBuffer, 2 + recvLength)
+        print(recvBuffer)
         return self.decode(recvBuffer)
 
     def encode(self, sendBuffer, msg):
@@ -31,7 +32,7 @@ if __name__ == "__main__":
         uart = UartPico(bus=0 , bdrate=9600, pinTx=0, pinRx=1)
         bus = ModbusRtu(uart)
         msg = ModbusMsgFree(0x01, 0x28, bus)
-        print(msg.transfer(b'\xFE\x01\x00\x02\x04\x00\x00\x00\x00', 0x02))
+        print(msg.transfer(b'\xFE\x01\x00\x02\x04\x00\x00\x00\x00', 0x04))
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
