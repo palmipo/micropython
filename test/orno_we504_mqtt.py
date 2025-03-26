@@ -1,6 +1,7 @@
 from master.net.wlanpico import WLanPico
 from master.net.sockettcp import SocketTcp
 from master.uart.uartpico import UartPico
+from device.modbus.r4dcb08 import R4DCB08
 from device.modbus.or_we_504 import OR_WE_504
 from device.modbus.modbusrtu import ModbusRtu
 from device.modbus.modbusexception import ModbusException
@@ -34,9 +35,12 @@ def main():
         bus1 = ModbusRtu(uart1)
         bus2 = ModbusRtu(uart2)
 
+        tempe = R4DCB08(0x01, bus2)
         cpt = []
         cpt.append(OR_WE_504(0x01, bus1))
-        cpt.append(OR_WE_504(0x01, bus2))
+        cpt.append(OR_WE_504(0x02, bus1))
+        cpt.append(OR_WE_504(0x03, bus1))
+        cpt.append(OR_WE_504(0x04, bus1))
 
         wlan = WLanPico()
         try:
@@ -62,35 +66,42 @@ def main():
                     sock.send(cnx.buffer)
                     recevoir(sock)
 
-                    i = 0
                     fin = False
                     while fin == False:
+                        for i in range(len(cpt)):
+                            try:
+                                publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
+                                time.sleep(1)
+
+                                publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                                time.sleep(1)
+
+                            except ModbusException as err:
+                                print('ModbusException', err)
+
                         try:
-                            publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                            time.sleep(1)
-
-                            publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                            publier(sock, 'capteur/temperature/garage', tempe.read(0))
                             time.sleep(1)
 
                         except ModbusException as err:
@@ -99,15 +110,10 @@ def main():
                         except Exception as err:
                             print('exception', err)
 
-                        i = (i + 1) % len(cpt)
                         
-                        time.sleep(30)
+                        time.sleep(60)
                     print('FIN.')
                         
-                except ModbusException as err:
-                    print('ModbusException', err)
-                    fin = True
-
                 finally:
                     print('MqttDisconnect')
                     discnx = MqttDisconnect()
@@ -128,4 +134,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
-

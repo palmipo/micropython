@@ -125,12 +125,12 @@ if __name__ == "__main__":
     try:
         #uart = UartPico(bus=1 , bdrate=9600, pinTx=4, pinRx=5)
         uart = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
-        orno = OR_WE_504(1, ModbusRtu(uart))
-        orno.login(b'\x00\x00\x00\x00')
-        time.sleep(5)
-        orno.setModbusId(2)
-#         orno.clearActiveEnergy(b'\x00\x00\x00\x00')
-#         orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
+        orno = OR_WE_504(2, ModbusRtu(uart))
+#         orno.login(b'\x00\x00\x00\x00')
+#         time.sleep(5)
+#         orno.setModbusId([2])
+        orno.clearActiveEnergy(b'\x00\x00\x00\x00')
+        orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
