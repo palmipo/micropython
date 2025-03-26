@@ -1,4 +1,4 @@
-import time, binascii, ntptime
+import time, binascii, ntptime, machine
 from waveshare.waveshare_nixie_clock.nixieclock import NixieClock
 from waveshare.waveshare_nixie_clock.nixiebipapp import NixieBipApp
 from waveshare.waveshare_nixie_clock.nixieconfigapp import NixieConfigApp
@@ -11,13 +11,17 @@ from tools.mqtt.mqttcodec import *
 from tools.configfile import ConfigFile
 
 def recevoir(fd):
-    msg = MqttResponse()
+    try:
+        msg = MqttResponse()
 
-    recvBuffer1 = fd.recv(2)
-    type_packet, taille = msg.analayseHeader(recvBuffer1)
+        recvBuffer1 = fd.recv(2)
+        type_packet, taille = msg.analayseHeader(recvBuffer1)
 
-    recvBuffer2 = fd.recv(taille)
-    return msg.analayseBody(type_packet, taille, recvBuffer2)
+        recvBuffer2 = fd.recv(taille)
+        return msg.analayseBody(type_packet, taille, recvBuffer2)
+    except OSError as err:
+        print(err)
+
 
 horloge = NixieClock()
 try:
@@ -26,7 +30,7 @@ try:
     wlan = WLanPico()
     wlan.connect(wifi.config()['wifi']['ssid'], wifi.config()['wifi']['passwd'])
 
-#     ntptime.settime()
+    ntptime.settime()
 
     bipApp = NixieBipApp(horloge)
     configApp = NixieConfigApp(horloge, wlan)
@@ -42,7 +46,7 @@ try:
     PASSWD = cfg.config()['mqtt']['broker']['passwd']
     CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-    sock = SocketTcp()
+    sock = SocketTcp(timeout=1)
     try:
         sock.connect(SERVER, PORT)
 
@@ -52,7 +56,7 @@ try:
             recevoir(sock)
             
             try:
-                sub = MqttSubcribe(1, "capteur/energie/0/activePower", 0)
+                sub = MqttSubcribe(1, "capteur/energie/0/activeEnergie", 0)
                 sock.send(sub.buffer)
                 recevoir(sock)
 
@@ -74,12 +78,9 @@ try:
                     if horloge.ds1321.isActivated() == True:
                         mainApp.rtcActivated()
 
-                    try:
-                        pubRecv = recevoir(sock)
-                        pubRecv.topic_name, pubRecv.text
+                    pubRecv = recevoir(sock)
+                    if type(pubRecv) == MqttPubRecv:
                         mainApp.publisherRecev(pubRecv.topic_name, pubRecv.text)
-                    except OSError:
-                        pass
 
             finally:
                 unsub = MqttUnsubcribe(2)

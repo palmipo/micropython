@@ -58,7 +58,7 @@ def main():
             PASSWD = mqtt.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            sock = SocketTcp(timeout=10)
+            sock = SocketTcp(timeout=60)
             try:
                 sock.connect(SERVER, PORT)
 
