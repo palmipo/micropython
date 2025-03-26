@@ -18,11 +18,18 @@ def publier(sock, texte, valeur):
     sock.send(pub.buffer)
 
 def recevoir(fd):
-    msg = MqttResponse()
-    recvBuffer = fd.recv(2)
-    type_packet, taille = msg.analayseHeader(recvBuffer)
-    recvBuffer = fd.recv(taille)
-    return msg.analayseBody(type_packet, taille, recvBuffer)
+    try:
+        msg = MqttResponse()
+        recvBuffer = fd.recv(2)
+        type_packet, taille = msg.analayseHeader(recvBuffer)
+        recvBuffer = fd.recv(taille)
+        pubRecv = msg.analayseBody(type_packet, taille, recvBuffer)
+        if type(pubRecv) == MqttPubRecv:
+            if pubRecv.topic_name == b'capteur/energie/raz':
+                cpt[int(pubRecv.text)].clearActiveEnergy(b'\x00\x00\x00\x00')
+                cpt[int(pubRecv.text)].clearReactiveEnergie(b'\x00\x00\x00\x00')
+    except OSError as err:
+        print(err)
 
 def main():
         uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
@@ -31,6 +38,8 @@ def main():
         bus2 = ModbusRtu(uart2)
 
         tempe = R4DCB08(0x01, bus2)
+        
+        global cpt
         cpt = []
         cpt.append(OR_WE_504(0x01, bus1))
         cpt.append(OR_WE_504(0x02, bus1))
@@ -49,7 +58,7 @@ def main():
             PASSWD = mqtt.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            sock = SocketTcp(timeout=60)
+            sock = SocketTcp(timeout=10)
             try:
                 sock.connect(SERVER, PORT)
 
@@ -69,50 +78,29 @@ def main():
                             for i in range(len(cpt)):
                                 try:
                                     publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                                    time.sleep(1)
-
                                     publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
-                                    time.sleep(1)
 
                                 except ModbusException as err:
                                     print('ModbusException', err)
 
                             try:
                                 publier(sock, 'capteur/temperature/garage', tempe.read(0))
-                                time.sleep(1)
 
                             except ModbusException as err:
                                 print('ModbusException', err)
 
-                                pubRecv = recevoir(sock)
-                                pubRecv.topic_name, pubRecv.text
-                                if pubRecv.topic_name == 'capteur/energie/raz':
-                                    cpt[int(pubRecv.text)].clearActiveEnergie()
-                                    cpt[int(pubRecv.text)].clearReactiveEnergie()
+                            try:
+                                recevoir(sock)
 
-                            except Exception as err:
-                                print('exception', err)
+                            except ModbusException as err:
+                                print('ModbusException', err)
 
                         print('FIN.')
                         
