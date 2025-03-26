@@ -77,8 +77,8 @@ class OR_WE_504:
         return bd[0]
 
     def setModbusId(self, modbus_id):
-        msg = ModbusMsg06(self.modbus_id, self.bus)
-        msg.presetSingleRegister(0x0F, modbus_id)
+        msg = ModbusMsg16(self.modbus_id, self.bus)
+        msg.presetMultipleRegisters(0x0F, modbus_id)
 
     def getModbusId(self):
         msg = ModbusMsg03(self.modbus_id, self.bus)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         orno = OR_WE_504(1, ModbusRtu(uart))
         orno.login(b'\x00\x00\x00\x00')
         time.sleep(5)
-        orno.setModbusId(1)
+        orno.setModbusId(2)
 #         orno.clearActiveEnergy(b'\x00\x00\x00\x00')
 #         orno.clearReactiveEnergie(b'\x00\x00\x00\x00')
     except KeyboardInterrupt:
