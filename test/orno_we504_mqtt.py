@@ -19,15 +19,10 @@ def publier(sock, texte, valeur):
 
 def recevoir(fd):
     msg = MqttResponse()
-
     recvBuffer = fd.recv(2)
-
     type_packet, taille = msg.analayseHeader(recvBuffer)
-
     recvBuffer = fd.recv(taille)
-
-    reponse = msg.analayseBody(type_packet, taille, recvBuffer)
-
+    return msg.analayseBody(type_packet, taille, recvBuffer)
 
 def main():
         uart1 = UartPico(bus=0, bdrate=9600, pinTx=0, pinRx=1)
@@ -54,9 +49,7 @@ def main():
             PASSWD = mqtt.config()['mqtt']['broker']['passwd']
             CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-            orno = ConfigFile("orno.json")
-
-            sock = SocketTcp()
+            sock = SocketTcp(timeout=60)
             try:
                 sock.connect(SERVER, PORT)
 
@@ -66,54 +59,67 @@ def main():
                     sock.send(cnx.buffer)
                     recevoir(sock)
 
-                    fin = False
-                    while fin == False:
-                        for i in range(len(cpt)):
+                    try:
+                        sub = MqttSubcribe(1, "capteur/energie/raz", 0)
+                        sock.send(sub.buffer)
+                        recevoir(sock)
+
+                        fin = False
+                        while fin == False:
+                            for i in range(len(cpt)):
+                                try:
+                                    publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
+                                    time.sleep(1)
+
+                                    publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                                    time.sleep(1)
+
+                                except ModbusException as err:
+                                    print('ModbusException', err)
+
                             try:
-                                publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                                time.sleep(1)
-
-                                publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                                publier(sock, 'capteur/temperature/garage', tempe.read(0))
                                 time.sleep(1)
 
                             except ModbusException as err:
                                 print('ModbusException', err)
 
-                        try:
-                            publier(sock, 'capteur/temperature/garage', tempe.read(0))
-                            time.sleep(1)
+                                pubRecv = recevoir(sock)
+                                pubRecv.topic_name, pubRecv.text
+                                if pubRecv.topic_name == 'capteur/energie/raz':
+                                    cpt[int(pubRecv.text)].clearActiveEnergie()
+                                    cpt[int(pubRecv.text)].clearReactiveEnergie()
 
-                        except ModbusException as err:
-                            print('ModbusException', err)
+                            except Exception as err:
+                                print('exception', err)
 
-                        except Exception as err:
-                            print('exception', err)
-
+                        print('FIN.')
                         
-                        time.sleep(60)
-                    print('FIN.')
-                        
+                    finally:
+                        unsub = MqttUnsubcribe(1)
+                        sock.send(unsub.buffer)
+
                 finally:
                     print('MqttDisconnect')
                     discnx = MqttDisconnect()
