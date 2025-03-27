@@ -5,10 +5,10 @@ class PiaPico(PiaBus):
     def __init__(self):
         super().__init__()
 
-    def set(self, value):
+    def send(self, value):
         self.pin.value(value)
 
-    def get(self):
+    def recv(self):
         return self.pin.value()
 
 class PiaOutputPico(PiaPico):

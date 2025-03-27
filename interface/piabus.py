@@ -4,9 +4,9 @@ class PiaBus:
     def __init__(self):
         pass
     
-    def set(self, value):
+    def send(self, value):
         raise NotImplementedError
 
-    def get(self):
+    def recv(self):
         raise NotImplementedError
 

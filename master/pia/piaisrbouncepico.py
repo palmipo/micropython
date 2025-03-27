@@ -8,17 +8,19 @@ class PiaIsrBouncePico(PiaIsrBounceBus):
         self.pin = machine.Pin(nPin, machine.Pin.IN, pullUp)
         self.pin.irq(handler=self.isr, trigger=trigger, hard=True)
 
-# 
-# import time
-# try:
-#     rc = PiaIsrBouncePico(15, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
-#     fin = False
-#     while fin == False:
-#         print('validation {}'.format(rc.isActivated()))
-#         time.sleep_ms(500)
-# 
-# except KeyboardInterrupt:
-#     pass
-# 
-# finally:
-#     fin = True
+
+if __name__ == "__main__":
+
+    import time
+    try:
+        rc = PiaIsrBouncePico(15, pullUp=machine.Pin.PULL_DOWN, trigger=machine.Pin.IRQ_FALLING)
+        fin = False
+        while fin == False:
+            print('validation {}'.format(rc.isActivated()))
+            time.sleep_ms(500)
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        fin = True
