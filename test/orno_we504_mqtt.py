@@ -25,9 +25,9 @@ def recevoir(fd):
         recvBuffer = fd.recv(taille)
         pubRecv = msg.analayseBody(type_packet, taille, recvBuffer)
         if type(pubRecv) == MqttPubRecv:
-            if pubRecv.topic_name == b'capteur/energie/raz':
-                cpt[int(pubRecv.text)].clearActiveEnergy(b'\x00\x00\x00\x00')
-                cpt[int(pubRecv.text)].clearReactiveEnergie(b'\x00\x00\x00\x00')
+            if pubRecv.topic_name == b'commande/energie/raz':
+                cpt[int(pubRecv.text)%len(cpt)].clearActiveEnergy(b'\x00\x00\x00\x00')
+                cpt[int(pubRecv.text)%len(cpt)].clearReactiveEnergie(b'\x00\x00\x00\x00')
     except OSError as err:
         print(err)
 
@@ -69,7 +69,7 @@ def main():
                     recevoir(sock)
 
                     try:
-                        sub = MqttSubcribe(1, "capteur/energie/raz", 0)
+                        sub = MqttSubcribe(1, "commande/energie/raz", 0)
                         sock.send(sub.buffer)
                         recevoir(sock)
 
@@ -77,24 +77,25 @@ def main():
                         while fin == False:
                             for i in range(len(cpt)):
                                 try:
-                                    publier(sock, 'capteur/energie/{}/voltage'.format(i), cpt[i].voltage())
-                                    publier(sock, 'capteur/energie/{}/intensite'.format(i), cpt[i].intensite())
-                                    publier(sock, 'capteur/energie/{}/frequence'.format(i), cpt[i].frequence())
-                                    publier(sock, 'capteur/energie/{}/activePower'.format(i), cpt[i].activePower())
-                                    publier(sock, 'capteur/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
-                                    publier(sock, 'capteur/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
-                                    publier(sock, 'capteur/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
-                                    publier(sock, 'capteur/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
-                                    publier(sock, 'capteur/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
+                                    publier(sock, 'status/energie/{}/voltage'.format(i), cpt[i].voltage())
+                                    publier(sock, 'status/energie/{}/intensite'.format(i), cpt[i].intensite())
+                                    publier(sock, 'status/energie/{}/frequence'.format(i), cpt[i].frequence())
+                                    publier(sock, 'status/energie/{}/activePower'.format(i), cpt[i].activePower())
+                                    publier(sock, 'status/energie/{}/reactivePower'.format(i), cpt[i].reactivePower())
+                                    publier(sock, 'status/energie/{}/apparentPower'.format(i), cpt[i].apparentPower())
+                                    publier(sock, 'status/energie/{}/powerFactor'.format(i), cpt[i].powerFactor())
+                                    publier(sock, 'status/energie/{}/activeEnergie'.format(i), cpt[i].activeEnergie())
+                                    publier(sock, 'status/energie/{}/reactiveEnergie'.format(i), cpt[i].reactiveEnergie())
 
                                 except ModbusException as err:
                                     print('ModbusException', err)
 
-                            try:
-                                publier(sock, 'capteur/temperature/garage', tempe.read(0))
+                            for i in range(8):
+                                try:
+                                    publier(sock, 'status/temperature/garage/{}'.format(i), tempe.read(i))
 
-                            except ModbusException as err:
-                                print('ModbusException', err)
+                                except ModbusException as err:
+                                    print('ModbusException', err)
 
                             try:
                                 recevoir(sock)
@@ -128,3 +129,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
+
