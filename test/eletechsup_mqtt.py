@@ -60,9 +60,10 @@ def main():
                 recevoir(sock)
 
                 try:
-                    sub = MqttSubcribe(1, "output/lampe/cabane/0", 0)
-                    sock.send(sub.buffer)
-                    recevoir(sock)
+                    for i in range(16):
+                        sub = MqttSubcribe(1+i, "command/output/cabane/{}".format(i), 0)
+                        sock.send(sub.buffer)
+                        recevoir(sock)
 
                     cpt_seconde = 0
                     fin = False
@@ -70,15 +71,22 @@ def main():
                         if cpt_seconde == 0:
                             for i in range(8):
                                 try:
-                                    publier(sock, 'capteur/temperature/cabane/{}'.format(i), cpt[0].read(i))
+                                    publier(sock, 'status/temperature/cabane/{}'.format(i), cpt[0].read(i))
                                 
                                 except ModbusException as err:
                                     print('ModbusException', err)
 
 
+                        for i in range(16):
+                            try:
+                                publier(sock, 'status/output/cabane/{}'.format(i), cpt[1].read(i))
+
+                            except ModbusException as err:
+                                print('ModbusException', err)
+
                         for i in range(32):
                             try:
-                                publier(sock, 'capteur/bp/cabane/{}'.format(i), cpt[2].read(i))
+                                publier(sock, 'status/input/cabane/{}'.format(i), cpt[2].read(i))
 
                             except ModbusException as err:
                                 print('ModbusException', err)
@@ -86,13 +94,13 @@ def main():
                         try:
                             rep = recevoir(sock)
                             if type(rep) == MqttPubRecv:
-                                if rep.topic_name == b'output/lampe/cabane/0':
-                                    print('======================> ', rep.text, ' <======================')
-                                    if rep.text == b'0':
-                                        cpt[1].close(0)
+                                for i in range(16):
+                                    if rep.topic_name == b'command/output/cabane/{}'.format(i):
+                                        if rep.text == b'0':
+                                            cpt[1].close(i)
 
-                                    elif rep.text == b'1':
-                                        cpt[1].open(0)
+                                        elif rep.text == b'1':
+                                            cpt[1].open(i)
 
                         except ModbusException as err:
                             print('ModbusException', err)
@@ -100,8 +108,9 @@ def main():
                         cpt_seconde = (cpt_seconde + 1) % 60
                         
                 finally:
-                    sub = MqttUnsubcribe(1)
-                    sock.send(sub.buffer)
+                    for i in range(16):
+                        sub = MqttUnsubcribe(1+i)
+                        sock.send(sub.buffer)
 
             finally:
                 print('MqttDisconnect')
@@ -123,4 +132,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("exit")
         sys.quit()
-

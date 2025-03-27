@@ -30,10 +30,12 @@ def recevoir(fd):
                 cpt[int(pubRecv.text)%len(cpt)].clearActiveEnergy(b'\x00\x00\x00\x00')
                 cpt[int(pubRecv.text)%len(cpt)].clearReactiveEnergie(b'\x00\x00\x00\x00')
 
-            elif pubRecv.topic_name == b'commande/telerupteur/garage':
-                out[int(pubRecv.text)%8].send(1)
-                time.sleep(1)
-                out[int(pubRecv.text)%8].send(0)
+            for i in range(len(out)):
+                if pubRecv.topic_name == b'commande/output/garage/{}'.format(i):
+                    if int(pubRecv.text) != inp[i].recv():
+                        out[i].send(1)
+                        time.sleep_ms(10)
+                        out[i].send(0)
 
     except OSError as err:
         print(err)
@@ -101,9 +103,10 @@ def main():
                         sock.send(sub.buffer)
                         recevoir(sock)
 
-                        sub = MqttSubcribe(2, "commande/telerupteur/garage", 0)
-                        sock.send(sub.buffer)
-                        recevoir(sock)
+                        for i in range(len(out)):
+                            sub = MqttSubcribe(2+i, "commande/output/garage/{}".format(i), 0)
+                            sock.send(sub.buffer)
+                            recevoir(sock)
 
                         cpt_seconde = 0
                         fin = False
@@ -133,7 +136,7 @@ def main():
 
                             for i in range(len(inp)):
                                 try:
-                                    publier(sock, 'status/telerupteur/garage/{}'.format(i), inp[i].recv())
+                                    publier(sock, 'status/output/garage/{}'.format(i), inp[i].recv())
 
                                 except ModbusException as err:
                                     print('ModbusException', err)
@@ -147,8 +150,9 @@ def main():
                             cpt_seconde = (cpt_seconde + 1) % 60
                         
                     finally:
-                        sub = MqttUnsubcribe(2)
-                        sock.send(sub.buffer)
+                        for i in range(len(out)):
+                            sub = MqttUnsubcribe(2+i)
+                            sock.send(sub.buffer)
 
                         unsub = MqttUnsubcribe(1)
                         sock.send(unsub.buffer)
