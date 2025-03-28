@@ -1,0 +1,3 @@
+
+class MqttMsg:
+    pass

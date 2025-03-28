@@ -8,7 +8,7 @@ class N4DOG16(Eletechsup):
 
     def read(self, voie):
         fc03 = ModbusMsg03(self.modbusId, self.rtu)
-        return fc03.readHoldingRegisters((1+voie) & 0x001F, 1)
+        return fc03.readHoldingRegisters((1+voie) & 0x001F, 1)[0]
 
     def open(self, voie):
         fc06 = ModbusMsg06(self.modbusId, self.rtu)
@@ -52,7 +52,12 @@ if __name__ == "__main__":
     bus1 = ModbusRtu(uart1)
     cpt1 = N4DOG16(0x02, bus1)
     cpt1.openAll()
+    print(cpt1.read(0))
     time.sleep(1)
     cpt1.closeAll()
+    print(cpt1.read(0))
     time.sleep(1)
     cpt1.momentary(0)
+    print(cpt1.read(0))
+    time.sleep(1)
+    print(cpt1.read(0))

@@ -18,7 +18,4 @@ if __name__ == "__main__":
             time.sleep_ms(500)
 
     except KeyboardInterrupt:
-        pass
-
-    finally:
         fin = True

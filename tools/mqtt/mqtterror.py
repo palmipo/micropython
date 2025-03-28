@@ -1,0 +1,2 @@
+class MqttError(BaseException):
+    pass

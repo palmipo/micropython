@@ -10,13 +10,11 @@ class ModbusRtu:
         buffer[0:len(sendBuffer)] = sendBuffer
         crc0 = self.calcul_crc(sendBuffer)
         buffer[len(sendBuffer):] = crc0
-        print(buffer)
         self.rs485.send(buffer)
         
         time.sleep_ms(100)
         
         recvBuffer = self.rs485.recv(recvLen + 2)
-        print(recvBuffer)
         if recvBuffer == None:
             raise ModbusException("buffer de reception vide !")
 
@@ -45,4 +43,3 @@ class ModbusRtu:
         res[0] = uchCRCHi
         res[1] = uchCRCLo
         return res
-

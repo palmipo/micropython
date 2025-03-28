@@ -9,7 +9,6 @@ class PiaIsrBus(PiaBus):
     def isr(self, pin):
         state = machine.disable_irq()
         try:
-#             print(pin.value())
             self.activated = True
         finally:
             machine.enable_irq(state)
