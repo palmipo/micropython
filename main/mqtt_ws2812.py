@@ -19,8 +19,8 @@ def recevoir(fd):
 
 
 def main():
-    NB_LED = 8
-    pin = Pin(0, Pin.OUT)   # set GPIO0 to output to drive NeoPixels
+    NB_LED = 12
+    pin = Pin(8, Pin.OUT)   # set GPIO0 to output to drive NeoPixels
     np = NeoPixel(pin, NB_LED)   # create NeoPixel driver on GPIO0 for 8 pixels
 
     wlan = WLanPico()
@@ -35,12 +35,11 @@ def main():
         PASSWD = mqtt.config()['mqtt']['broker']['passwd']
         CLIENT_ID = binascii.hexlify(machine.unique_id())
 
-        sock = SocketTcp(timeout=1)
+        sock = SocketTcp(timeout=10)
         try:
             sock.connect(SERVER, PORT)
 
             try:
-
                 cnx = MqttConnect(client_id=CLIENT_ID, user=USER, passwd=PASSWD, retain=0, QoS=0, clean=1)
                 sock.send(cnx.buffer)
                 recevoir(sock)
@@ -53,15 +52,6 @@ def main():
                     fin = False
                     while fin == False:
 
-                        offset = 0
-                        msg = bytearray(NB_LED * 3)
-                        for i in range(NB_LED):
-                            r, g, b = np[i]
-                            struct.pack_into('!BBB', msg, offset, r, g, b)
-                            offset += 3
-                        print(msg)
-                        publier(sock, 'status/output/ch1/led/0', msg)
-
                         try:
                             pubRecv = recevoir(sock)
                             if type(pubRecv) == MqttPubRecv:
@@ -70,7 +60,7 @@ def main():
                                     cpt = 0
                                     while offset < len(pubRecv.text) and cpt < NB_LED:
                                         r, g, b = struct.unpack_from('!BBB', pubRecv.text, offset)
-                                        print(r,g,b)
+                                        print(cpt, r,g,b)
                                         offset += 3
                                         np[cpt] = (r, g, b)
                                         cpt += 1
@@ -78,7 +68,6 @@ def main():
 
                         except OSError as err:
                             print(err)
-
 
                     
                 finally:

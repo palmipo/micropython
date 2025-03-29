@@ -7,8 +7,8 @@ class Lunartec:
         cmd = "<ID><{}><E>".format(self._id)
         self._uart.send(cmd)
 
-    def set_time(self):
-        data = "<SC>{:02d}{:02d}{:02d}{:02d}{:02d}{:02d}{:02d}".format(73,04,01,18,16,45,00)
+    def set_time(self, year, month, day, weekday, hours, minutes, seconds, subseconds):
+        data = "<SC>{:02d}{:02d}{:02d}{:02d}{:02d}{:02d}{:02d}".format(year, weekday, month, day, hours, minutes, seconds)
         self.__write__(data);
 
     def send(self, text):
